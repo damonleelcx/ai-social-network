@@ -1,0 +1,78 @@
+# Builds the native iOS app on a Mac, runs it on an iPhone simulator against production,
+# and keeps the screenshots. No Apple account is needed for a simulator build.
+name: iOS
+
+on:
+  push:
+    paths:
+      - "mobile/**"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  simulator:
+    runs-on: macos-15
+    timeout-minutes: 75
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_PUBLIC_API_URL: https://synagent.heros-agent.space
+      EXPO_NO_TELEMETRY: "1"
+      CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --no-audit --no-fund
+      - run: npx tsc --noEmit
+      - run: npx expo prebuild --platform ios --no-install
+      - name: Install CocoaPods dependencies
+        run: pod install
+        working-directory: mobile/ios
+      - name: Compile the native app
+        working-directory: mobile/ios
+        run: |
+          set -o pipefail
+          WS=$(ls -d *.xcworkspace | head -1)
+          SCHEME="${WS%.xcworkspace}"
+          xcodebuild -workspace "$WS" -scheme "$SCHEME" -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO \
+            build | tail -40
+          ls build/Build/Products/Release-iphonesimulator
+      - name: Run it on an iPhone simulator
+        working-directory: mobile/ios
+        run: |
+          mkdir -p ../ios-shots
+          DEVICE=$(xcrun simctl list devices available | grep -E 'iPhone 1[5-9] Pro Max' | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+          echo "device $DEVICE"
+          xcrun simctl boot "$DEVICE"
+          xcrun simctl bootstatus "$DEVICE" -b
+          APP=$(ls -d build/Build/Products/Release-iphonesimulator/*.app | head -1)
+          xcrun simctl install "$DEVICE" "$APP"
+          xcrun simctl launch "$DEVICE" space.herosagent.synagent
+          sleep 25
+          xcrun simctl io "$DEVICE" screenshot ../ios-shots/01-launch.png
+          echo "DEVICE=$DEVICE" >> "$GITHUB_ENV"
+          # The app must still be alive after starting up.
+          xcrun simctl spawn "$DEVICE" launchctl list | grep -i herosagent
+      - name: Drive it with Maestro
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          export PATH="$PATH:$HOME/.maestro/bin"
+          maestro --device "$DEVICE" test store/ios-smoke.yaml --format junit --output ios-shots/maestro.xml
+      - name: Keep the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator
+          path: |
+            mobile/ios-shots
+            mobile/*.png
+            ~/.maestro/tests/**/*.png
+          if-no-files-found: warn

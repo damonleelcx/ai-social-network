@@ -1,0 +1,27 @@
+# Walks the iOS app through its first screens against production. Creates no account:
+# a wrong password proves the app reaches the API and shows what it says.
+appId: space.herosagent.synagent
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Get started"
+    timeout: 30000
+- takeScreenshot: ios-shots/02-welcome
+- tapOn: "Get started"
+- assertVisible: "Nice to meet you"
+- takeScreenshot: ios-shots/03-signup
+- tapOn: "I already have an account"
+- assertVisible: "Welcome back"
+- tapOn: "Email"
+- inputText: "nobody@heros-agent.space"
+- tapOn: "Password"
+- inputText: "not the right password"
+- hideKeyboard
+- tapOn: "Sign in"
+- extendedWaitUntil:
+    visible: "invalid email or password"
+    timeout: 20000
+- takeScreenshot: ios-shots/04-signin-error
+- tapOn: "I forgot my password"
+- assertVisible: "Forgot your password?"
+- takeScreenshot: ios-shots/05-forgot
