@@ -1,8 +1,9 @@
-# Walks the iOS app through its first screens against production. Creates no account:
-# a wrong password proves the app reaches the API and shows what it says.
+# Walks the native iOS app against production with a dedicated test account. It has no
+# photo, so it stays in onboarding and is never introduced to anyone.
 appId: space.herosagent.synagent
 ---
-- launchApp
+- launchApp:
+    clearState: true
 - extendedWaitUntil:
     visible: "Get started"
     timeout: 30000
@@ -12,16 +13,59 @@ appId: space.herosagent.synagent
 - takeScreenshot: ios-shots/03-signup
 - tapOn: "I already have an account"
 - assertVisible: "Welcome back"
-- tapOn: "Email"
-- inputText: "nobody@heros-agent.space"
-- tapOn: "Password"
+
+# A wrong password: the app reaches the API and shows what it says.
+- tapOn:
+    point: "50%,37.6%"
+- inputText: "ios-ci@heros-agent.space"
+- tapOn:
+    point: "45%,47.6%"
 - inputText: "not the right password"
-- hideKeyboard
 - tapOn: "Sign in"
 - extendedWaitUntil:
-    visible: "invalid email or password"
+    visible: ".*invalid email or password.*"
     timeout: 20000
 - takeScreenshot: ios-shots/04-signin-error
+
+# Forgot password opens, and back again.
 - tapOn: "I forgot my password"
 - assertVisible: "Forgot your password?"
 - takeScreenshot: ios-shots/05-forgot
+- tapOn: "Back"
+- assertVisible: "Welcome back"
+
+# The right password. The form keeps the address, so only the password changes.
+- tapOn:
+    point: "45%,47.6%"
+- eraseText: 40
+- inputText: ${IOS_TEST_PASSWORD}
+- tapOn: "Sign in"
+- extendedWaitUntil:
+    visible: "Tell Suki anything"
+    timeout: 30000
+- takeScreenshot: ios-shots/06-suki-empty
+
+# Talk to Suki: the real model answers, on iOS.
+- tapOn: "Tell Suki anything"
+- inputText: "Hi Suki, what can you help me with?"
+- tapOn: "Send"
+- extendedWaitUntil:
+    visible: "Hear Suki say this"
+    timeout: 90000
+- takeScreenshot: ios-shots/07-suki-replied
+- hideKeyboard
+
+# The tabs and settings.
+- tapOn: "Matches"
+- assertVisible: "Good introductions, not endless swiping."
+- takeScreenshot: ios-shots/08-matches
+- tapOn: "Dates"
+- takeScreenshot: ios-shots/09-dates
+- tapOn: "Me"
+- assertVisible: "Edit profile"
+- takeScreenshot: ios-shots/10-me
+- tapOn: "Settings"
+- takeScreenshot: ios-shots/11-settings
+- tapOn: ".*How she talks.*"
+- assertVisible: "Tone"
+- takeScreenshot: ios-shots/12-suki-settings

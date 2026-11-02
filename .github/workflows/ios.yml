@@ -66,10 +66,12 @@ jobs:
           # The app must still be alive after starting up.
           xcrun simctl spawn "$DEVICE" launchctl list | grep -i herosagent
       - name: Drive it with Maestro
+        env:
+          IOS_TEST_PASSWORD: ${{ secrets.IOS_TEST_PASSWORD }}
         run: |
           curl -fsSL "https://get.maestro.mobile.dev" | bash
           export PATH="$PATH:$HOME/.maestro/bin"
-          maestro --device "$DEVICE" test store/ios-smoke.yaml --format junit --output ios-shots/maestro.xml
+          maestro --device "$DEVICE" test -e IOS_TEST_PASSWORD="$IOS_TEST_PASSWORD" store/ios-smoke.yaml --format junit --output ios-shots/maestro.xml
       - name: Keep the screenshots
         if: always()
         uses: actions/upload-artifact@v4
