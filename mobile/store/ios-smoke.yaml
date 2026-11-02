@@ -30,7 +30,10 @@ appId: space.herosagent.synagent
     timeout: 20000
 - takeScreenshot: ios-shots/04-signin-error
 
-# Forgot password opens, and back again.
+# Forgot password opens, and back again. Tapping the form closes the keyboard, which
+# covers this link. (iOS leaves the keyboard and secure text out of screenshots while a
+# password field has focus, so the keyboard won't show in 04-signin-error.)
+- tapOn: ".*I was hoping you'd come back.*"
 - tapOn: "I forgot my password"
 - assertVisible: "Forgot your password?"
 - takeScreenshot: ios-shots/05-forgot
