@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   simulator:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 75
     defaults:
       run:
@@ -28,6 +28,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - run: xcodebuild -version
       - run: npm ci --no-audit --no-fund
       - run: npx tsc --noEmit
       - run: npx expo prebuild --platform ios --no-install
@@ -37,13 +38,16 @@ jobs:
       - name: Compile the native app
         working-directory: mobile/ios
         run: |
-          set -o pipefail
+          mkdir -p ../ios-shots
           WS=$(ls -d *.xcworkspace | head -1)
           SCHEME="${WS%.xcworkspace}"
           xcodebuild -workspace "$WS" -scheme "$SCHEME" -configuration Release \
             -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO \
-            build | tail -40
+            build > ../ios-shots/xcodebuild.log 2>&1 && ok=1 || ok=0
+          grep -nE 'error:|fatal error|BUILD (FAILED|SUCCEEDED)|build commands failed' ../ios-shots/xcodebuild.log | head -40 || true
+          tail -25 ../ios-shots/xcodebuild.log
+          [ "$ok" = "1" ]
           ls build/Build/Products/Release-iphonesimulator
       - name: Run it on an iPhone simulator
         working-directory: mobile/ios
