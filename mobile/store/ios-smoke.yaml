@@ -15,11 +15,14 @@ appId: space.herosagent.synagent
 - assertVisible: "Welcome back"
 
 # A wrong password: the app reaches the API and shows what it says.
+# Each field has the same label as the text above it: index 1 is the field itself.
 - tapOn:
-    point: "50%,37.6%"
+    text: "Email"
+    index: 1
 - inputText: "ios-ci@heros-agent.space"
 - tapOn:
-    point: "45%,47.6%"
+    text: "Password"
+    index: 1
 - inputText: "not the right password"
 - tapOn: "Sign in"
 - extendedWaitUntil:
@@ -36,7 +39,8 @@ appId: space.herosagent.synagent
 
 # The right password. The form keeps the address, so only the password changes.
 - tapOn:
-    point: "45%,47.6%"
+    text: "Password"
+    index: 1
 - eraseText: 40
 - inputText: ${IOS_TEST_PASSWORD}
 - tapOn: "Sign in"
@@ -53,7 +57,12 @@ appId: space.herosagent.synagent
     visible: "Hear Suki say this"
     timeout: 90000
 - takeScreenshot: ios-shots/07-suki-replied
-- hideKeyboard
+# Dragging the conversation dismisses the keyboard, which covers the tab bar.
+- swipe:
+    start: "50%,25%"
+    end: "50%,45%"
+- hideKeyboard:
+    optional: true
 
 # The tabs and settings.
 - tapOn: "Matches"
