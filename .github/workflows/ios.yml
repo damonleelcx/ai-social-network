@@ -43,7 +43,7 @@ jobs:
           SCHEME="${WS%.xcworkspace}"
           xcodebuild -workspace "$WS" -scheme "$SCHEME" -configuration Release \
             -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath build CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO \
+            -derivedDataPath build CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=YES COMPILER_INDEX_STORE_ENABLE=NO \
             build > ../ios-shots/xcodebuild.log 2>&1 && ok=1 || ok=0
           grep -nE 'error:|fatal error|BUILD (FAILED|SUCCEEDED)|build commands failed' ../ios-shots/xcodebuild.log | head -40 || true
           tail -25 ../ios-shots/xcodebuild.log

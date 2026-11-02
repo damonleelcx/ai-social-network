@@ -122,7 +122,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const adoptToken = useCallback(
     async (token: string) => {
       setToken(token);
-      await SecureStore.setItemAsync(TOKEN_KEY, token);
+      // If the keychain refuses, they stay signed in until the app closes. Better than
+      // turning a correct password into a technical error.
+      await SecureStore.setItemAsync(TOKEN_KEY, token).catch(() => {});
       const next = await auth.me();
       applyMe(next);
       loadSettings();
