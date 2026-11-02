@@ -1,0 +1,33 @@
+# Every knob the process reads (internal/config). Nothing here is a secret.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: synagent-config
+  namespace: synagent
+data:
+  SYN_ADDR: ":8080"
+  SYN_PUBLIC_ORIGIN: "https://synagent.heros-agent.space"
+  SYN_LLM_BASE_URL: "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
+  SYN_LLM_MODEL: "qwen3.8-max"
+  SYN_LLM_FAST_MODEL: "qwen3.8-flash"
+  SYN_MONGO_DB: "synagent"
+  SYN_S3_BUCKET: "synagent-photos-373468206837"
+  SYN_S3_REGION: "us-east-1"
+  # The relay presents a certificate for this name; the pod resolves it to the
+  # relay's pinned ClusterIP via hostAliases (see 40-app.yaml).
+  SYN_SMTP_HOST: "mail.heros-agent.space"
+  SYN_SMTP_PORT: "587"
+  SYN_SMTP_REPLY_TO: "support@heros-agent.space"
+  # Suki's voice. s2.1-pro-free lets the vendor train on requests, and the privacy
+  # policy says so; s2.1-pro does not, but needs API credit on the account.
+  SYN_TTS_VOICE_ID: "df5c6c19dca944918dcbd6f1368fd02f"
+  SYN_TTS_MODEL: "s2.1-pro-free"
+  SYN_TTS_DAILY_CHARS: "20000"
+  SYN_WORKERS: "3"
+  SYN_LEASE: "90s"
+  SYN_TURN_WORKERS: "4"
+  SYN_TURN_LEASE: "60s"
+  # Spending ceilings (tokens/day). A public sign-up sits in front of a paid key.
+  SYN_ACCOUNT_DAILY_TOKENS: "2000000"
+  SYN_DEPLOYMENT_DAILY_TOKENS: "20000000"
+  GOMEMLIMIT: "300MiB"

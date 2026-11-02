@@ -1,0 +1,47 @@
+# Nightly dumps of both databases to a private S3 bucket. The volumes are local to one
+# node, so without this a lost disk loses everyone's account and chats. The bucket
+# expires objects after 30 days.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: synagent-backup
+  namespace: synagent
+spec:
+  schedule: "17 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 1800
+      template:
+        metadata:
+          labels: { app.kubernetes.io/name: synagent-backup }
+        spec:
+          restartPolicy: Never
+          volumes:
+            - { name: dump, emptyDir: {} }
+          initContainers:
+            - name: pg-dump
+              image: postgres:17.6
+              # A new pod is refused until the network policy has admitted its address, so retry.
+              command: ["sh", "-c", "for i in 1 2 3 4 5 6 7 8 9 10 11 12; do pg_dump -h postgres -U synagent -d synagent -Fc -f /dump/postgres.dump && exit 0; sleep 5; done; exit 1"]
+              env:
+                - name: PGPASSWORD
+                  valueFrom: { secretKeyRef: { name: synagent-db, key: POSTGRES_PASSWORD } }
+              volumeMounts: [{ name: dump, mountPath: /dump }]
+            - name: mongo-dump
+              image: mongo:7.0
+              command: ["sh", "-c", "for i in 1 2 3 4 5 6; do mongodump --host mongodb --username synagent --password \"$MONGO_PASSWORD\" --authenticationDatabase admin --archive=/dump/mongo.archive --gzip && exit 0; sleep 5; done; exit 1"]
+              env:
+                - name: MONGO_PASSWORD
+                  valueFrom: { secretKeyRef: { name: synagent-db, key: MONGO_INITDB_ROOT_PASSWORD } }
+              volumeMounts: [{ name: dump, mountPath: /dump }]
+          containers:
+            - name: upload
+              image: amazon/aws-cli:2.27.50
+              command: ["sh", "-c", "set -e; d=$(date -u +%Y-%m-%dT%H%M); aws s3 cp --only-show-errors --sse AES256 /dump/postgres.dump s3://synagent-backups-373468206837/$d/postgres.dump; aws s3 cp --only-show-errors --sse AES256 /dump/mongo.archive s3://synagent-backups-373468206837/$d/mongo.archive; echo uploaded $d"]
+              volumeMounts: [{ name: dump, mountPath: /dump }]
+              resources:
+                limits: { memory: 256Mi }

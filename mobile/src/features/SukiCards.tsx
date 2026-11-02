@@ -1,0 +1,316 @@
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Alert, Pressable, Share, View } from 'react-native';
+import * as api from '@/api/endpoints';
+import type { Card, Proposal } from '@/api/types';
+import { openNamedScreen } from '@/lib/links';
+import { pickAndUploadPhoto } from '@/lib/photos';
+import { useLive, useTopic } from '@/state/live';
+import { useSession } from '@/state/session';
+import { useTheme } from '@/theme/ThemeProvider';
+import { radius, space } from '@/theme/tokens';
+import { MediaImage, personLine, SharedChips } from '@/ui/person';
+import { Button, ErrorText, Glass, Pill, T, type IconName } from '@/ui/primitives';
+import { confirm, showError } from '@/ui/sheet';
+import { DecisionBar, useDecision } from './proposalActions';
+
+function ActionCard({
+  label,
+  icon,
+  onPress,
+  kind = 'secondary',
+}: {
+  label: string;
+  icon: IconName;
+  onPress: () => void | Promise<unknown>;
+  kind?: 'primary' | 'secondary' | 'danger';
+}) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <Button
+      label={label}
+      icon={icon}
+      kind={kind}
+      small
+      loading={busy}
+      onPress={async () => {
+        setBusy(true);
+        try {
+          await onPress();
+        } catch (e) {
+          showError(e);
+        } finally {
+          setBusy(false);
+        }
+      }}
+    />
+  );
+}
+
+function PhotoUploadCard() {
+  const { refreshPhotos } = useLive();
+  const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle');
+  const [error, setError] = useState<string | null>(null);
+  if (state === 'done') return <Pill tone="good" icon="checkmark-circle" label="Got it. I'll take a look." />;
+  return (
+    <View style={{ gap: space.sm }}>
+      <Button
+        label="Add a photo"
+        icon="image"
+        small
+        loading={state === 'busy'}
+        onPress={async () => {
+          setState('busy');
+          setError(null);
+          try {
+            const r = await pickAndUploadPhoto();
+            if (r) {
+              refreshPhotos();
+              setState('done');
+            } else setState('idle');
+          } catch (e: any) {
+            setError(e.message);
+            setState('idle');
+          }
+        }}
+      />
+      <ErrorText message={error} />
+    </View>
+  );
+}
+
+function BioDraftCard({ text }: { text: string }) {
+  const t = useTheme();
+  const { profile, refreshMe } = useSession();
+  const [accepted, setAccepted] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const saved = accepted || profile?.bio === text;
+  return (
+    <Glass strong style={{ gap: space.md }}>
+      <T v="label" soft>
+        A bio for you
+      </T>
+      <T style={{ fontStyle: 'italic' }} color={t.ink}>
+        {text}
+      </T>
+      {saved ? (
+        <Pill tone="good" icon="checkmark-circle" label="It's on your profile" />
+      ) : (
+        <Button
+          label="Use this"
+          icon="checkmark"
+          small
+          loading={busy}
+          onPress={async () => {
+            setBusy(true);
+            setError(null);
+            try {
+              await api.profile.acceptBio();
+              setAccepted(true);
+              refreshMe().catch(() => {});
+            } catch (e: any) {
+              setError(e.message);
+            } finally {
+              setBusy(false);
+            }
+          }}
+        />
+      )}
+      <ErrorText message={error} />
+    </Glass>
+  );
+}
+
+function ProposalCard({ id }: { id: string }) {
+  const t = useTheme();
+  const [proposal, setProposal] = useState<Proposal | null>(null);
+  const [gone, setGone] = useState(false);
+
+  const load = () =>
+    api.proposals
+      .get(id)
+      .then((p) => {
+        setProposal(p);
+        setGone(false);
+      })
+      .catch((e) => {
+        if (e?.status === 404) setGone(true);
+      });
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+  useTopic('proposals', load);
+  useTopic('matches', load);
+
+  const { decide, busy } = useDecision(() => load());
+
+  if (gone) {
+    return (
+      <Glass strong>
+        <T v="small" soft>
+          This introduction isn't available any more.
+        </T>
+      </Glass>
+    );
+  }
+  if (!proposal) {
+    return <Glass strong style={{ height: 120, backgroundColor: t.cardTint }} />;
+  }
+  const p = proposal.person;
+  const open = proposal.status === 'open' && !proposal.my_decision;
+  const expired = proposal.status === 'expired' || new Date(proposal.expires_at).getTime() < Date.now();
+  return (
+    <Glass strong padded={false} style={{ overflow: 'hidden', borderRadius: radius.lg, width: 280 }}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`See ${p.display_name}'s profile`}
+        onPress={() => router.push(`/person?proposal=${proposal.id}`)}
+      >
+        <MediaImage id={p.photo_ids?.[0]} style={{ height: 240 }} />
+      </Pressable>
+      <View style={{ padding: space.md, gap: space.sm }}>
+        <View>
+          <T v="heading">{p.display_name}</T>
+          <T v="small" soft>
+            {personLine(p)}
+          </T>
+        </View>
+        <SharedChips shared={proposal.shared} />
+        {proposal.match_id ? (
+          <Button label="Open chat" icon="chatbubbles" small onPress={() => router.push(`/chat/${proposal.match_id}`)} />
+        ) : proposal.my_decision === 'accept' ? (
+          <Pill tone="good" icon="heart" label={`You said yes. Waiting on ${p.display_name}.`} />
+        ) : proposal.my_decision === 'pass' ? (
+          <Pill tone="plain" label="You passed on this one." />
+        ) : expired || !open ? (
+          <Pill tone="plain" label="This introduction has ended." />
+        ) : (
+          <DecisionBar proposal={proposal} decide={decide} busy={busy} />
+        )}
+      </View>
+    </Glass>
+  );
+}
+
+function ConfirmCard({ card }: { card: Extract<Card, { kind: 'confirm' }> }) {
+  const live = useLive();
+  const { refreshMe } = useSession();
+  const [done, setDone] = useState(false);
+  if (done) return <Pill tone="good" icon="checkmark-circle" label="Done." />;
+
+  const copy: Record<typeof card.action, [string, string]> = {
+    remove_photo: ['Remove this photo?', "It comes off your profile right away."],
+    unmatch: ['Unmatch?', 'The chat ends for both of you, and any open date plan is cancelled.'],
+    block: ['Block this person?', "You'll stop seeing each other, and any match ends at once."],
+    reset_taste: ['Start over?', 'I forget my notes and everything I learned about your taste.'],
+  };
+  const [title, body] = copy[card.action] ?? ['Are you sure?', ''];
+
+  const run = async () => {
+    switch (card.action) {
+      case 'remove_photo':
+        if (!card.photo_id) return;
+        await api.photos.remove(card.photo_id);
+        live.refreshPhotos();
+        refreshMe().catch(() => {});
+        break;
+      case 'unmatch':
+        if (!card.match_id) return;
+        await api.matches.unmatch(card.match_id);
+        live.refreshMatches();
+        live.refreshDates();
+        break;
+      case 'block':
+        if (!card.user_id) return;
+        await api.safety.block(card.user_id);
+        live.refreshMatches();
+        live.refreshProposals();
+        live.refreshDates();
+        break;
+      case 'reset_taste':
+        await api.memories.reset();
+        break;
+      default:
+        return;
+    }
+    setDone(true);
+  };
+
+  return (
+    <ActionCard
+      label={card.label}
+      icon="alert-circle-outline"
+      kind="danger"
+      onPress={async () => {
+        if (await confirm(title, body, card.label, true)) await run();
+      }}
+    />
+  );
+}
+
+export function SukiCard({ card }: { card: Card }) {
+  const { matches } = useLive();
+  const { user } = useSession();
+  switch (card.kind) {
+    case 'photo_upload':
+      return <PhotoUploadCard />;
+    case 'bio_draft':
+      return <BioDraftCard text={card.text} />;
+    case 'proposal':
+      return <ProposalCard id={card.proposal_id} />;
+    case 'match': {
+      const name = matches.find((m) => m.id === card.match_id)?.person.display_name;
+      return (
+        <ActionCard
+          kind="primary"
+          icon="chatbubbles"
+          label={name ? `Say hi to ${name}` : 'Open the chat'}
+          onPress={() => router.push(`/chat/${card.match_id}`)}
+        />
+      );
+    }
+    case 'date':
+      return (
+        <ActionCard
+          kind="primary"
+          icon="calendar"
+          label={card.focus === 'time' ? 'Pick a time' : card.focus === 'change' ? 'Change the plan' : 'Open the date'}
+          onPress={() =>
+            router.push(card.focus ? `/date/${card.date_id}?focus=${card.focus}` : `/date/${card.date_id}`)
+          }
+        />
+      );
+    case 'share_plan':
+      return (
+        <ActionCard
+          icon="share-outline"
+          label="Share with a friend"
+          onPress={async () => {
+            const message = await api.dates.share(card.date_id);
+            await Share.share({ message });
+          }}
+        />
+      );
+    case 'open_screen':
+      return (
+        <ActionCard
+          icon="arrow-forward"
+          label={card.label}
+          onPress={() => {
+            if (card.screen === 'verify_email') {
+              if (user?.email_verified) Alert.alert('All set', 'Your email is already verified.');
+              return;
+            }
+            openNamedScreen(card.screen);
+          }}
+        />
+      );
+    case 'confirm':
+      return <ConfirmCard card={card} />;
+    default:
+      return null;
+  }
+}
