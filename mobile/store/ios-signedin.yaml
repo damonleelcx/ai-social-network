@@ -1,0 +1,51 @@
+# The signed-in app on iOS, against production, with a dedicated test account. It has no
+# photo, so it stays in onboarding and is never introduced to anyone.
+appId: space.herosagent.synagent
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Get started"
+    timeout: 30000
+- tapOn: "I already have an account"
+- assertVisible: "Welcome back"
+- tapOn:
+    text: "Email"
+    index: 1
+- inputText: "ios-ci@heros-agent.space"
+- tapOn:
+    text: "Password"
+    index: 1
+- inputText: ${IOS_TEST_PASSWORD}
+- tapOn: "Sign in"
+- extendedWaitUntil:
+    visible: "Tell Suki anything"
+    timeout: 30000
+- takeScreenshot: ios-shots/06-suki
+
+# Talk to Suki: the real model answers, on iOS.
+- tapOn: "Tell Suki anything"
+- inputText: "Hi Suki, what can you help me with?"
+- tapOn: "Send"
+- extendedWaitUntil:
+    visible: "Hear Suki say this"
+    timeout: 90000
+- takeScreenshot: ios-shots/07-suki-replied
+
+# Dragging the conversation dismisses the keyboard, which covers the tab bar.
+- swipe:
+    start: "50%,25%"
+    end: "50%,45%"
+- tapOn: "Matches"
+- assertVisible: "Good introductions, not endless swiping."
+- takeScreenshot: ios-shots/08-matches
+- tapOn: "Dates"
+- takeScreenshot: ios-shots/09-dates
+- tapOn: "Me"
+- assertVisible: "Edit profile"
+- takeScreenshot: ios-shots/10-me
+- tapOn: "Settings"
+- takeScreenshot: ios-shots/11-settings
+- tapOn: ".*How she talks.*"
+- assertVisible: "Tone"
+- takeScreenshot: ios-shots/12-suki-settings

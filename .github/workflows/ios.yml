@@ -71,7 +71,29 @@ jobs:
         run: |
           curl -fsSL "https://get.maestro.mobile.dev" | bash
           export PATH="$PATH:$HOME/.maestro/bin"
-          maestro --device "$DEVICE" test -e IOS_TEST_PASSWORD="$IOS_TEST_PASSWORD" store/ios-smoke.yaml --format junit --output ios-shots/maestro.xml
+          # Maestro's iOS driver sometimes loses its connection, so each flow gets three tries.
+          # An app crash shows up in the crash reports kept below.
+          run_flow() {
+            for try in 1 2 3; do
+              echo "::group::$1, try $try"
+              if maestro --device "$DEVICE" test -e IOS_TEST_PASSWORD="$IOS_TEST_PASSWORD" "store/$1.yaml" --format junit --output "ios-shots/$1-$try.xml"; then
+                echo "::endgroup::"; echo "PASSED $1 on try $try"; return 0
+              fi
+              echo "::endgroup::"; echo "FAILED $1 on try $try"
+              xcrun simctl io "$DEVICE" screenshot "ios-shots/$1-failed-$try.png" || true
+            done
+            return 1
+          }
+          status=0
+          run_flow ios-smoke || status=1
+          run_flow ios-signedin || status=1
+          exit $status
+      - name: Collect crash reports
+        if: always()
+        run: |
+          mkdir -p ios-shots/crashes
+          find ~/Library/Logs/DiagnosticReports -type f -iname '*synagent*' -exec cp {} ios-shots/crashes/ \; 2>/dev/null || true
+          ls -la ios-shots/crashes
       - name: Keep the screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -82,3 +104,4 @@ jobs:
             mobile/*.png
             ~/.maestro/tests/**/*.png
           if-no-files-found: warn
+          include-hidden-files: true
