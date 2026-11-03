@@ -2,22 +2,34 @@
 # photo, so it stays in onboarding and is never introduced to anyone.
 appId: space.herosagent.synagent
 ---
-- launchApp:
-    clearState: true
+- launchApp
+# A retry can find it still signed in: the session survives in the keychain.
 - extendedWaitUntil:
-    visible: "Get started"
+    visible: "I already have an account|Tell Suki anything"
     timeout: 30000
-- tapOn: "I already have an account"
-- assertVisible: "Welcome back"
-- tapOn:
-    text: "Email"
-    index: 1
-- inputText: "ios-ci@heros-agent.space"
-- tapOn:
-    text: "Password"
-    index: 1
-- inputText: ${IOS_TEST_PASSWORD}
-- tapOn: "Sign in"
+- runFlow:
+    when:
+      visible: "I already have an account"
+    commands:
+      - tapOn: "I already have an account"
+      - assertVisible: "Welcome back"
+      - tapOn:
+          text: "Email"
+          index: 1
+      - inputText: "ios-ci@heros-agent.space"
+      - tapOn:
+          text: "Password"
+          index: 1
+      - inputText: ${IOS_TEST_PASSWORD}
+      - tapOn: "Sign in"
+      # iOS offers to save the password, and the prompt covers the app.
+      - extendedWaitUntil:
+          visible: "Not Now"
+          timeout: 15000
+          optional: true
+      - tapOn:
+          text: "Not Now"
+          optional: true
 - extendedWaitUntil:
     visible: "Tell Suki anything"
     timeout: 30000
