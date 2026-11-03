@@ -1,0 +1,37 @@
+# The signed-out screens of the native iOS app, against production.
+appId: space.herosagent.synagent
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Get started"
+    timeout: 30000
+- takeScreenshot: ios-shots/02-welcome
+- tapOn: "Get started"
+- assertVisible: "Nice to meet you"
+- takeScreenshot: ios-shots/03-signup
+- tapOn: "I already have an account"
+- assertVisible: "Welcome back"
+
+# A wrong password: the app reaches the API and shows what it says.
+# Each field has the same label as the text above it: index 1 is the field itself.
+- tapOn:
+    text: "Email"
+    index: 1
+- inputText: "ios-ci@heros-agent.space"
+- tapOn:
+    text: "Password"
+    index: 1
+- inputText: "not the right password"
+- tapOn: "Sign in"
+- extendedWaitUntil:
+    visible: ".*invalid email or password.*"
+    timeout: 20000
+- takeScreenshot: ios-shots/04-signin-error
+
+# Tapping the form closes the keyboard, which covers this link. (iOS leaves the keyboard
+# and secure text out of screenshots while a password field has focus.)
+- tapOn: ".*I was hoping you'd come back.*"
+- tapOn: "I forgot my password"
+- assertVisible: "Forgot your password?"
+- takeScreenshot: ios-shots/05-forgot

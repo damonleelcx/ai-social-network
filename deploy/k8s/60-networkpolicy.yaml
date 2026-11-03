@@ -1,0 +1,61 @@
+# The databases accept connections only from this app. The app's pods may reach DNS,
+# the two databases, the mail relay, the instance's IAM credentials, and HTTPS on
+# public addresses (the model, S3, OpenStreetMap, Expo push).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: databases-ingress
+  namespace: synagent
+spec:
+  podSelector:
+    matchLabels: { app.kubernetes.io/component: database }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: { app.kubernetes.io/part-of: synagent }
+        - podSelector:
+            matchLabels: { app.kubernetes.io/name: synagent-backup }
+      ports:
+        - { protocol: TCP, port: 5432 }
+        - { protocol: TCP, port: 27017 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: app-egress
+  namespace: synagent
+spec:
+  podSelector:
+    matchExpressions:
+      - { key: app.kubernetes.io/name, operator: In, values: [synagent-web, synagent-worker, synagent-backup] }
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
+          podSelector: { matchLabels: { k8s-app: kube-dns } }
+      ports:
+        - { protocol: UDP, port: 53 }
+        - { protocol: TCP, port: 53 }
+    - to:
+        - podSelector:
+            matchLabels: { app.kubernetes.io/component: database }
+      ports:
+        - { protocol: TCP, port: 5432 }
+        - { protocol: TCP, port: 27017 }
+    - to:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: heros } }
+          podSelector: { matchLabels: { app.kubernetes.io/name: mail } }
+      ports:
+        - { protocol: TCP, port: 587 }
+    # The instance metadata service: how the S3 client gets the node role's credentials.
+    - to:
+        - ipBlock: { cidr: 169.254.169.254/32 }
+      ports:
+        - { protocol: TCP, port: 80 }
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16]
+      ports:
+        - { protocol: TCP, port: 443 }
