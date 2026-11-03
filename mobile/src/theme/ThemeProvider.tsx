@@ -7,7 +7,7 @@ import { dark, light, type Tokens } from './tokens';
 const Ctx = createContext<Tokens>(light);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const { settings, cachedTheme } = useSession();
+  const { settings, cachedTheme, language } = useSession();
   const choice = settings?.theme ?? cachedTheme ?? 'system';
 
   // Setting it at the OS level means alerts and native pickers follow too.
@@ -17,7 +17,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const system = useColorScheme();
   const scheme = choice === 'system' ? system : choice;
-  const tokens = useMemo(() => (scheme === 'dark' ? dark : light), [scheme]);
+  // A new object when the language changes: every screen reads this context, so they all
+  // render again with the new copy, and the navigator stays where it is.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const tokens = useMemo(() => ({ ...(scheme === 'dark' ? dark : light) }), [scheme, language]);
 
   // The window behind the app shows during transitions and while the keyboard moves.
   useEffect(() => {

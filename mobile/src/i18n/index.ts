@@ -18,7 +18,7 @@ let current: Language = 'en';
 
 export const isLanguage = (v: unknown): v is Language => typeof v === 'string' && v in LOCALE;
 
-/** Callers remount the screens afterwards: copy is read as they render, and tables at import time stay in English. */
+/** Copy is read as screens render, and the session re-renders them. Tables built at import time would stay in English. */
 export function setLanguage(language: Language) {
   current = language;
 }

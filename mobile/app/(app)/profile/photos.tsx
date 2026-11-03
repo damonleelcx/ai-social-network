@@ -110,7 +110,7 @@ export default function Photos() {
                     <Pill label={tr(s.label)} tone={s.tone} />
                     {p.reason ? (
                       <T v="caption" soft>
-                        {p.reason}
+                        {tr(p.reason)}
                       </T>
                     ) : null}
                     {p.tips ? (
