@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -14,7 +14,10 @@ export default function Welcome() {
   const t = useTheme();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
-  const size = Math.min(width - 72, height * 0.38);
+  // Small phones can't fit her at full size, so she gives up whatever the words need.
+  const [room, setRoom] = useState(height);
+  const [wordsHeight, setWordsHeight] = useState(0);
+  const size = Math.max(88, Math.min(width - 72, height * 0.38, room - wordsHeight - 28));
   const glow = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -34,7 +37,10 @@ export default function Welcome() {
         <View style={{ position: 'absolute', zIndex: 1, top: insets.top + space.sm, right: space.lg }}>
           <ThemeToggle />
         </View>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <View
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+          onLayout={(e) => setRoom(e.nativeEvent.layout.height)}
+        >
           <View style={{ width: size + 28, height: size + 28, alignItems: 'center', justifyContent: 'center' }}>
             <Animated.View
               style={{
@@ -59,12 +65,14 @@ export default function Welcome() {
               accessibilityLabel="Suki, your AI wingwoman, winking"
             />
           </View>
-          <T v="display" center style={{ marginTop: space.xl }}>
-            SynAgent
-          </T>
-          <T v="heading" center color={t.accent} style={{ marginTop: space.xs }}>
-            Meet someone, share ideas, explore together
-          </T>
+          <View style={{ paddingTop: space.xl }} onLayout={(e) => setWordsHeight(e.nativeEvent.layout.height)}>
+            <T v="display" center>
+              SynAgent
+            </T>
+            <T v="heading" center color={t.accent} style={{ marginTop: space.xs }}>
+              Meet someone, share ideas, explore together
+            </T>
+          </View>
         </View>
 
         <Glass style={{ marginBottom: space.lg }}>
