@@ -81,7 +81,9 @@ jobs:
               fi
               echo "::endgroup::"; echo "FAILED $1 on try $try"
               xcrun simctl io "$DEVICE" screenshot "ios-shots/$1-failed-$try.png" || true
-              timeout 120 maestro --device "$DEVICE" hierarchy > "ios-shots/$1-hierarchy-$try.json" 2>&1 || true
+              perl -e 'alarm 120; exec @ARGV' maestro --device "$DEVICE" hierarchy > "ios-shots/$1-hierarchy-$try.json" 2>&1 || true
+              # The simulator's network can take a few minutes to settle.
+              sleep 60
             done
             return 1
           }
