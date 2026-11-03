@@ -1,6 +1,6 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
-const DEFAULT_API = 'https://synagent.heros-agent.space';
+const DEFAULT_API = 'https://match.heros-agent.space';
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   // Set by hand once an EAS project exists. Without it the app simply doesn't

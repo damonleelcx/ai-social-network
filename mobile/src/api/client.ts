@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 
-const DEFAULT_API = 'https://synagent.heros-agent.space';
+const DEFAULT_API = 'https://match.heros-agent.space';
 
 export const API_URL: string = (
   process.env.EXPO_PUBLIC_API_URL ||

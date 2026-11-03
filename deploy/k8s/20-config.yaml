@@ -6,7 +6,7 @@ metadata:
   namespace: synagent
 data:
   SYN_ADDR: ":8080"
-  SYN_PUBLIC_ORIGIN: "https://synagent.heros-agent.space"
+  SYN_PUBLIC_ORIGIN: "https://match.heros-agent.space"
   SYN_LLM_BASE_URL: "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
   SYN_LLM_MODEL: "qwen3.8-max"
   SYN_LLM_FAST_MODEL: "qwen3.8-flash"

@@ -6,7 +6,7 @@ The API contract is [`../docs/03-api.md`](../docs/03-api.md).
 
 ## Run against a local API
 
-`EXPO_PUBLIC_API_URL` picks the server. It defaults to `https://synagent.heros-agent.space`.
+`EXPO_PUBLIC_API_URL` picks the server. It defaults to `https://match.heros-agent.space`.
 An Android emulator reaches your machine at `10.0.2.2`.
 
 ```sh

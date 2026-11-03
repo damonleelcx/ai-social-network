@@ -49,7 +49,7 @@ type Client struct {
 	HTTP      *http.Client
 }
 
-const userAgent = "SynAgent/1.0 (+https://synagent.heros-agent.space; support@heros-agent.space)"
+const userAgent = "SynAgent/1.0 (+https://match.heros-agent.space; support@heros-agent.space)"
 
 func (c *Client) http() *http.Client {
 	if c.HTTP != nil {

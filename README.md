@@ -8,8 +8,8 @@
 
 <p align="center">
   <a href="mobile/store/demo/synagent-demo.mp4">Watch the demo</a> ·
-  <a href="https://synagent.heros-agent.space/legal/privacy">Privacy</a> ·
-  <a href="https://synagent.heros-agent.space/legal/terms">Terms</a>
+  <a href="https://match.heros-agent.space/legal/privacy">Privacy</a> ·
+  <a href="https://match.heros-agent.space/legal/terms">Terms</a>
 </p>
 
 SynAgent is a dating app for iOS and Android, built around one AI character. Tell Suki about

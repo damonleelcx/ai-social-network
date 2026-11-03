@@ -20,7 +20,7 @@ jobs:
       run:
         working-directory: mobile
     env:
-      EXPO_PUBLIC_API_URL: https://synagent.heros-agent.space
+      EXPO_PUBLIC_API_URL: https://match.heros-agent.space
       EXPO_NO_TELEMETRY: "1"
       CI: "1"
     steps:
