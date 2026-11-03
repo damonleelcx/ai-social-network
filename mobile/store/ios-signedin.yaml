@@ -69,6 +69,7 @@ appId: space.herosagent.synagent
 - takeScreenshot: ios-shots/10-me
 - tapOn: "Settings"
 - takeScreenshot: ios-shots/11-settings
-- tapOn: ".*How she talks.*"
+# iOS reports each row by its label alone, without the hint under it.
+- tapOn: "Suki"
 - assertVisible: "Tone"
 - takeScreenshot: ios-shots/12-suki-settings
