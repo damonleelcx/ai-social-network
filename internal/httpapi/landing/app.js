@@ -1,6 +1,8 @@
 // The page's own behaviour: theme, sprites, cards, terminal steps. The 3D world is
 // loaded separately and is optional; everything here works without it.
 
+import { LANG, setLanguage, tr, translatePage } from './i18n.js';
+
 const root = document.documentElement;
 const THEME_KEY = 'synagent.theme';
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -53,7 +55,7 @@ function saved() {
 function applyTheme(theme) {
   root.dataset.theme = theme;
   document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#f6f1ff' : '#05030c';
-  document.getElementById('themeBtn').setAttribute('aria-label', theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
+  document.getElementById('themeBtn').setAttribute('aria-label', tr(theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'));
   onTheme(theme);
 }
 
@@ -83,6 +85,9 @@ const LINES = [
   "* It's only a match when you both say yes.",
 ];
 const typed = document.getElementById('typed');
+const langSelect = document.getElementById('langSelect');
+langSelect.value = LANG;
+langSelect.addEventListener('change', () => setLanguage(langSelect.value));
 
 function typeLine(el, line, then) {
   if (reduced) {
@@ -104,7 +109,7 @@ function typeLine(el, line, then) {
 
 if (!reduced) {
   let n = 0;
-  const next = () => typeLine(typed, LINES[n++ % LINES.length], () => setTimeout(next, 3200));
+  const next = () => typeLine(typed, tr(LINES[n++ % LINES.length]), () => setTimeout(next, 3200));
   next();
 }
 
@@ -146,17 +151,17 @@ PEOPLE.forEach((p, i) => {
   li.className = 'fan-card';
   li.style.setProperty('--r', `${FAN[i][0]}deg`);
   li.style.setProperty('--y', `${FAN[i][1]}px`);
-  li.innerHTML = `<span class="fan-art">${svg(p.art, p.colors)}</span><h3>${p.name}</h3><p>${p.why}</p>
-    <div class="fan-actions"><button type="button" class="no" aria-label="Pass on ${p.name}">X</button><button type="button" class="yes" aria-label="Say yes to ${p.name}"><i class="spr">${svg(ICONS.heart, { X: 'currentColor' })}</i></button></div>`;
+  li.innerHTML = `<span class="fan-art">${svg(p.art, p.colors)}</span><h3>${p.name}</h3><p>${tr(p.why)}</p>
+    <div class="fan-actions"><button type="button" class="no" aria-label="${tr('Pass on {name}', { name: p.name })}">X</button><button type="button" class="yes" aria-label="${tr('Say yes to {name}', { name: p.name })}"><i class="spr">${svg(ICONS.heart, { X: 'currentColor' })}</i></button></div>`;
   li.querySelector('.yes').addEventListener('click', () => {
     li.classList.remove('is-passed');
     li.classList.add('is-yes');
-    typeLine(fanSay, `* Nice. If ${p.name} says yes too, you'll start talking.`);
+    typeLine(fanSay, tr("* Nice. If {name} says yes too, you'll start talking.", { name: p.name }));
   });
   li.querySelector('.no').addEventListener('click', () => {
     li.classList.remove('is-yes');
     li.classList.add('is-passed');
-    typeLine(fanSay, `* Noted. Passing tells me something too. I'll learn from it.`);
+    typeLine(fanSay, tr("* Noted. Passing tells me something too. I'll learn from it."));
   });
   fan.append(li);
 });
@@ -182,9 +187,9 @@ function setStep(i) {
     if (n === i) b.setAttribute('aria-current', 'step');
     else b.removeAttribute('aria-current');
   });
-  detail.innerHTML = `<h3>Step ${i + 1} · ${STEPS[i].title}</h3><p>${STEPS[i].body}</p>`;
-  holoState.textContent = STEPS[i].state;
-  document.getElementById('crtState').textContent = STEPS[i].state;
+  detail.innerHTML = `<h3>${tr('Step {n}', { n: i + 1 })} · ${tr(STEPS[i].title)}</h3><p>${tr(STEPS[i].body)}</p>`;
+  holoState.textContent = tr(STEPS[i].state);
+  document.getElementById('crtState').textContent = tr(STEPS[i].state);
 }
 
 let goToStep = setStep;
@@ -192,12 +197,14 @@ STEPS.forEach((s, i) => {
   const li = document.createElement('li');
   const b = document.createElement('button');
   b.type = 'button';
-  b.innerHTML = `<b>${i + 1}</b><span>${s.title}</span>`;
+  b.innerHTML = `<b>${i + 1}</b><span>${tr(s.title)}</span>`;
   b.addEventListener('click', () => goToStep(i));
   li.append(b);
   stepsEl.append(li);
 });
 setStep(0);
+
+translatePage();
 
 /* ---------- The 3D world ---------- */
 

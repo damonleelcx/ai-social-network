@@ -16,6 +16,16 @@
     try { saved = localStorage.getItem('synagent.theme'); } catch (e) {}
     var theme = saved === 'light' || saved === 'dark' ? saved : matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
     document.documentElement.dataset.theme = theme;
+    // English unless they chose otherwise, here or through a shared ?lang= link.
+    var lang = new URLSearchParams(location.search).get('lang');
+    try { lang = lang || localStorage.getItem('synagent.lang'); } catch (e) {}
+    if (lang === 'zh' || lang === 'ko' || lang === 'ja') {
+      document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : lang;
+      document.documentElement.dataset.lang = lang;
+      // Hold the first paint for the translation, but never leave the page blank.
+      document.documentElement.classList.add('i18n-pending');
+      setTimeout(function () { document.documentElement.classList.remove('i18n-pending'); }, 1500);
+    }
   })();
 </script>
 <link rel="stylesheet" href="/landing/style.css">
@@ -34,6 +44,12 @@
     <a href="#download">Download</a>
   </nav>
   <div class="nav-end">
+    <select class="lang-select" id="langSelect" aria-label="Language">
+      <option value="en">EN</option>
+      <option value="zh">中文</option>
+      <option value="ko">한국어</option>
+      <option value="ja">日本語</option>
+    </select>
     <button class="theme-btn" id="themeBtn" type="button" aria-pressed="false">
       <i data-sprite="sun" class="spr when-dark"></i><i data-sprite="moon" class="spr when-light"></i>
       <span class="when-dark">Light</span><span class="when-light">Dark</span>

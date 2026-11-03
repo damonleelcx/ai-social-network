@@ -61,6 +61,31 @@ func TestLandingAssetsResolve(t *testing.T) {
 	}
 }
 
+// English is the default: another language only appears when someone picks it, so nothing may
+// read the browser's language. The promises the English page makes have to survive translation.
+func TestLandingLanguages(t *testing.T) {
+	for _, f := range []string{"/", "/landing/app.js", "/landing/i18n.js"} {
+		body := getLanding(t, f).Body.String()
+		if strings.Contains(body, "navigator.language") || strings.Contains(body, "Accept-Language") {
+			t.Errorf("%s picks a language by itself", f)
+		}
+	}
+	if got := getLanding(t, "/").Body.String(); !strings.Contains(got, `<html lang="en"`) {
+		t.Error("the page isn't English by default")
+	}
+	i18n := getLanding(t, "/landing/i18n.js").Body.String()
+	for _, want := range []string{"18 岁", "18세", "18歳", "Suki 是 AI", "Suki는 사람이 아니라 AI", "Suki は人ではなく AI"} {
+		if !strings.Contains(i18n, want) {
+			t.Errorf("translations lost %q", want)
+		}
+	}
+	for _, f := range []string{"zh", "ko", "ja"} {
+		if rec := getLanding(t, "/landing/fonts/fusion-pixel-"+f+".woff2"); rec.Code != 200 {
+			t.Errorf("%s font: %d", f, rec.Code)
+		}
+	}
+}
+
 // A new page with last hour's stylesheet renders broken, so the two can't be cached apart.
 func TestLandingCodeIsNeverStale(t *testing.T) {
 	for _, f := range []string{"/", "/landing/style.css", "/landing/app.js", "/landing/scene.js", "/landing/vendor/three.js"} {
