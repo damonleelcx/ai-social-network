@@ -61,6 +61,18 @@ func TestLandingAssetsResolve(t *testing.T) {
 	}
 }
 
+// A new page with last hour's stylesheet renders broken, so the two can't be cached apart.
+func TestLandingCodeIsNeverStale(t *testing.T) {
+	for _, f := range []string{"/", "/landing/style.css", "/landing/app.js", "/landing/scene.js", "/landing/vendor/three.js"} {
+		if got := getLanding(t, f).Header().Get("Cache-Control"); got != "no-cache" {
+			t.Errorf("%s: Cache-Control %q", f, got)
+		}
+	}
+	if got := getLanding(t, "/landing/img/suki.png").Header().Get("Cache-Control"); got != "public, max-age=3600" {
+		t.Errorf("image: Cache-Control %q", got)
+	}
+}
+
 func TestLandingGzipAndRevalidation(t *testing.T) {
 	plain := getLanding(t, "/landing/app.js").Body.String()
 
