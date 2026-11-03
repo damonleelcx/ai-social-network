@@ -44,6 +44,7 @@ type Server struct {
 	Speech           *tts.Service
 	SpeechDailyChars int
 	limit            limiter
+	mapCache         userMapCache
 }
 
 // ── Socket fan-out ──────────────────────────────────────────────────────────
@@ -276,6 +277,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /legal/privacy", legalPage("Privacy Policy", privacyHTML))
 	m.HandleFunc("GET /legal/delete-account", legalPage("Delete your SynAgent account", deleteHTML))
 	m.HandleFunc("GET /open", legalPage("SynAgent", openHTML))
+
+	m.HandleFunc("GET /v1/public/user-map", lim("user-map", 60, time.Minute, s.userMap))
 
 	// Accounts
 	m.HandleFunc("POST /v1/auth/signup", lim("signup", 30, time.Hour, s.signup))

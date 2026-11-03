@@ -6,6 +6,8 @@ export const catalog: Record<string, readonly [string, string, string]> = {
   ' · Read': [' · 已读', ' · 읽음', ' · 既読'],
   ', new messages': ['，有新消息', ', 새 메시지', '、新着メッセージあり'],
   "A JSON file of your profile, your words and Suki's notes.": ['一个 JSON 文件，包含你的资料、你说过的话和 Suki 的笔记。', '프로필, 대화 내용, Suki의 메모가 담긴 JSON 파일이에요.', 'プロフィール、あなたの言葉、Suki のメモをまとめた JSON ファイルです。'],
+  '{count} people have joined': ['已有 {count} 人加入', '{count}명이 함께하고 있어요', '{count} 人が参加しています'],
+  'World map of where people use SynAgent': ['SynAgent 用户分布的世界地图', 'SynAgent 사용자가 있는 곳을 보여 주는 세계 지도', 'SynAgent を使っている人がいる場所の世界地図'],
   'Version {version} is ready': ['新版本 {version} 已就绪', '새 버전 {version} 준비됐어요', 'バージョン {version} の準備ができました'],
   'One tap downloads it. Android then asks you to confirm the install, and your account stays as it is.': ['点一下就会开始下载。之后 Android 会请你确认安装，你的账户不受影响。', '한 번만 누르면 다운로드돼요. 그다음 Android에서 설치를 확인하면 되고, 계정은 그대로예요.', 'ワンタップでダウンロードします。そのあと Android がインストールの確認をします。アカウントはそのままです。'],
   "An iPhone can't update this app from inside it. Download the new file and sign it with your sideloading tool again.": ['iPhone 无法在应用内更新。请下载新文件，再用你的侧载工具重新签名。', 'iPhone은 앱 안에서 업데이트할 수 없어요. 새 파일을 내려받아 사이드로딩 도구로 다시 서명해 주세요.', 'iPhone ではアプリ内から更新できません。新しいファイルをダウンロードして、サイドロードツールでもう一度署名してください。'],

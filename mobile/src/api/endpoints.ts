@@ -14,11 +14,17 @@ import type {
   Session,
   Settings,
   User,
+  UserMap,
 } from './types';
 import { api } from './client';
 
 type AuthResult = { token: string; expires_at: string; user: User };
 type Ok = { ok: boolean };
+
+/** Open to everyone, signed in or not. */
+export const publicInfo = {
+  userMap: () => api<UserMap>('/v1/public/user-map', { timeoutMs: 8000 }),
+};
 
 export const auth = {
   signUp: (b: { email: string; password: string; name: string; accept_terms: boolean; language?: string }) =>

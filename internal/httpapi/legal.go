@@ -100,6 +100,7 @@ const privacyHTML = `<h1>Privacy Policy</h1>
 <tr><td>Device and technical</td><td>IP address and device or browser description for each signed-in session, and your push notification token and device platform. We also log failed sign-in attempts, including the email address used.</td></tr>
 </table>
 <p>We don't use your device's GPS: you type your city, and we look up its approximate coordinates.</p>
+<p>The app's first screen shows a public map of where people use SynAgent. It only shows areas about 500 km across with at least five people in each, and rounded counts. It never shows who anyone is or which city they live in, and paused accounts aren't counted.</p>
 <p>Some of this data may be sensitive, for example who you're looking for, which can suggest your sexual orientation, and your religion or political views. Providing the optional items is your choice, and you can remove them from your profile at any time.</p>
 
 <h2>How we use it</h2>
