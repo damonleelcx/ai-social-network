@@ -36,7 +36,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       softwareKeyboardLayoutMode: 'resize',
       // Lets the app hand a new release to the system installer. Android still asks the person.
       permissions: PLAY ? [] : ['android.permission.REQUEST_INSTALL_PACKAGES'],
-      blockedPermissions: ['android.permission.RECORD_AUDIO', ...(PLAY ? ['android.permission.REQUEST_INSTALL_PACKAGES'] : [])],
+      blockedPermissions: ['android.permission.RECORD_AUDIO', ...(PLAY ? ['android.permission.REQUEST_INSTALL_PACKAGES', 'android.permission.SYSTEM_ALERT_WINDOW'] : [])],
     },
     plugins: [
       'expo-router',
