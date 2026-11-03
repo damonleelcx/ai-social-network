@@ -1,3 +1,4 @@
+import * as SystemUI from 'expo-system-ui';
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import { Appearance, useColorScheme } from 'react-native';
 import { useSession } from '@/state/session';
@@ -17,6 +18,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const system = useColorScheme();
   const scheme = choice === 'system' ? system : choice;
   const tokens = useMemo(() => (scheme === 'dark' ? dark : light), [scheme]);
+
+  // The window behind the app shows during transitions and while the keyboard moves.
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(tokens.bg[0]).catch(() => {});
+  }, [tokens]);
 
   return <Ctx.Provider value={tokens}>{children}</Ctx.Provider>;
 }

@@ -6,7 +6,7 @@ import { Animated, Easing, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
-import { Backdrop } from '@/ui/layout';
+import { Backdrop, ThemeToggle } from '@/ui/layout';
 import { Button, Glass, T } from '@/ui/primitives';
 import { sukiFace } from '@/ui/suki';
 
@@ -31,6 +31,9 @@ export default function Welcome() {
   return (
     <Backdrop>
       <View style={{ flex: 1, paddingTop: insets.top + space.xxl, paddingBottom: insets.bottom + space.xl, paddingHorizontal: space.xl }}>
+        <View style={{ position: 'absolute', zIndex: 1, top: insets.top + space.sm, right: space.lg }}>
+          <ThemeToggle />
+        </View>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <View style={{ width: size + 28, height: size + 28, alignItems: 'center', justifyContent: 'center' }}>
             <Animated.View

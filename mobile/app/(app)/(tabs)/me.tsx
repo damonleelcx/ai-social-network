@@ -9,7 +9,7 @@ import { useSession } from '@/state/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
 import { Group, NavRow, ToggleRow } from '@/ui/form';
-import { Backdrop, Page, TabHeader } from '@/ui/layout';
+import { Backdrop, Page, TabHeader, ThemeToggle } from '@/ui/layout';
 import { PersonAvatar } from '@/ui/person';
 import { Button, Glass, Pill, T } from '@/ui/primitives';
 import { showError } from '@/ui/sheet';
@@ -77,7 +77,7 @@ export default function Me() {
 
   return (
     <Backdrop>
-      <TabHeader title="Me" />
+      <TabHeader title="Me" right={<ThemeToggle />} />
       <Page
         bottomInset={false}
         contentStyle={{ paddingTop: space.xs }}
