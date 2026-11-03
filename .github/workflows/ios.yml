@@ -81,12 +81,14 @@ jobs:
               fi
               echo "::endgroup::"; echo "FAILED $1 on try $try"
               xcrun simctl io "$DEVICE" screenshot "ios-shots/$1-failed-$try.png" || true
+              timeout 120 maestro --device "$DEVICE" hierarchy > "ios-shots/$1-hierarchy-$try.json" 2>&1 || true
             done
             return 1
           }
           status=0
           run_flow ios-smoke || status=1
           run_flow ios-signedin || status=1
+          run_flow ios-visual || true
           exit $status
       - name: Collect crash reports
         if: always()
