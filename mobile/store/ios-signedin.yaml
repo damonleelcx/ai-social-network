@@ -5,7 +5,7 @@ appId: space.herosagent.synagent
 - launchApp
 # A retry can find it still signed in: the session survives in the keychain.
 - extendedWaitUntil:
-    visible: "I already have an account|Tell Suki anything"
+    visible: "I already have an account|Matches"
     timeout: 30000
 - runFlow:
     when:
@@ -30,13 +30,16 @@ appId: space.herosagent.synagent
       - tapOn:
           text: "Not Now"
           optional: true
+# XCUITest doesn't expose a multiline input's placeholder or label, so wait for the tab bar
+# and find the input by where it sits.
 - extendedWaitUntil:
-    visible: "Tell Suki anything"
+    visible: "Matches"
     timeout: 30000
 - takeScreenshot: ios-shots/06-suki
 
 # Talk to Suki: the real model answers, on iOS.
-- tapOn: "Tell Suki anything"
+- tapOn:
+    point: "40%,88%"
 - inputText: "Hi Suki, what can you help me with?"
 - tapOn: "Send"
 - extendedWaitUntil:
