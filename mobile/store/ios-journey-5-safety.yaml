@@ -5,8 +5,7 @@ appId: space.herosagent.synagent
 - extendedWaitUntil:
     visible: ".*Tell Suki anything.*"
     timeout: 30000
-- tapOn:
-    point: "37%,94%"
+- tapOn: "Matches, tab.*"
 - extendedWaitUntil:
     visible: ".*Chat with Leo.*"
     timeout: 30000

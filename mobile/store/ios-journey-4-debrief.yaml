@@ -33,8 +33,7 @@ appId: space.herosagent.synagent
 - swipe:
     start: "50%,25%"
     end: "50%,45%"
-- tapOn:
-    point: "87%,94%"
+- tapOn: "Me, tab.*"
 - extendedWaitUntil:
     visible: "Edit profile"
     timeout: 15000

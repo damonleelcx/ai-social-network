@@ -15,7 +15,7 @@ permissions:
 jobs:
   journey:
     runs-on: macos-26
-    timeout-minutes: 90
+    timeout-minutes: 110
     defaults:
       run:
         working-directory: mobile
@@ -35,6 +35,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install pillow
+      - name: Start the stack and seed fictional people
+        working-directory: .
+        run: bash scripts/ios-journey/run_stack.sh "$GITHUB_WORKSPACE/mobile/ios-shots/stack"
       - run: npm ci --no-audit --no-fund
       - run: npx expo prebuild --platform ios --no-install
       # Only in this build: it talks to a plain http server on this machine.
@@ -59,9 +62,6 @@ jobs:
             build > ../ios-shots/xcodebuild.log 2>&1 && ok=1 || ok=0
           grep -nE 'error:|fatal error|BUILD (FAILED|SUCCEEDED)|build commands failed' ../ios-shots/xcodebuild.log | head -40 || true
           [ "$ok" = "1" ]
-      - name: Start the stack and seed fictional people
-        working-directory: .
-        run: bash scripts/ios-journey/run_stack.sh "$GITHUB_WORKSPACE/mobile/ios-shots/stack"
       - name: Start the simulator
         working-directory: mobile/ios
         run: |

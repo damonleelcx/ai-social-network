@@ -37,8 +37,7 @@ appId: space.herosagent.synagent
     visible: ".*I found someone.*"
     timeout: 180000
 - takeScreenshot: ios-shots/j02-suki-found
-- tapOn:
-    point: "37%,94%"
+- tapOn: "Matches, tab.*"
 - extendedWaitUntil:
     visible: "Yes"
     timeout: 60000

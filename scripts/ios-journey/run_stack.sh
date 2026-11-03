@@ -18,6 +18,7 @@ wait_for() { # name, seconds, command
 export HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1
 brew install postgresql@17
 brew tap mongodb/brew
+brew trust mongodb/brew
 brew install mongodb-community
 PGBIN="$(brew --prefix postgresql@17)/bin"
 echo "$PGBIN" >> "${GITHUB_PATH:-/dev/null}"
@@ -48,6 +49,6 @@ export SYN_DATE_MIN_LEAD=30s SYN_DEBRIEF_DELAY=20s
 nohup "$LOGS/../synagent-bin" serve > "$LOGS/server.log" 2>&1 &
 wait_for server 60 "curl -fsS http://127.0.0.1:8080/readyz"
 
-nohup python3 "$HERE/peer.py" "$LOGS/server.log" "$LOGS" 70 > "$LOGS/peer.log" 2>&1 &
+nohup python3 "$HERE/peer.py" "$LOGS/server.log" "$LOGS" 100 > "$LOGS/peer.log" 2>&1 &
 wait_for seeding 180 "test -f '$LOGS/seeded'" || { tail -30 "$LOGS/peer.log"; tail -30 "$LOGS/server.log"; exit 1; }
 tail -8 "$LOGS/peer.log"
