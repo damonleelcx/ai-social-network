@@ -30,6 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         backgroundImage: './assets/brand/adaptive-background.png',
         monochromeImage: './assets/brand/adaptive-monochrome.png',
       },
+      versionCode: Number(process.env.ANDROID_VERSION_CODE) || 1,
       softwareKeyboardLayoutMode: 'resize',
       blockedPermissions: ['android.permission.RECORD_AUDIO'],
     },
