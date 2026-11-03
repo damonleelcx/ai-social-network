@@ -14,9 +14,11 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSession } from '@/state/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
 import { IconButton, IrisRule, T } from './primitives';
+import { showError } from './sheet';
 
 /** The lilac (or deep violet) gradient everything sits on. */
 export function Backdrop({ children }: { children?: ReactNode }) {
@@ -34,6 +36,20 @@ export function Backdrop({ children }: { children?: ReactNode }) {
       />
       {children}
     </View>
+  );
+}
+
+/** One tap between light and dark. "Match my phone" lives in Settings > App. */
+export function ThemeToggle() {
+  const t = useTheme();
+  const { setTheme } = useSession();
+  const toDark = t.scheme === 'light';
+  return (
+    <IconButton
+      icon={toDark ? 'moon-outline' : 'sunny-outline'}
+      label={toDark ? 'Switch to dark mode' : 'Switch to light mode'}
+      onPress={() => setTheme(toDark ? 'dark' : 'light').catch(showError)}
+    />
   );
 }
 

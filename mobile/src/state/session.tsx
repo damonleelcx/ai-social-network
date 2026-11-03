@@ -29,6 +29,8 @@ type SessionValue = {
   /** Clears everything local. For after the account or this session is gone. */
   forget: () => Promise<void>;
   updateSettings: (patch: Partial<Settings>) => Promise<void>;
+  /** Works signed out too: the choice stays on this device until there's an account to save it to. */
+  setTheme: (theme: Settings['theme']) => Promise<void>;
 };
 
 const Ctx = createContext<SessionValue | null>(null);
@@ -69,8 +71,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const loadSettings = useCallback(async () => {
     try {
-      const s = await settingsApi.get();
+      let s = await settingsApi.get();
+      // An account that never chose keeps what they picked on this device before signing in.
+      const local = await SecureStore.getItemAsync(THEME_KEY).catch(() => null);
+      if (s.theme === 'system' && (local === 'light' || local === 'dark')) s = await settingsApi.patch({ theme: local });
       setSettings(s);
+      setCachedTheme(s.theme);
       SecureStore.setItemAsync(THEME_KEY, s.theme).catch(() => {});
     } catch {
       // Screens that need settings show their own state; the theme stays as it was.
@@ -145,6 +151,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       try {
         const s = await settingsApi.patch(patch);
         setSettings(s);
+        setCachedTheme(s.theme);
         SecureStore.setItemAsync(THEME_KEY, s.theme).catch(() => {});
       } catch (e) {
         if (before) setSettings(before);
@@ -152,6 +159,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       }
     },
     [settings],
+  );
+
+  const setTheme = useCallback(
+    async (theme: Settings['theme']) => {
+      if (settings) return updateSettings({ theme });
+      setCachedTheme(theme);
+      await SecureStore.setItemAsync(THEME_KEY, theme).catch(() => {});
+    },
+    [settings, updateSettings],
   );
 
   const value = useMemo<SessionValue>(
@@ -168,8 +184,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       signOut,
       forget,
       updateSettings,
+      setTheme,
     }),
-    [status, me, settings, cachedTheme, adoptToken, refreshMe, boot, signOut, forget, updateSettings],
+    [status, me, settings, cachedTheme, adoptToken, refreshMe, boot, signOut, forget, updateSettings, setTheme],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
