@@ -8,6 +8,7 @@ import { Backdrop, Page, ScreenHeader } from '@/ui/layout';
 import { Button, ErrorText, Glass, IconButton, T } from '@/ui/primitives';
 import { confirm, showError } from '@/ui/sheet';
 import { SukiLoading, SukiSays } from '@/ui/suki';
+import { tr } from '@/i18n';
 
 export default function MemoryScreen() {
   const { settings } = useSession();
@@ -39,7 +40,7 @@ export default function MemoryScreen() {
   };
 
   const reset = async () => {
-    const yes = await confirm('Start over?', "I'll forget my notes about you and everything I've learned about your taste. This can't be undone.", 'Forget it all', true);
+    const yes = await confirm(tr('Start over?'), tr("I'll forget my notes about you and everything I've learned about your taste. This can't be undone."), tr('Forget it all'), true);
     if (!yes) return;
     setResetting(true);
     try {
@@ -54,32 +55,30 @@ export default function MemoryScreen() {
 
   return (
     <Backdrop>
-      <ScreenHeader title="What Suki remembers" />
+      <ScreenHeader title={tr('What Suki remembers')} />
       <Page refreshing={false} onRefresh={load}>
         <ErrorText message={error} />
         {settings && !settings.memory_enabled ? (
           <Glass>
-            <T v="small" soft>
-              Long-term memory is off, so I'm not adding anything new.
-            </T>
+            <T v="small" soft>{tr("Long-term memory is off, so I'm not adding anything new.")}</T>
           </Glass>
         ) : null}
         {items === null && !error ? (
-          <SukiLoading line="Going through my notes..." />
+          <SukiLoading line={tr('Going through my notes...')} />
         ) : items?.length === 0 ? (
-          <SukiSays face="thinking" title="A blank page" body="I haven't written anything down yet. As we talk, my notes will show up here, and you can delete any of them." />
+          <SukiSays face="thinking" title={tr('A blank page')} body={tr("I haven't written anything down yet. As we talk, my notes will show up here, and you can delete any of them.")} />
         ) : (
           items?.map((m) => (
             <Glass key={m.id} style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingRight: space.sm }}>
               <T v="small" style={{ flex: 1 }}>
                 {m.note}
               </T>
-              <IconButton icon="trash-outline" size={19} label={`Delete note: ${m.note}`} onPress={() => remove(m)} />
+              <IconButton icon="trash-outline" size={19} label={tr('Delete note: {note}', { note: m.note })} onPress={() => remove(m)} />
             </Glass>
           ))
         )}
         <View style={{ marginTop: space.md }}>
-          <Button label="Forget everything and start over" kind="danger" full loading={resetting} onPress={reset} />
+          <Button label={tr('Forget everything and start over')} kind="danger" full loading={resetting} onPress={reset} />
         </View>
       </Page>
     </Backdrop>

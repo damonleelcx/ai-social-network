@@ -13,6 +13,7 @@ import { Backdrop, Page, ScreenHeader, Section } from '@/ui/layout';
 import { Button, ErrorText, Field, Glass, IconButton, Pill, T } from '@/ui/primitives';
 import { confirm, Sheet, showError } from '@/ui/sheet';
 import { SukiAvatar, SukiLoading } from '@/ui/suki';
+import { tr } from '@/i18n';
 
 const PROMPT_IDEAS = [
   'My ideal Sunday',
@@ -103,9 +104,9 @@ function Birthdate({ value, onSaved }: { value: string; onSaved: () => void }) {
   const save = async (d: Date) => {
     const s = ymd(d);
     const yes = await confirm(
-      `Is ${fullDate(s)} right?`,
-      "You can only set your birthday once, so please check it. SynAgent is for people 18 and over.",
-      'Yes, save it',
+      tr('Is {time} right?', { time: fullDate(s) }),
+      tr('You can only set your birthday once, so please check it. SynAgent is for people 18 and over.'),
+      tr('Yes, save it'),
     );
     if (!yes) return;
     try {
@@ -120,24 +121,18 @@ function Birthdate({ value, onSaved }: { value: string; onSaved: () => void }) {
   if (value) {
     return (
       <View style={{ gap: 4 }}>
-        <T v="small" soft style={{ fontWeight: '600', marginLeft: 4 }}>
-          Birthday
-        </T>
+        <T v="small" soft style={{ fontWeight: '600', marginLeft: 4 }}>{tr('Birthday')}</T>
         <T style={{ marginLeft: 4 }}>{fullDate(value)}</T>
-        <T v="caption" faint style={{ marginLeft: 4 }}>
-          Set once. Contact support if it's wrong.
-        </T>
+        <T v="caption" faint style={{ marginLeft: 4 }}>{tr("Set once. Contact support if it's wrong.")}</T>
       </View>
     );
   }
   return (
     <View style={{ gap: 6 }}>
-      <T v="small" soft style={{ fontWeight: '600', marginLeft: 4 }}>
-        Birthday
-      </T>
+      <T v="small" soft style={{ fontWeight: '600', marginLeft: 4 }}>{tr('Birthday')}</T>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Set your birthday"
+        accessibilityLabel={tr('Set your birthday')}
         onPress={() => {
           if (Platform.OS === 'ios') setIosOpen(true);
           else {
@@ -153,15 +148,13 @@ function Birthdate({ value, onSaved }: { value: string; onSaved: () => void }) {
         }}
         style={{ paddingVertical: space.sm, paddingHorizontal: 4 }}
       >
-        <T color={t.accent} style={{ fontWeight: '700' }}>
-          Set your birthday
-        </T>
+        <T color={t.accent} style={{ fontWeight: '700' }}>{tr('Set your birthday')}</T>
       </Pressable>
       {Platform.OS === 'ios' ? (
-        <Sheet visible={iosOpen} onClose={() => setIosOpen(false)} title="Your birthday">
+        <Sheet visible={iosOpen} onClose={() => setIosOpen(false)} title={tr('Your birthday')}>
           <DateTimePicker value={draft} mode="date" display="spinner" maximumDate={new Date()} onChange={(_, d) => d && setDraft(d)} />
           <Button
-            label="Continue"
+            label={tr('Continue')}
             full
             onPress={() => {
               setIosOpen(false);
@@ -181,16 +174,16 @@ function City({ name, onSaved }: { name: string; onSaved: () => void }) {
   return (
     <View style={{ gap: space.sm }}>
       <Field
-        label="City"
-        placeholder={name || 'Where do you live?'}
+        label={tr('City')}
+        placeholder={name || tr('Where do you live?')}
         value={query}
         onChangeText={setQuery}
-        hint={name ? `Now: ${name}` : 'Add the country if I can’t find it.'}
+        hint={name ? tr('Now: {name}', { name: name }) : tr('Add the country if I can’t find it.')}
         autoCorrect={false}
       />
       {query.trim() ? (
         <Button
-          label="Set this city"
+          label={tr('Set this city')}
           small
           kind="secondary"
           loading={busy}
@@ -246,9 +239,9 @@ export default function EditProfile() {
   if (!form || !before || !profile) {
     return (
       <Backdrop>
-        <ScreenHeader title="Edit profile" />
+        <ScreenHeader title={tr('Edit profile')} />
         <View style={{ flex: 1, justifyContent: 'center', padding: space.xl }}>
-          {error ? <ErrorText message={error} /> : <SukiLoading line="Getting your profile..." />}
+          {error ? <ErrorText message={error} /> : <SukiLoading line={tr('Getting your profile...')} />}
         </View>
       </Backdrop>
     );
@@ -282,37 +275,35 @@ export default function EditProfile() {
 
   return (
     <Backdrop>
-      <ScreenHeader title="Edit profile" />
+      <ScreenHeader title={tr('Edit profile')} />
       <Page>
         <Glass style={{ flexDirection: 'row', gap: space.md, alignItems: 'center' }}>
           <SukiAvatar mood="playful" size={44} />
-          <T v="small" soft style={{ flex: 1 }}>
-            You can also just tell me. "I'm a nurse now" works fine.
-          </T>
+          <T v="small" soft style={{ flex: 1 }}>{tr('You can also just tell me. "I\'m a nurse now" works fine.')}</T>
         </Glass>
 
-        <Section title="About you">
+        <Section title={tr('About you')}>
           <Glass style={{ gap: space.lg }}>
-            <Field label="Name" value={form.display_name} onChangeText={(v) => set('display_name', v)} maxLength={40} autoCapitalize="words" />
-            <Field label="Pronouns" value={form.pronouns} onChangeText={(v) => set('pronouns', v)} maxLength={30} autoCapitalize="none" />
+            <Field label={tr('Name')} value={form.display_name} onChangeText={(v) => set('display_name', v)} maxLength={40} autoCapitalize="words" />
+            <Field label={tr('Pronouns')} value={form.pronouns} onChangeText={(v) => set('pronouns', v)} maxLength={30} autoCapitalize="none" />
             <Birthdate value={profile.birthdate} onSaved={afterSubAction} />
-            <SingleSelect label="Gender" options={GENDERS} value={form.gender} onChange={(v) => set('gender', v)} />
+            <SingleSelect label={tr('Gender')} options={GENDERS} value={form.gender} onChange={(v) => set('gender', v)} />
             <City name={profile.city_name} onSaved={afterSubAction} />
-            <Field label="Work" value={form.occupation} onChangeText={(v) => set('occupation', v)} maxLength={80} />
-            <Field label="Studied" value={form.education} onChangeText={(v) => set('education', v)} maxLength={80} />
+            <Field label={tr('Work')} value={form.occupation} onChangeText={(v) => set('occupation', v)} maxLength={80} />
+            <Field label={tr('Studied')} value={form.education} onChangeText={(v) => set('education', v)} maxLength={80} />
           </Glass>
         </Section>
 
-        <Section title="Bio">
+        <Section title={tr('Bio')}>
           <Glass style={{ gap: space.md }}>
             {profile.bio_draft ? (
               <View style={{ gap: space.sm, padding: space.md, borderRadius: 14, backgroundColor: t.cardTint }}>
-                <Pill label="Suki's draft" icon="sparkles" />
+                <Pill label={tr("Suki's draft")} icon="sparkles" />
                 <T v="small" style={{ fontStyle: 'italic' }}>
                   {profile.bio_draft}
                 </T>
                 <Button
-                  label="Use this"
+                  label={tr('Use this')}
                   small
                   loading={acceptingBio}
                   onPress={async () => {
@@ -330,60 +321,60 @@ export default function EditProfile() {
                 />
               </View>
             ) : null}
-            <Field value={form.bio} onChangeText={(v) => set('bio', v)} multiline maxLength={600} placeholder="A few lines that sound like you" accessibilityLabel="Bio" />
+            <Field value={form.bio} onChangeText={(v) => set('bio', v)} multiline maxLength={600} placeholder={tr('A few lines that sound like you')} accessibilityLabel={tr('Bio')} />
           </Glass>
         </Section>
 
-        <Section title="Who you want to meet">
+        <Section title={tr('Who you want to meet')}>
           <Glass style={{ gap: space.lg }}>
-            <MultiSelect label="I'd like to meet" options={GENDERS} value={form.seeking} onChange={(v) => set('seeking', v)} />
+            <MultiSelect label={tr("I'd like to meet")} options={GENDERS} value={form.seeking} onChange={(v) => set('seeking', v)} />
             <View style={{ flexDirection: 'row', gap: space.md }}>
               <View style={{ flex: 1 }}>
-                <Field label="Youngest" keyboardType="number-pad" value={form.age_min} maxLength={3} onChangeText={(v) => set('age_min', v.replace(/\D/g, ''))} />
+                <Field label={tr('Youngest')} keyboardType="number-pad" value={form.age_min} maxLength={3} onChangeText={(v) => set('age_min', v.replace(/\D/g, ''))} />
               </View>
               <View style={{ flex: 1 }}>
-                <Field label="Oldest" keyboardType="number-pad" value={form.age_max} maxLength={3} onChangeText={(v) => set('age_max', v.replace(/\D/g, ''))} />
+                <Field label={tr('Oldest')} keyboardType="number-pad" value={form.age_max} maxLength={3} onChangeText={(v) => set('age_max', v.replace(/\D/g, ''))} />
               </View>
             </View>
-            <SingleSelect label="Looking for" options={GOALS} value={form.goal} onChange={(v) => set('goal', v)} />
+            <SingleSelect label={tr('Looking for')} options={GOALS} value={form.goal} onChange={(v) => set('goal', v)} />
           </Glass>
         </Section>
 
-        <Section title="Lifestyle">
+        <Section title={tr('Lifestyle')}>
           <Glass style={{ gap: space.lg }}>
-            <Field label="Height (cm)" keyboardType="number-pad" value={form.height_cm} maxLength={3} onChangeText={(v) => set('height_cm', v.replace(/\D/g, ''))} />
-            <SingleSelect label="Smoking" options={HABITS} value={form.smoking} onChange={(v) => set('smoking', v)} />
-            <SingleSelect label="Drinking" options={HABITS} value={form.drinking} onChange={(v) => set('drinking', v)} />
-            <SingleSelect label="Kids now" options={KIDS} value={form.kids} onChange={(v) => set('kids', v)} />
-            <SingleSelect label="Kids in the future" options={WANTS_KIDS} value={form.wants_kids} onChange={(v) => set('wants_kids', v)} />
-            <Field label="Religion" value={form.religion} onChangeText={(v) => set('religion', v)} maxLength={40} hint="Optional, and only if you want it to matter." />
-            <Field label="Politics" value={form.politics} onChangeText={(v) => set('politics', v)} maxLength={40} hint="Optional, same deal." />
+            <Field label={tr('Height (cm)')} keyboardType="number-pad" value={form.height_cm} maxLength={3} onChangeText={(v) => set('height_cm', v.replace(/\D/g, ''))} />
+            <SingleSelect label={tr('Smoking')} options={HABITS} value={form.smoking} onChange={(v) => set('smoking', v)} />
+            <SingleSelect label={tr('Drinking')} options={HABITS} value={form.drinking} onChange={(v) => set('drinking', v)} />
+            <SingleSelect label={tr('Kids now')} options={KIDS} value={form.kids} onChange={(v) => set('kids', v)} />
+            <SingleSelect label={tr('Kids in the future')} options={WANTS_KIDS} value={form.wants_kids} onChange={(v) => set('wants_kids', v)} />
+            <Field label={tr('Religion')} value={form.religion} onChangeText={(v) => set('religion', v)} maxLength={40} hint={tr('Optional, and only if you want it to matter.')} />
+            <Field label={tr('Politics')} value={form.politics} onChangeText={(v) => set('politics', v)} maxLength={40} hint={tr('Optional, same deal.')} />
           </Glass>
         </Section>
 
-        <Section title="Languages and interests">
+        <Section title={tr('Languages and interests')}>
           <Glass style={{ gap: space.lg }}>
-            <TagInput label="Languages" placeholder="English, Korean" value={form.languages} onChange={(v) => set('languages', v)} />
-            <TagInput label="Interests" placeholder="Climbing, jazz, ramen" value={form.interests} onChange={(v) => set('interests', v)} hint="At least 3, so I have something to work with." />
+            <TagInput label={tr('Languages')} placeholder={tr('English, Korean')} value={form.languages} onChange={(v) => set('languages', v)} />
+            <TagInput label={tr('Interests')} placeholder={tr('Climbing, jazz, ramen')} value={form.interests} onChange={(v) => set('interests', v)} hint={tr('At least 3, so I have something to work with.')} />
           </Glass>
         </Section>
 
-        <Section title="Prompts" hint="Up to 6. These are what people actually read.">
+        <Section title={tr('Prompts')} hint={tr('Up to 6. These are what people actually read.')}>
           {form.prompts.map((p, i) => (
             <Glass key={i} style={{ gap: space.md }}>
               <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: space.xs }}>
                 <View style={{ flex: 1 }}>
                   <Field
-                    label="Question"
+                    label={tr('Question')}
                     value={p.q}
                     maxLength={120}
                     onChangeText={(v) => set('prompts', form.prompts.map((x, j) => (j === i ? { ...x, q: v } : x)))}
                   />
                 </View>
-                <IconButton icon="trash-outline" label="Remove this prompt" onPress={() => set('prompts', form.prompts.filter((_, j) => j !== i))} />
+                <IconButton icon="trash-outline" label={tr('Remove this prompt')} onPress={() => set('prompts', form.prompts.filter((_, j) => j !== i))} />
               </View>
               <Field
-                label="Your answer"
+                label={tr('Your answer')}
                 value={p.a}
                 multiline
                 maxLength={300}
@@ -393,32 +384,32 @@ export default function EditProfile() {
           ))}
           {form.prompts.length < 6 ? (
             <Button
-              label="Add a prompt"
+              label={tr('Add a prompt')}
               icon="add"
               small
               kind="secondary"
               onPress={() => {
                 const used = new Set(form.prompts.map((p) => p.q));
-                const q = PROMPT_IDEAS.find((x) => !used.has(x)) ?? '';
+                const q = PROMPT_IDEAS.map((x) => tr(x)).find((x) => !used.has(x)) ?? '';
                 set('prompts', [...form.prompts, { q, a: '' }]);
               }}
             />
           ) : null}
         </Section>
 
-        <Section title="Dealbreakers" hint="I'll never introduce you to someone on the wrong side of these.">
+        <Section title={tr('Dealbreakers')} hint={tr("I'll never introduce you to someone on the wrong side of these.")}>
           <Glass style={{ gap: space.lg }}>
-            <MultiSelect label="Won't date someone who smokes..." options={HABITS} value={dealbreaker('smoking')} onChange={(v) => setDealbreaker('smoking', v)} />
-            <MultiSelect label="Won't date someone who drinks..." options={HABITS} value={dealbreaker('drinking')} onChange={(v) => setDealbreaker('drinking', v)} />
-            <MultiSelect label="Won't date someone who..." options={KIDS} value={dealbreaker('kids')} onChange={(v) => setDealbreaker('kids', v)} />
-            <MultiSelect label="On future kids, not someone who..." options={WANTS_KIDS} value={dealbreaker('wants_kids')} onChange={(v) => setDealbreaker('wants_kids', v)} />
-            <TagInput label="Religions to rule out" placeholder="Type and tap done" value={dealbreaker('religion')} onChange={(v) => setDealbreaker('religion', v)} />
-            <TagInput label="Politics to rule out" placeholder="Type and tap done" value={dealbreaker('politics')} onChange={(v) => setDealbreaker('politics', v)} />
+            <MultiSelect label={tr("Won't date someone who smokes...")} options={HABITS} value={dealbreaker('smoking')} onChange={(v) => setDealbreaker('smoking', v)} />
+            <MultiSelect label={tr("Won't date someone who drinks...")} options={HABITS} value={dealbreaker('drinking')} onChange={(v) => setDealbreaker('drinking', v)} />
+            <MultiSelect label={tr("Won't date someone who...")} options={KIDS} value={dealbreaker('kids')} onChange={(v) => setDealbreaker('kids', v)} />
+            <MultiSelect label={tr('On future kids, not someone who...')} options={WANTS_KIDS} value={dealbreaker('wants_kids')} onChange={(v) => setDealbreaker('wants_kids', v)} />
+            <TagInput label={tr('Religions to rule out')} placeholder={tr('Type and tap done')} value={dealbreaker('religion')} onChange={(v) => setDealbreaker('religion', v)} />
+            <TagInput label={tr('Politics to rule out')} placeholder={tr('Type and tap done')} value={dealbreaker('politics')} onChange={(v) => setDealbreaker('politics', v)} />
           </Glass>
         </Section>
 
         <ErrorText message={error} />
-        <Button label={dirty ? 'Save changes' : 'Nothing to save yet'} full disabled={!dirty} loading={saving} onPress={save} />
+        <Button label={dirty ? tr('Save changes') : tr('Nothing to save yet')} full disabled={!dirty} loading={saving} onPress={save} />
       </Page>
     </Backdrop>
   );

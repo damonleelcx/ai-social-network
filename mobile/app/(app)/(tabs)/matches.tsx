@@ -12,6 +12,7 @@ import { Backdrop, TabHeader } from '@/ui/layout';
 import { MediaImage, PersonAvatar, personLine, SharedChips } from '@/ui/person';
 import { Badge, Glass, T } from '@/ui/primitives';
 import { FadeIn, SukiAvatar, SukiLoading, SukiSays } from '@/ui/suki';
+import { tr } from '@/i18n';
 
 function Introduction({ proposal }: { proposal: Proposal }) {
   const t = useTheme();
@@ -22,7 +23,7 @@ function Introduction({ proposal }: { proposal: Proposal }) {
       <Glass padded={false} style={{ overflow: 'hidden', borderRadius: radius.xl }}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`See ${p.display_name}'s profile`}
+          accessibilityLabel={tr("See {name}'s profile", { name: p.display_name })}
           onPress={() => router.push(`/person?proposal=${proposal.id}`)}
         >
           <MediaImage id={p.photo_ids?.[0]} style={{ aspectRatio: 4 / 5 }} />
@@ -53,11 +54,11 @@ function Introduction({ proposal }: { proposal: Proposal }) {
 
 function MatchRow({ match }: { match: Match }) {
   const p = match.person;
-  const stage = STAGE_LABEL[match.stage];
+  const stage = tr(STAGE_LABEL[match.stage] ?? '');
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Chat with ${p.display_name}${match.unread ? ', new messages' : ''}`}
+      accessibilityLabel={tr('Chat with {name}{value}', { name: p.display_name, value: match.unread ? tr(', new messages') : '' })}
       onPress={() => router.push(`/chat/${match.id}`)}
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
     >
@@ -73,7 +74,7 @@ function MatchRow({ match }: { match: Match }) {
             </T>
           </View>
           <T v="small" soft numberOfLines={1} style={match.unread ? { fontWeight: '700' } : undefined}>
-            {match.last_preview || 'Say hi. I know you want to.'}
+            {match.last_preview || tr('Say hi. I know you want to.')}
           </T>
           {stage ? (
             <T v="caption" faint numberOfLines={1}>
@@ -117,7 +118,7 @@ export default function Matches() {
 
   return (
     <Backdrop>
-      <TabHeader title="Matches" subtitle="Good introductions, not endless swiping." />
+      <TabHeader title={tr('Matches')} subtitle={tr('Good introductions, not endless swiping.')} />
       <FlatList
         data={rows}
         keyExtractor={(r) => r.key}
@@ -125,13 +126,13 @@ export default function Matches() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={t.accent} colors={[t.accent]} />}
         ListEmptyComponent={
           loading ? (
-            <SukiLoading line="Checking on your introductions..." />
+            <SukiLoading line={tr('Checking on your introductions...')} />
           ) : (
             <SukiSays
               face="thinking"
               size={132}
-              title="Nobody here yet"
-              body="I'm looking. When I find someone worth your time, I'll bring them right here. The more you tell me, the better I get."
+              title={tr('Nobody here yet')}
+              body={tr("I'm looking. When I find someone worth your time, I'll bring them right here. The more you tell me, the better I get.")}
             />
           )
         }

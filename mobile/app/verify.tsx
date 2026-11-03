@@ -7,6 +7,7 @@ import { CodeBoxes } from '@/ui/CodeBoxes';
 import { Backdrop, Page } from '@/ui/layout';
 import { Button, ErrorText, T } from '@/ui/primitives';
 import { SukiAvatar } from '@/ui/suki';
+import { tr } from '@/i18n';
 
 const COOLDOWN = 30;
 
@@ -56,12 +57,8 @@ export default function Verify() {
       <Page contentStyle={{ paddingTop: 96, alignItems: 'stretch' }}>
         <View style={{ alignItems: 'center', gap: space.md }}>
           <SukiAvatar mood="happy" size={104} ring={3} />
-          <T v="title" center>
-            Check your email
-          </T>
-          <T soft center>
-            I sent a 6-digit code to {user?.email ?? 'your email'}. Type it here and we can start.
-          </T>
+          <T v="title" center>{tr('Check your email')}</T>
+          <T soft center>{tr('I sent a 6-digit code to {value}. Type it here and we can start.', { value: user?.email ?? tr('your email') })}</T>
         </View>
         <CodeBoxes
           value={code}
@@ -73,19 +70,17 @@ export default function Verify() {
         />
         <ErrorText message={error} />
         {sent ? (
-          <T v="small" soft center>
-            A new code is on its way.
-          </T>
+          <T v="small" soft center>{tr('A new code is on its way.')}</T>
         ) : null}
-        <Button label="Confirm" full loading={busy} disabled={code.length !== 6} onPress={() => submit(code)} />
+        <Button label={tr('Confirm')} full loading={busy} disabled={code.length !== 6} onPress={() => submit(code)} />
         <Button
-          label={cooldown > 0 ? `Send a new code in ${cooldown}s` : 'Send a new code'}
+          label={cooldown > 0 ? tr('Send a new code in {cooldown}s', { cooldown: cooldown }) : tr('Send a new code')}
           kind="secondary"
           full
           disabled={cooldown > 0}
           onPress={resend}
         />
-        <Button label="Use a different account" kind="ghost" full onPress={signOut} />
+        <Button label={tr('Use a different account')} kind="ghost" full onPress={signOut} />
       </Page>
     </Backdrop>
   );

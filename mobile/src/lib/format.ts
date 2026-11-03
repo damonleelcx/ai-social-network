@@ -1,3 +1,6 @@
+
+import { dateLocale, tr } from '@/i18n';
+
 export function uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -9,7 +12,7 @@ const sameDay = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
 export function clock(d: Date) {
-  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  return d.toLocaleTimeString(dateLocale(), { hour: 'numeric', minute: '2-digit' });
 }
 
 /** "3:04 PM" today, "Mon 3:04 PM" this week, otherwise "Mar 3". For message lists. */
@@ -20,9 +23,9 @@ export function shortTime(iso?: string | null) {
   const now = new Date();
   if (sameDay(d, now)) return clock(d);
   if (now.getTime() - d.getTime() < 6 * 86400000) {
-    return `${d.toLocaleDateString(undefined, { weekday: 'short' })} ${clock(d)}`;
+    return `${d.toLocaleDateString(dateLocale(), { weekday: 'short' })} ${clock(d)}`;
   }
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return d.toLocaleDateString(dateLocale(), { month: 'short', day: 'numeric' });
 }
 
 /** "Saturday, March 3 at 7:30 PM", for dates. */
@@ -30,29 +33,19 @@ export function longDateTime(iso?: string | null) {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
-  const day = d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-  return `${day} at ${clock(d)}`;
+  const day = d.toLocaleDateString(dateLocale(), { weekday: 'long', month: 'long', day: 'numeric' });
+  return tr('{day} at {value}', { day: day, value: clock(d) });
 }
 
 export function fullDate(ymd: string) {
   const d = new Date(`${ymd}T12:00:00`);
   if (Number.isNaN(d.getTime())) return ymd;
-  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  return d.toLocaleDateString(dateLocale(), { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
 export function ymd(d: Date) {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-export function deviceLanguage(): 'en' | 'zh' | 'ko' | 'ja' | 'es' {
-  try {
-    const l = Intl.DateTimeFormat().resolvedOptions().locale.slice(0, 2).toLowerCase();
-    if (l === 'zh' || l === 'ko' || l === 'ja' || l === 'es') return l;
-  } catch {
-    // Fall through to English.
-  }
-  return 'en';
 }
 
 // ── Labels for the contract's enums. Words only, never a number. ───────────────
@@ -95,7 +88,7 @@ export const REPORT_REASONS = [
 ] as const;
 
 export const labelOf = (list: readonly { value: string; label: string }[], v?: string | null) =>
-  list.find((x) => x.value === v)?.label ?? '';
+  tr(list.find((x) => x.value === v)?.label ?? '');
 
 export const STAGE_LABEL: Record<string, string> = {
   icebreaker: 'Just matched',
@@ -109,16 +102,16 @@ export const STAGE_LABEL: Record<string, string> = {
 /** Turns the server's `missing` entries into words for a person. */
 export function missingLabel(m: string) {
   const known: Record<string, string> = {
-    display_name: 'Your name',
-    birthdate: 'Your birthday',
-    gender: 'Your gender',
-    seeking: 'Who you want to meet',
-    city: 'Your city',
-    goal: "What you're looking for",
-    'interests (at least 3)': 'A few interests',
-    'bio or a prompt answer': 'A bio or a prompt answer',
-    photo: 'A photo',
-    'photo (waiting for review)': 'Your photo is being checked',
+    display_name: tr('Your name'),
+    birthdate: tr('Your birthday'),
+    gender: tr('Your gender'),
+    seeking: tr('Who you want to meet'),
+    city: tr('Your city'),
+    goal: tr("What you're looking for"),
+    'interests (at least 3)': tr('A few interests'),
+    'bio or a prompt answer': tr('A bio or a prompt answer'),
+    photo: tr('A photo'),
+    'photo (waiting for review)': tr('Your photo is being checked'),
   };
   return known[m] ?? m.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
 }

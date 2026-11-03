@@ -4,6 +4,7 @@ import { voice, useVoice, type ClipKey } from '@/lib/voice';
 import { useTheme } from '@/theme/ThemeProvider';
 import { Button } from '@/ui/primitives';
 import { showError } from '@/ui/sheet';
+import { tr } from '@/i18n';
 
 function toggle(key: ClipKey, active: boolean) {
   if (active) voice.stop();
@@ -20,7 +21,7 @@ export function SpeakerButton({ seq }: { seq: number }) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={loading ? 'Getting Suki’s voice. Tap to cancel' : playing ? 'Stop' : 'Hear Suki say this'}
+      accessibilityLabel={loading ? tr('Getting Suki’s voice. Tap to cancel') : playing ? tr('Stop') : tr('Hear Suki say this')}
       accessibilityState={{ busy: loading }}
       hitSlop={10}
       onPress={() => toggle(seq, active)}
@@ -49,7 +50,7 @@ export function HearSukiButton() {
   const active = clip === 'sample';
   return (
     <Button
-      label={active && phase === 'playing' ? 'Stop' : 'Hear Suki'}
+      label={active && phase === 'playing' ? tr('Stop') : tr('Hear Suki')}
       icon={active && phase === 'playing' ? 'stop' : 'volume-medium-outline'}
       kind="secondary"
       small

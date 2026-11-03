@@ -84,11 +84,23 @@ jobs:
           disable-animations: true
           working-directory: mobile
           # One shell per line: the app has to be alive and showing a screen after starting up.
+          # Then pick Korean on Welcome and relaunch. The taps are fixed positions on this 320x640
+          # screen, because uiautomator can't read a screen with a looping animation.
           script: |
             adb install -r out/SynAgent.apk
             adb shell monkey -p space.herosagent.synagent -c android.intent.category.LAUNCHER 1
             sleep 30
             adb exec-out screencap -p > out/launch.png
+            adb shell input tap 233 53
+            sleep 3
+            adb exec-out screencap -p > out/language-sheet.png
+            adb shell input tap 100 553
+            sleep 5
+            adb exec-out screencap -p > out/launch-ko.png
+            adb shell am force-stop space.herosagent.synagent
+            adb shell monkey -p space.herosagent.synagent -c android.intent.category.LAUNCHER 1
+            sleep 15
+            adb exec-out screencap -p > out/relaunch-ko.png
             adb logcat -d -b crash > out/crash.log
             adb shell pidof space.herosagent.synagent
       - name: Keep the results

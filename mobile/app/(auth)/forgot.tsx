@@ -4,6 +4,7 @@ import { auth } from '@/api/endpoints';
 import { CodeBoxes } from '@/ui/CodeBoxes';
 import { Backdrop, Page, ScreenHeader } from '@/ui/layout';
 import { Button, ErrorText, Field, T } from '@/ui/primitives';
+import { tr } from '@/i18n';
 
 export default function Forgot() {
   const [step, setStep] = useState<'email' | 'code'>('email');
@@ -41,13 +42,13 @@ export default function Forgot() {
 
   return (
     <Backdrop>
-      <ScreenHeader title="Forgot your password?" />
+      <ScreenHeader title={tr('Forgot your password?')} />
       <Page>
         {step === 'email' ? (
           <>
-            <T soft>It happens. Tell me your email and I'll send you a code.</T>
+            <T soft>{tr("It happens. Tell me your email and I'll send you a code.")}</T>
             <Field
-              label="Email"
+              label={tr('Email')}
               value={email}
               onChangeText={setEmail}
               autoComplete="email"
@@ -57,25 +58,25 @@ export default function Forgot() {
               onSubmitEditing={sendCode}
             />
             <ErrorText message={error} />
-            <Button label="Send me a code" full loading={busy} disabled={!email.trim()} onPress={sendCode} />
+            <Button label={tr('Send me a code')} full loading={busy} disabled={!email.trim()} onPress={sendCode} />
           </>
         ) : (
           <>
-            <T soft>If {email.trim()} has an account, a 6-digit code is on its way. Enter it with your new password.</T>
+            <T soft>{tr('If {value} has an account, a 6-digit code is on its way. Enter it with your new password.', { value: email.trim() })}</T>
             <CodeBoxes value={code} onChange={setCode} autoFocus />
             <Field
-              label="New password"
+              label={tr('New password')}
               value={password}
               onChangeText={setPassword}
               secure
               autoComplete="new-password"
               textContentType="newPassword"
               autoCapitalize="none"
-              hint="At least 10 characters."
+              hint={tr('At least 10 characters.')}
             />
             <ErrorText message={error} />
-            <Button label="Set new password" full loading={busy} disabled={code.length !== 6 || !password} onPress={reset} />
-            <Button label="Use a different email" kind="ghost" full onPress={() => setStep('email')} />
+            <Button label={tr('Set new password')} full loading={busy} disabled={code.length !== 6 || !password} onPress={reset} />
+            <Button label={tr('Use a different email')} kind="ghost" full onPress={() => setStep('email')} />
           </>
         )}
       </Page>

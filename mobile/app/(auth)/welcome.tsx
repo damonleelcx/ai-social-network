@@ -6,9 +6,10 @@ import { Animated, Easing, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
-import { Backdrop, ThemeToggle } from '@/ui/layout';
+import { Backdrop, LanguagePicker, ThemeToggle } from '@/ui/layout';
 import { Button, Glass, T } from '@/ui/primitives';
 import { sukiFace } from '@/ui/suki';
+import { tr } from '@/i18n';
 
 export default function Welcome() {
   const t = useTheme();
@@ -34,7 +35,8 @@ export default function Welcome() {
   return (
     <Backdrop>
       <View style={{ flex: 1, paddingTop: insets.top + space.xxl, paddingBottom: insets.bottom + space.xl, paddingHorizontal: space.xl }}>
-        <View style={{ position: 'absolute', zIndex: 1, top: insets.top + space.sm, right: space.lg }}>
+        <View style={{ position: 'absolute', zIndex: 1, top: insets.top + space.sm, right: space.lg, flexDirection: 'row', gap: space.sm }}>
+          <LanguagePicker />
           <ThemeToggle />
         </View>
         <View
@@ -62,27 +64,23 @@ export default function Welcome() {
               source={sukiFace('portrait') as any}
               style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 3, borderColor: t.glassBorder }}
               contentFit="cover"
-              accessibilityLabel="Suki, your AI wingwoman, winking"
+              accessibilityLabel={tr('Suki, your AI wingwoman, winking')}
             />
           </View>
           <View style={{ paddingTop: space.xl }} onLayout={(e) => setWordsHeight(e.nativeEvent.layout.height)}>
             <T v="display" center>
               SynAgent
             </T>
-            <T v="heading" center color={t.accent} style={{ marginTop: space.xs }}>
-              Meet someone, share ideas, explore together
-            </T>
+            <T v="heading" center color={t.accent} style={{ marginTop: space.xs }}>{tr('Meet someone, share ideas, explore together')}</T>
           </View>
         </View>
 
         <Glass style={{ marginBottom: space.lg }}>
-          <T soft center>
-            I'm Suki, your AI wingwoman. Tell me about you, and I'll introduce you to people worth meeting. No swiping.
-          </T>
+          <T soft center>{tr("I'm Suki, your AI wingwoman. Tell me about you, and I'll introduce you to people worth meeting. No swiping.")}</T>
         </Glass>
         <View style={{ gap: space.sm }}>
-          <Button label="Get started" full onPress={() => router.push('/signup')} />
-          <Button label="I already have an account" kind="ghost" full onPress={() => router.push('/signin')} />
+          <Button label={tr('Get started')} full onPress={() => router.push('/signup')} />
+          <Button label={tr('I already have an account')} kind="ghost" full onPress={() => router.push('/signin')} />
         </View>
       </View>
     </Backdrop>

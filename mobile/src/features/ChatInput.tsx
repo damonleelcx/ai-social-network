@@ -3,6 +3,7 @@ import { TextInput, View } from 'react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
 import { IconButton } from '@/ui/primitives';
+import { tr } from '@/i18n';
 
 type Props = {
   value: string;
@@ -44,7 +45,7 @@ export const ChatInput = forwardRef<ComponentRef<typeof TextInput>, Props>(funct
         accessibilityLabel={placeholder}
         style={{ flex: 1, color: t.ink, fontSize: 16, lineHeight: 21, maxHeight: 120, paddingTop: 10, paddingBottom: 10 }}
       />
-      <IconButton icon="arrow-up-circle" size={34} label="Send" color={canSend ? t.accent : t.inkFaint} disabled={!canSend} onPress={onSend} />
+      <IconButton icon="arrow-up-circle" size={34} label={tr('Send')} color={canSend ? t.accent : t.inkFaint} disabled={!canSend} onPress={onSend} />
     </View>
   );
 });

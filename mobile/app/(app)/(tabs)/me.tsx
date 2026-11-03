@@ -14,6 +14,7 @@ import { PersonAvatar } from '@/ui/person';
 import { Button, Glass, Pill, T } from '@/ui/primitives';
 import { showError } from '@/ui/sheet';
 import { SukiAvatar } from '@/ui/suki';
+import { tr } from '@/i18n';
 
 /** Nine things make a profile whole on the server (see profile.Missing). */
 const PROFILE_STEPS = 9;
@@ -29,9 +30,9 @@ function Completeness({ missing }: { missing: string[] }) {
       <View style={{ flexDirection: 'row', gap: space.md, alignItems: 'center' }}>
         <SukiAvatar mood="thinking" size={44} />
         <View style={{ flex: 1 }}>
-          <T v="subheading">{left === 0 && waitingOnReview ? 'Almost there' : 'A little more and we can start'}</T>
+          <T v="subheading">{left === 0 && waitingOnReview ? tr('Almost there') : tr('A little more and we can start')}</T>
           <T v="small" soft>
-            {left === 0 && waitingOnReview ? "I'm checking your photo." : "I can't introduce you until these are done."}
+            {left === 0 && waitingOnReview ? tr("I'm checking your photo.") : tr("I can't introduce you until these are done.")}
           </T>
         </View>
       </View>
@@ -50,8 +51,8 @@ function Completeness({ missing }: { missing: string[] }) {
       </View>
       {left > 0 ? (
         <View style={{ flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' }}>
-          <Button label="Finish with Suki" small onPress={() => router.navigate('/suki')} />
-          <Button label="Fill it in myself" small kind="secondary" onPress={() => router.push('/profile/edit')} />
+          <Button label={tr('Finish with Suki')} small onPress={() => router.navigate('/suki')} />
+          <Button label={tr('Fill it in myself')} small kind="secondary" onPress={() => router.push('/profile/edit')} />
         </View>
       ) : null}
     </Glass>
@@ -77,7 +78,7 @@ export default function Me() {
 
   return (
     <Backdrop>
-      <TabHeader title="Me" right={<ThemeToggle />} />
+      <TabHeader title={tr('Me')} right={<ThemeToggle />} />
       <Page
         bottomInset={false}
         contentStyle={{ paddingTop: space.xs }}
@@ -91,18 +92,16 @@ export default function Me() {
         <Glass style={{ flexDirection: 'row', gap: space.lg, alignItems: 'center', borderRadius: radius.xl }}>
           {main ? <PersonAvatar id={main.id} size={88} /> : <SukiAvatar mood="pouty" size={88} ring={3} />}
           <View style={{ flex: 1, gap: 4 }}>
-            <T v="heading">{profile?.display_name || user?.name || 'You'}</T>
+            <T v="heading">{profile?.display_name || user?.name || tr('You')}</T>
             {place ? (
               <T v="small" soft>
                 {place}
               </T>
             ) : null}
             {!main ? (
-              <T v="small" soft>
-                No photo yet. That's my face, not yours.
-              </T>
+              <T v="small" soft>{tr("No photo yet. That's my face, not yours.")}</T>
             ) : null}
-            {status ? <Pill tone={status.tone} label={status.label} /> : null}
+            {status ? <Pill tone={status.tone} label={tr(status.label)} /> : null}
           </View>
         </Glass>
 
@@ -110,29 +109,27 @@ export default function Me() {
 
         {profile?.status === 'held' ? (
           <Glass>
-            <T v="small" soft>
-              A person on our team is reviewing your account. You won't get new introductions until they're done.
-            </T>
+            <T v="small" soft>{tr("A person on our team is reviewing your account. You won't get new introductions until they're done.")}</T>
           </Glass>
         ) : null}
 
         <Group>
-          <NavRow icon="create-outline" label="Edit profile" hint="Or just tell Suki" onPress={() => router.push('/profile/edit')} />
+          <NavRow icon="create-outline" label={tr('Edit profile')} hint={tr('Or just tell Suki')} onPress={() => router.push('/profile/edit')} />
           <NavRow
             icon="images-outline"
-            label="Photos"
-            hint={live.photos.length ? undefined : 'Add your first one'}
+            label={tr('Photos')}
+            hint={live.photos.length ? undefined : tr('Add your first one')}
             onPress={() => router.push('/profile/photos')}
           />
-          <NavRow icon="notifications-outline" label="Notifications" badge={live.badges.me} onPress={() => router.push('/notifications')} />
-          <NavRow icon="settings-outline" label="Settings" onPress={() => router.push('/settings')} />
+          <NavRow icon="notifications-outline" label={tr('Notifications')} badge={live.badges.me} onPress={() => router.push('/notifications')} />
+          <NavRow icon="settings-outline" label={tr('Settings')} onPress={() => router.push('/settings')} />
         </Group>
 
         {profile && (profile.status === 'active' || profile.status === 'paused') ? (
           <Group>
             <ToggleRow
-              label="Pause introductions"
-              hint="You keep your matches and chats. I just stop looking."
+              label={tr('Pause introductions')}
+              hint={tr('You keep your matches and chats. I just stop looking.')}
               value={profile.status === 'paused'}
               disabled={pausing}
               onChange={async (paused) => {

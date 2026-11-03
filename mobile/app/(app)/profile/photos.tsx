@@ -12,6 +12,7 @@ import { MediaImage } from '@/ui/person';
 import { Button, ErrorText, Glass, Pill, T } from '@/ui/primitives';
 import { confirm, Sheet, SheetAction, showError } from '@/ui/sheet';
 import { SukiLoading, SukiSays } from '@/ui/suki';
+import { tr } from '@/i18n';
 
 const MAX_PHOTOS = 6;
 
@@ -65,7 +66,7 @@ export default function Photos() {
 
   const remove = async (p: Photo) => {
     setSelected(null);
-    if (!(await confirm('Remove this photo?', 'It comes off your profile right away.', 'Remove', true))) return;
+    if (!(await confirm(tr('Remove this photo?'), tr('It comes off your profile right away.'), tr('Remove'), true))) return;
     try {
       await api.photos.remove(p.id);
       await refreshPhotos();
@@ -77,20 +78,20 @@ export default function Photos() {
 
   return (
     <Backdrop>
-      <ScreenHeader title="Photos" />
+      <ScreenHeader title={tr('Photos')} />
       <Page refreshing={false} onRefresh={refreshPhotos}>
         {!loaded.photos && !photos.length ? (
-          <SukiLoading line="Getting your photos..." />
+          <SukiLoading line={tr('Getting your photos...')} />
         ) : !photos.length ? (
           <SukiSays
             face="surprised"
             size={120}
-            title="No photos yet?"
-            body="One clear photo of your face is worth a thousand bios. I'll take a look and tell you honestly how it comes across."
+            title={tr('No photos yet?')}
+            body={tr("One clear photo of your face is worth a thousand bios. I'll take a look and tell you honestly how it comes across.")}
           />
         ) : (
           <>
-            <T soft>Tap a photo to make it your main one, or remove it. I check each one before anyone sees it.</T>
+            <T soft>{tr('Tap a photo to make it your main one, or remove it. I check each one before anyone sees it.')}</T>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.md }}>
               {photos.map((p) => {
                 const s = STATUS[p.status] ?? STATUS.pending;
@@ -98,15 +99,15 @@ export default function Photos() {
                   <Pressable
                     key={p.id}
                     accessibilityRole="button"
-                    accessibilityLabel={`Photo. ${s.label}.${p.is_primary ? ' Your main photo.' : ''}`}
+                    accessibilityLabel={tr('Photo. {label}.{value}', { label: tr(s.label), value: p.is_primary ? tr(' Your main photo.') : '' })}
                     onPress={() => setSelected(p)}
                     style={{ width: size, gap: space.xs }}
                   >
                     <View>
                       <MediaImage id={p.id} radiusPx={radius.md} style={{ width: size, height: size * 1.25 }} />
-                      {p.is_primary ? <Pill label="Main" tone="accent" style={{ position: 'absolute', top: 8, left: 8, backgroundColor: t.glassStrong }} /> : null}
+                      {p.is_primary ? <Pill label={tr('Main')} tone="accent" style={{ position: 'absolute', top: 8, left: 8, backgroundColor: t.glassStrong }} /> : null}
                     </View>
-                    <Pill label={s.label} tone={s.tone} />
+                    <Pill label={tr(s.label)} tone={s.tone} />
                     {p.reason ? (
                       <T v="caption" soft>
                         {p.reason}
@@ -126,26 +127,22 @@ export default function Photos() {
 
         <ErrorText message={error} />
         {photos.length < MAX_PHOTOS ? (
-          <Button label={photos.length ? 'Add another photo' : 'Add a photo'} icon="image" full loading={uploading} onPress={add} />
+          <Button label={photos.length ? tr('Add another photo') : tr('Add a photo')} icon="image" full loading={uploading} onPress={add} />
         ) : (
           <Glass>
-            <T v="small" soft center>
-              That's the full six. Remove one to add another.
-            </T>
+            <T v="small" soft center>{tr("That's the full six. Remove one to add another.")}</T>
           </Glass>
         )}
       </Page>
 
-      <Sheet visible={!!selected} onClose={() => setSelected(null)} title="This photo">
+      <Sheet visible={!!selected} onClose={() => setSelected(null)} title={tr('This photo')}>
         {selected?.status === 'approved' && !selected.is_primary ? (
-          <SheetAction icon="ribbon-outline" label="Make it my main photo" onPress={() => setMain(selected)} />
+          <SheetAction icon="ribbon-outline" label={tr('Make it my main photo')} onPress={() => setMain(selected)} />
         ) : null}
         {selected && selected.status !== 'approved' ? (
-          <T v="small" soft>
-            It can be your main photo once it's approved.
-          </T>
+          <T v="small" soft>{tr("It can be your main photo once it's approved.")}</T>
         ) : null}
-        {selected ? <SheetAction icon="trash-outline" label="Remove" danger onPress={() => remove(selected)} /> : null}
+        {selected ? <SheetAction icon="trash-outline" label={tr('Remove')} danger onPress={() => remove(selected)} /> : null}
       </Sheet>
     </Backdrop>
   );

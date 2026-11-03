@@ -13,11 +13,12 @@ import { Group, NavRow } from '@/ui/form';
 import { Backdrop, Page, ScreenHeader, Section } from '@/ui/layout';
 import { Button, ErrorText, Field, Glass, Pill, T } from '@/ui/primitives';
 import { confirm, Sheet, showError } from '@/ui/sheet';
+import { tr } from '@/i18n';
 
 function describeAgent(ua: string) {
-  if (!ua) return 'Unknown device';
-  if (/okhttp|android/i.test(ua)) return 'Android phone';
-  if (/darwin|cfnetwork|iphone|ios/i.test(ua)) return 'iPhone';
+  if (!ua) return tr('Unknown device');
+  if (/okhttp|android/i.test(ua)) return tr('Android phone');
+  if (/darwin|cfnetwork|iphone|ios/i.test(ua)) return tr('iPhone');
   return ua.length > 40 ? `${ua.slice(0, 40)}...` : ua;
 }
 
@@ -35,19 +36,19 @@ function PasswordSheet({ visible, onClose }: { visible: boolean; onClose: () => 
     onClose();
   };
   return (
-    <Sheet visible={visible} onClose={close} title="Change password">
+    <Sheet visible={visible} onClose={close} title={tr('Change password')}>
       {done ? (
         <>
-          <Pill tone="good" icon="checkmark-circle" label="Changed. Your other devices were signed out." />
-          <Button label="Done" full onPress={close} />
+          <Pill tone="good" icon="checkmark-circle" label={tr('Changed. Your other devices were signed out.')} />
+          <Button label={tr('Done')} full onPress={close} />
         </>
       ) : (
         <>
-          <Field label="Current password" value={current} onChangeText={setCurrent} secure autoCapitalize="none" autoComplete="current-password" />
-          <Field label="New password" value={next} onChangeText={setNext} secure autoCapitalize="none" autoComplete="new-password" hint="At least 10 characters." />
+          <Field label={tr('Current password')} value={current} onChangeText={setCurrent} secure autoCapitalize="none" autoComplete="current-password" />
+          <Field label={tr('New password')} value={next} onChangeText={setNext} secure autoCapitalize="none" autoComplete="new-password" hint={tr('At least 10 characters.')} />
           <ErrorText message={error} />
           <Button
-            label="Change password"
+            label={tr('Change password')}
             full
             loading={busy}
             disabled={!current || !next}
@@ -76,12 +77,12 @@ function DeleteSheet({ visible, onClose }: { visible: boolean; onClose: () => vo
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   return (
-    <Sheet visible={visible} onClose={onClose} title="Delete your account">
-      <T soft>This removes your profile, photos, matches and chats for good. It can't be undone. Type your password to confirm.</T>
-      <Field label="Password" value={password} onChangeText={setPassword} secure autoCapitalize="none" autoComplete="current-password" />
+    <Sheet visible={visible} onClose={onClose} title={tr('Delete your account')}>
+      <T soft>{tr("This removes your profile, photos, matches and chats for good. It can't be undone. Type your password to confirm.")}</T>
+      <Field label={tr('Password')} value={password} onChangeText={setPassword} secure autoCapitalize="none" autoComplete="current-password" />
       <ErrorText message={error} />
       <Button
-        label="Delete my account"
+        label={tr('Delete my account')}
         kind="danger"
         full
         loading={busy}
@@ -100,7 +101,7 @@ function DeleteSheet({ visible, onClose }: { visible: boolean; onClose: () => vo
           }
         }}
       />
-      <Button label="Keep my account" kind="ghost" full onPress={onClose} />
+      <Button label={tr('Keep my account')} kind="ghost" full onPress={onClose} />
     </Sheet>
   );
 }
@@ -128,8 +129,8 @@ export default function AccountSettings() {
   }, [loadSessions]);
 
   const revoke = async (s: Session) => {
-    const body = s.current ? 'This signs you out on this phone.' : 'That device gets signed out right away.';
-    if (!(await confirm('Sign out this session?', body, 'Sign out', true))) return;
+    const body = s.current ? tr('This signs you out on this phone.') : tr('That device gets signed out right away.');
+    if (!(await confirm(tr('Sign out this session?'), body, tr('Sign out'), true))) return;
     try {
       await api.auth.revokeSession(s.id);
       if (s.current) await forget();
@@ -149,7 +150,7 @@ export default function AccountSettings() {
       file.create();
       file.write(json);
       if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(file.uri, { mimeType: 'application/json', dialogTitle: 'Your SynAgent data' });
+        await Sharing.shareAsync(file.uri, { mimeType: 'application/json', dialogTitle: tr('Your SynAgent data') });
       } else {
         await Share.share({ message: json });
       }
@@ -162,51 +163,48 @@ export default function AccountSettings() {
 
   return (
     <Backdrop>
-      <ScreenHeader title="Account" />
+      <ScreenHeader title={tr('Account')} />
       <Page refreshing={false} onRefresh={loadSessions}>
-        <Section title="Signed in as">
+        <Section title={tr('Signed in as')}>
           <Glass>
             <T>{user?.email}</T>
           </Glass>
         </Section>
 
         <Group>
-          <NavRow icon="key-outline" label="Change password" onPress={() => setPasswordOpen(true)} />
+          <NavRow icon="key-outline" label={tr('Change password')} onPress={() => setPasswordOpen(true)} />
         </Group>
 
-        <Section title="Active sessions">
+        <Section title={tr('Active sessions')}>
           <ErrorText message={sessionError} />
           {(sessions ?? []).map((s) => (
             <Glass key={s.id} style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }}>
               <View style={{ flex: 1, gap: 2 }}>
                 <View style={{ flexDirection: 'row', gap: space.sm, alignItems: 'center', flexWrap: 'wrap' }}>
                   <T v="subheading">{describeAgent(s.user_agent)}</T>
-                  {s.current ? <Pill tone="good" label="This phone" /> : null}
+                  {s.current ? <Pill tone="good" label={tr('This phone')} /> : null}
                 </View>
-                <T v="caption" faint>
-                  Last seen {shortTime(s.last_seen_at)}
-                  {s.ip ? ` · ${s.ip}` : ''}
-                </T>
+                <T v="caption" faint>{tr('Last seen {time} {value}', { time: shortTime(s.last_seen_at), value: s.ip ? ` · ${s.ip}` : '' })}</T>
               </View>
-              <Button label="Revoke" small kind="secondary" onPress={() => revoke(s)} />
+              <Button label={tr('Revoke')} small kind="secondary" onPress={() => revoke(s)} />
             </Glass>
           ))}
         </Section>
 
-        <Section title="Your data" hint="A JSON file of your profile, your words and Suki's notes.">
-          <Button label="Export my data" icon="download-outline" kind="secondary" full loading={exporting} onPress={exportData} />
+        <Section title={tr('Your data')} hint={tr("A JSON file of your profile, your words and Suki's notes.")}>
+          <Button label={tr('Export my data')} icon="download-outline" kind="secondary" full loading={exporting} onPress={exportData} />
         </Section>
 
-        <Section title="Legal">
+        <Section title={tr('Legal')}>
           <Group>
-            <NavRow label="Terms" onPress={() => openLegal(legalUrl('terms'))} />
-            <NavRow label="Privacy policy" onPress={() => openLegal(legalUrl('privacy'))} />
-            <NavRow label="How account deletion works" onPress={() => openLegal(legalUrl('delete-account'))} />
+            <NavRow label={tr('Terms')} onPress={() => openLegal(legalUrl('terms'))} />
+            <NavRow label={tr('Privacy policy')} onPress={() => openLegal(legalUrl('privacy'))} />
+            <NavRow label={tr('How account deletion works')} onPress={() => openLegal(legalUrl('delete-account'))} />
           </Group>
         </Section>
 
         <Button
-          label="Sign out"
+          label={tr('Sign out')}
           kind="secondary"
           full
           loading={signingOut}
@@ -215,11 +213,9 @@ export default function AccountSettings() {
             await signOut();
           }}
         />
-        <Button label="Delete my account" kind="danger" full onPress={() => setDeleteOpen(true)} />
+        <Button label={tr('Delete my account')} kind="danger" full onPress={() => setDeleteOpen(true)} />
         {__DEV__ ? (
-          <T v="caption" faint center>
-            API: {API_URL}
-          </T>
+          <T v="caption" faint center>{tr('API: {API_URL}', { API_URL: API_URL })}</T>
         ) : null}
       </Page>
 

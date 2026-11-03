@@ -8,6 +8,7 @@ import { Backdrop, Page, ScreenHeader } from '@/ui/layout';
 import { Button, ErrorText, Glass, T } from '@/ui/primitives';
 import { confirm, showError } from '@/ui/sheet';
 import { SukiLoading, SukiSays } from '@/ui/suki';
+import { tr } from '@/i18n';
 
 export default function BlockedScreen() {
   const live = useLive();
@@ -29,13 +30,13 @@ export default function BlockedScreen() {
 
   return (
     <Backdrop>
-      <ScreenHeader title="Blocked people" />
+      <ScreenHeader title={tr('Blocked people')} />
       <Page refreshing={false} onRefresh={load}>
         <ErrorText message={error} />
         {items === null && !error ? (
           <SukiLoading />
         ) : items?.length === 0 ? (
-          <SukiSays face="happy" title="Nobody blocked" body="If anyone ever makes you uncomfortable, block them from the chat menu. They won't be told." />
+          <SukiSays face="happy" title={tr('Nobody blocked')} body={tr("If anyone ever makes you uncomfortable, block them from the chat menu. They won't be told.")} />
         ) : (
           items?.map((b) => (
             <Glass key={b.user_id} style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }}>
@@ -43,11 +44,11 @@ export default function BlockedScreen() {
                 <T v="subheading">{b.display_name}</T>
               </View>
               <Button
-                label="Unblock"
+                label={tr('Unblock')}
                 small
                 kind="secondary"
                 onPress={async () => {
-                  const yes = await confirm(`Unblock ${b.display_name}?`, 'Your old match won’t come back, but you could be introduced again.', 'Unblock');
+                  const yes = await confirm(tr('Unblock {name}?', { name: b.display_name }), tr('Your old match won’t come back, but you could be introduced again.'), tr('Unblock'));
                   if (!yes) return;
                   try {
                     await api.safety.unblock(b.user_id);
