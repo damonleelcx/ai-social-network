@@ -84,8 +84,9 @@ func newLanding() http.Handler {
 		h.Set("Content-Type", a.ctype)
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("Vary", "Accept-Encoding")
-		// File names aren't hashed, so a deploy has to show up within the hour.
-		if path.Ext(name) == ".html" {
+		// File names aren't hashed, and the page, its styles and its scripts have to change
+		// together, so those revalidate every time. An unchanged file costs a 304.
+		if strings.HasPrefix(a.ctype, "text/") {
 			h.Set("Cache-Control", "no-cache")
 		} else {
 			h.Set("Cache-Control", "public, max-age=3600")
