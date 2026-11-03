@@ -9,10 +9,12 @@ import { space } from '@/theme/tokens';
 import { Backdrop, LanguagePicker, ThemeToggle } from '@/ui/layout';
 import { Button, Glass, T } from '@/ui/primitives';
 import { sukiFace } from '@/ui/suki';
-import { MAP_ASPECT, MAP_CAPTION_HEIGHT, WorldMap } from '@/ui/WorldMap';
+import { MAP_ASPECT, WorldMap } from '@/ui/WorldMap';
 import { tr } from '@/i18n';
 
-const SMALLEST_SUKI = 72;
+const SMALLEST_SUKI = 64;
+// Below this the intro paragraph goes, so the map keeps its full width.
+const ROOM_FOR_INTRO = 720;
 
 export default function Welcome() {
   const t = useTheme();
@@ -21,11 +23,9 @@ export default function Welcome() {
   // Small phones can't fit her at full size, so she gives up whatever the words need.
   const [room, setRoom] = useState(height);
   const [wordsHeight, setWordsHeight] = useState(0);
-  const [titleHeight, setTitleHeight] = useState(0);
-  const size = Math.max(SMALLEST_SUKI, Math.min(width - 72, height * 0.38, room - wordsHeight - 28));
-  // The map takes what's left once she's at her smallest, and small phones go without it.
-  const mapRoom = room - SMALLEST_SUKI - 28 - space.xl - titleHeight - space.md - MAP_CAPTION_HEIGHT;
-  const mapWidth = Math.min(width - space.xl * 2, mapRoom * MAP_ASPECT);
+  // The map is the biggest thing here: edge to edge, and she never outgrows it.
+  const mapHeight = width / MAP_ASPECT;
+  const size = Math.max(SMALLEST_SUKI, Math.min(mapHeight - 28, room - wordsHeight - 28));
   const glow = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -74,24 +74,27 @@ export default function Welcome() {
               accessibilityLabel={tr('Suki, your AI wingwoman, winking')}
             />
           </View>
-          <View style={{ paddingTop: space.xl }} onLayout={(e) => setWordsHeight(e.nativeEvent.layout.height)}>
-            <View onLayout={(e) => setTitleHeight(e.nativeEvent.layout.height)}>
+          <View
+            style={{ paddingTop: space.lg, alignSelf: 'stretch', marginHorizontal: -space.xl }}
+            onLayout={(e) => setWordsHeight(e.nativeEvent.layout.height)}
+          >
+            <View style={{ paddingHorizontal: space.xl }}>
               <T v="display" center>
                 SynAgent
               </T>
               <T v="heading" center color={t.accent} style={{ marginTop: space.xs }}>{tr('Meet someone, share ideas, explore together')}</T>
             </View>
-            {mapWidth >= 140 ? (
-              <View style={{ marginTop: space.md }}>
-                <WorldMap width={mapWidth} />
-              </View>
-            ) : null}
+            <View style={{ marginTop: space.md }}>
+              <WorldMap width={width} />
+            </View>
           </View>
         </View>
 
-        <Glass style={{ marginBottom: space.lg }}>
-          <T soft center>{tr("I'm Suki, your AI wingwoman. Tell me about you, and I'll introduce you to people worth meeting. No swiping.")}</T>
-        </Glass>
+        {height >= ROOM_FOR_INTRO ? (
+          <Glass style={{ marginBottom: space.lg }}>
+            <T soft center>{tr("I'm Suki, your AI wingwoman. Tell me about you, and I'll introduce you to people worth meeting. No swiping.")}</T>
+          </Glass>
+        ) : null}
         <View style={{ gap: space.sm }}>
           <Button label={tr('Get started')} full onPress={() => router.push('/signup')} />
           <Button label={tr('I already have an account')} kind="ghost" full onPress={() => router.push('/signin')} />

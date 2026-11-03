@@ -12,7 +12,6 @@ import { tr } from '@/i18n';
 const TOP = 84;
 const BOTTOM = -58;
 export const MAP_ASPECT = 960 / 376;
-export const MAP_CAPTION_HEIGHT = 26;
 
 /** Where people are, in crowds only. If the numbers don't arrive it's still a map. */
 export function WorldMap({ width }: { width: number }) {
@@ -35,7 +34,7 @@ export function WorldMap({ width }: { width: number }) {
       <View style={{ width, height }}>
         <Image
           source={require('../../assets/brand/world-dots.png')}
-          style={{ width, height, opacity: 0.28 }}
+          style={{ width, height, opacity: 0.38 }}
           tintColor={t.ink}
           contentFit="contain"
         />
