@@ -26,10 +26,10 @@ jobs:
     defaults:
       run:
         working-directory: mobile
-    env:
-      # Each upload has to outrank the last. The offset keeps it above the APK's version codes.
-      ANDROID_VERSION_CODE: ${{ github.run_number + 1000 }}
     steps:
+      # Each upload has to outrank the last. The offset keeps it above the APK's version codes.
+      - run: echo "ANDROID_VERSION_CODE=$((GITHUB_RUN_NUMBER + 1000))" >> "$GITHUB_ENV"
+        working-directory: .
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
