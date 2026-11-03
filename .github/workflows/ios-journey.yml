@@ -1,0 +1,114 @@
+# The whole journey on native iOS: introduction, match, coached chat, date planning, debrief,
+# memory, report and block. It runs on the Mac against its own stack: real server, workers,
+# Postgres and MongoDB, a scripted model and map, and fictional people. Production is not touched.
+name: iOS journey
+
+on:
+  push:
+    branches:
+      - ci/ios-journey
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  journey:
+    runs-on: macos-26
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_PUBLIC_API_URL: http://localhost:8080
+      EXPO_NO_TELEMETRY: "1"
+      CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow
+      - run: npm ci --no-audit --no-fund
+      - run: npx expo prebuild --platform ios --no-install
+      # Only in this build: it talks to a plain http server on this machine.
+      - name: Allow http in this test build
+        run: |
+          PLIST=$(ls ios/*/Info.plist | head -1)
+          /usr/libexec/PlistBuddy -c 'Delete :NSAppTransportSecurity' "$PLIST" || true
+          /usr/libexec/PlistBuddy -c 'Add :NSAppTransportSecurity dict' "$PLIST"
+          /usr/libexec/PlistBuddy -c 'Add :NSAppTransportSecurity:NSAllowsArbitraryLoads bool true' "$PLIST"
+      - name: Install CocoaPods dependencies
+        run: pod install
+        working-directory: mobile/ios
+      - name: Compile the native app
+        working-directory: mobile/ios
+        run: |
+          mkdir -p ../ios-shots
+          WS=$(ls -d *.xcworkspace | head -1)
+          SCHEME="${WS%.xcworkspace}"
+          xcodebuild -workspace "$WS" -scheme "$SCHEME" -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=YES COMPILER_INDEX_STORE_ENABLE=NO \
+            build > ../ios-shots/xcodebuild.log 2>&1 && ok=1 || ok=0
+          grep -nE 'error:|fatal error|BUILD (FAILED|SUCCEEDED)|build commands failed' ../ios-shots/xcodebuild.log | head -40 || true
+          [ "$ok" = "1" ]
+      - name: Start the stack and seed fictional people
+        working-directory: .
+        run: bash scripts/ios-journey/run_stack.sh "$GITHUB_WORKSPACE/mobile/ios-shots/stack"
+      - name: Start the simulator
+        working-directory: mobile/ios
+        run: |
+          DEVICE=$(xcrun simctl list devices available | grep -E 'iPhone 1[5-9] Pro Max' | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+          echo "device $DEVICE"
+          xcrun simctl boot "$DEVICE"
+          xcrun simctl bootstatus "$DEVICE" -b
+          APP=$(ls -d build/Build/Products/Release-iphonesimulator/*.app | head -1)
+          xcrun simctl install "$DEVICE" "$APP"
+          echo "DEVICE=$DEVICE" >> "$GITHUB_ENV"
+      - name: Walk the journey with Maestro
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          export PATH="$PATH:$HOME/.maestro/bin"
+          # Each stage starts from a tab, so a dropped driver connection can be retried. A real
+          # failure stops the journey, because every later stage depends on it.
+          run_flow() {
+            for try in 1 2; do
+              echo "::group::$1, try $try"
+              if maestro --device "$DEVICE" test "store/$1.yaml" --format junit --output "ios-shots/$1-$try.xml"; then
+                echo "::endgroup::"; echo "PASSED $1 on try $try"; return 0
+              fi
+              echo "::endgroup::"; echo "FAILED $1 on try $try"
+              xcrun simctl io "$DEVICE" screenshot "ios-shots/$1-failed-$try.png" || true
+              perl -e 'alarm 120; exec @ARGV' maestro --device "$DEVICE" hierarchy > "ios-shots/$1-hierarchy-$try.json" 2>&1 || true
+            done
+            return 1
+          }
+          for stage in ios-journey-1-intro ios-journey-2-chat ios-journey-3-date ios-journey-4-debrief ios-journey-5-safety; do
+            run_flow "$stage" || exit 1
+          done
+          perl -e 'alarm 120; exec @ARGV' maestro --device "$DEVICE" hierarchy > ios-shots/final-hierarchy.json 2>&1 || true
+          echo "JOURNEY PASSED"
+      - name: Collect crash reports and logs
+        if: always()
+        run: |
+          mkdir -p ios-shots/crashes
+          find ~/Library/Logs/DiagnosticReports -type f -iname '*synagent*' -exec cp {} ios-shots/crashes/ \; 2>/dev/null || true
+          rm -f ios-shots/synagent-bin
+          tail -40 ios-shots/stack/peer.log || true
+      - name: Keep the results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-journey
+          path: |
+            mobile/ios-shots
+            ~/.maestro/tests/**/*.png
+          if-no-files-found: warn
+          include-hidden-files: true

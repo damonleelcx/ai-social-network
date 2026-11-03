@@ -1,0 +1,61 @@
+# Plans the date: shortlist, vote, native date picker, confirmation by Leo.
+appId: space.herosagent.synagent
+---
+- launchApp
+- extendedWaitUntil:
+    visible: ".*Tell Suki anything.*"
+    timeout: 30000
+- tapOn:
+    point: "37%,94%"
+- extendedWaitUntil:
+    visible: ".*Chat with Leo.*"
+    timeout: 30000
+- tapOn: ".*Chat with Leo.*"
+- extendedWaitUntil:
+    visible: "Plan a date|Open our date"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: "Plan a date"
+    commands:
+      - tapOn: "Plan a date"
+      - extendedWaitUntil:
+          visible: "Find us a place"
+          timeout: 15000
+      - takeScreenshot: ios-shots/j10-plan-sheet
+      - tapOn: "Find us a place"
+- runFlow:
+    when:
+      visible: "Open our date"
+    commands:
+      - tapOn: "Open our date"
+- extendedWaitUntil:
+    visible: "Vote for this one.*|Switch to this one.*|Pick a date and time|.*Waiting for Leo.*|.*You're on.*"
+    timeout: 120000
+- takeScreenshot: ios-shots/j11-shortlist
+- runFlow:
+    when:
+      visible: "Vote for this one.*"
+    commands:
+      - tapOn:
+          text: "Vote for this one.*"
+          index: 0
+      - takeScreenshot: ios-shots/j12-voted
+- extendedWaitUntil:
+    visible: "Pick a date and time|.*Waiting for Leo.*|.*You're on.*"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "Pick a date and time"
+    commands:
+      - takeScreenshot: ios-shots/j13-when
+      - tapOn: "Pick a date and time"
+      - extendedWaitUntil:
+          visible: "Suggest this time"
+          timeout: 15000
+      - takeScreenshot: ios-shots/j14-native-picker
+      - tapOn: "Suggest this time"
+- extendedWaitUntil:
+    visible: ".*You're on.*"
+    timeout: 60000
+- takeScreenshot: ios-shots/j15-confirmed

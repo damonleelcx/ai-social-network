@@ -1,0 +1,56 @@
+# Mia, a seeded fictional person, signs in on iOS against the runner's own stack and says yes to
+# an introduction. Leo has already said yes, driven by scripts/ios-journey/peer.py.
+appId: space.herosagent.synagent
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "I already have an account|.*Tell Suki anything.*"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: "I already have an account"
+    commands:
+      - tapOn: "I already have an account"
+      - assertVisible: "Welcome back"
+      - tapOn:
+          text: "Email"
+          index: 1
+      - inputText: "mia@demo.synagent.test"
+      - tapOn:
+          text: "Password"
+          index: 1
+      - inputText: "demo password 123"
+      - tapOn: "Sign in"
+      - extendedWaitUntil:
+          visible: "Not Now"
+          timeout: 15000
+          optional: true
+      - tapOn:
+          text: "Not Now"
+          optional: true
+- extendedWaitUntil:
+    visible: ".*Tell Suki anything.*"
+    timeout: 30000
+- takeScreenshot: ios-shots/j01-suki-home
+# Suki tells her about the introduction in their conversation.
+- extendedWaitUntil:
+    visible: ".*I found someone.*"
+    timeout: 180000
+- takeScreenshot: ios-shots/j02-suki-found
+- tapOn:
+    point: "37%,94%"
+- extendedWaitUntil:
+    visible: "Yes"
+    timeout: 60000
+- assertVisible: "Leo"
+- takeScreenshot: ios-shots/j03-introduction
+- tapOn: "Yes"
+- extendedWaitUntil:
+    visible: "Open chat"
+    timeout: 30000
+- takeScreenshot: ios-shots/j04-its-a-match
+- tapOn: "Open chat"
+- extendedWaitUntil:
+    visible: ".*Message Leo.*"
+    timeout: 30000
+- takeScreenshot: ios-shots/j05-chat-open

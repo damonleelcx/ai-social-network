@@ -1,0 +1,50 @@
+# Report, then block, from the chat's menu. Blocking ends the match, so it comes last.
+appId: space.herosagent.synagent
+---
+- launchApp
+- extendedWaitUntil:
+    visible: ".*Tell Suki anything.*"
+    timeout: 30000
+- tapOn:
+    point: "37%,94%"
+- extendedWaitUntil:
+    visible: ".*Chat with Leo.*"
+    timeout: 30000
+- tapOn: ".*Chat with Leo.*"
+- extendedWaitUntil:
+    visible: "More"
+    timeout: 30000
+- tapOn: "More"
+- extendedWaitUntil:
+    visible: "Report"
+    timeout: 10000
+- takeScreenshot: ios-shots/j22-menu
+- tapOn: "Report"
+- extendedWaitUntil:
+    visible: "Send report"
+    timeout: 10000
+- tapOn: "Harassment"
+- takeScreenshot: ios-shots/j23-report-sheet
+- tapOn: "Send report"
+- extendedWaitUntil:
+    visible: "Thank you for telling us"
+    timeout: 20000
+- takeScreenshot: ios-shots/j24-report-sent
+- tapOn: "OK"
+- tapOn: "More"
+- extendedWaitUntil:
+    visible: "Block"
+    timeout: 10000
+- tapOn: "Block"
+- extendedWaitUntil:
+    visible: "Block Leo?"
+    timeout: 10000
+- takeScreenshot: ios-shots/j25-block-confirm
+- tapOn:
+    text: "Block"
+    index: 1
+- extendedWaitUntil:
+    visible: ".*Tell Suki anything.*|Matches"
+    timeout: 20000
+    optional: true
+- takeScreenshot: ios-shots/j26-after-block

@@ -1,0 +1,30 @@
+# Coaching, then a conversation with Leo. Opens the chat from Matches, so a retry can pick it up.
+appId: space.herosagent.synagent
+---
+- launchApp
+- extendedWaitUntil:
+    visible: ".*Tell Suki anything.*"
+    timeout: 30000
+- tapOn:
+    point: "37%,94%"
+- extendedWaitUntil:
+    visible: ".*Chat with Leo.*"
+    timeout: 30000
+- takeScreenshot: ios-shots/j06-matches-list
+- tapOn: ".*Chat with Leo.*"
+- extendedWaitUntil:
+    visible: ".*Message Leo.*"
+    timeout: 30000
+# The coach writes a private note once the match is made.
+- extendedWaitUntil:
+    visible: "Suki, just to you"
+    timeout: 120000
+- assertVisible: ".*You both love jazz.*"
+- takeScreenshot: ios-shots/j07-coach-hint
+- tapOn: ".*best live jazz.*"
+- takeScreenshot: ios-shots/j08-suggestion-in-box
+- tapOn: "Send"
+- extendedWaitUntil:
+    visible: ".*Kind of Blue, on vinyl.*"
+    timeout: 60000
+- takeScreenshot: ios-shots/j09-reply-from-leo

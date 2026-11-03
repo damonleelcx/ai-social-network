@@ -1,0 +1,56 @@
+# After the date, which Leo's script moves into the past: Suki asks how it went, then she learns.
+appId: space.herosagent.synagent
+---
+- launchApp
+- extendedWaitUntil:
+    visible: ".*Tell Suki anything.*"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: ".*how did it go.*"
+    timeout: 240000
+- takeScreenshot: ios-shots/j16-debrief-question
+- tapOn: ".*Tell Suki anything.*"
+- inputText: "We laughed a lot and he was really kind"
+- tapOn: "Send"
+- extendedWaitUntil:
+    visible: ".*Tell me more.*"
+    timeout: 60000
+- takeScreenshot: ios-shots/j17-debrief-answer
+- inputText: "That is all done from me"
+- tapOn: "Send"
+- extendedWaitUntil:
+    visible: ".*Saved.*"
+    timeout: 60000
+- takeScreenshot: ios-shots/j18-debrief-closed
+- inputText: "I usually go for creative types"
+- tapOn: "Send"
+- extendedWaitUntil:
+    visible: "this text is never on screen"
+    timeout: 8000
+    optional: true
+- takeScreenshot: ios-shots/j19-taste
+# Dragging the conversation closes the keyboard, which covers the tab bar.
+- swipe:
+    start: "50%,25%"
+    end: "50%,45%"
+- tapOn:
+    point: "87%,94%"
+- extendedWaitUntil:
+    visible: "Edit profile"
+    timeout: 15000
+- takeScreenshot: ios-shots/j20-me-complete
+- scrollUntilVisible:
+    element: "Settings"
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Settings"
+- tapOn: "Suki"
+- scrollUntilVisible:
+    element: "What Suki remembers"
+    direction: DOWN
+    timeout: 15000
+- tapOn: "What Suki remembers"
+- extendedWaitUntil:
+    visible: ".*creative types.*"
+    timeout: 60000
+- takeScreenshot: ios-shots/j21-memory
