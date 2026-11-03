@@ -3,6 +3,14 @@
 appId: space.herosagent.synagent
 ---
 - launchApp
+# When a newer release exists, the app offers it in a sheet that covers the screen.
+- extendedWaitUntil:
+    visible: "Later"
+    timeout: 10000
+    optional: true
+- tapOn:
+    text: "Later"
+    optional: true
 - extendedWaitUntil:
     visible: "I already have an account|.*Tell Suki anything.*"
     timeout: 30000

@@ -69,7 +69,7 @@ def answer(body):
     if "compat_record" in has:
         if done or not aliases(user):
             return "Evaluated.", []
-        return "", [call(a, "compat_record", {"alias": a, "score": 88, "reasons": ["shared interests"], "shared": ["jazz"],
+        return "", [call(a, "compat_record", {"alias": a, "score": 88, "reasons": ["shared interests"], "shared": ["live jazz"],
                                               "pitch_for_viewer": "You both light up about live jazz.",
                                               "pitch_for_candidate": "You two share a love of jazz."}) for a in aliases(user)]
     if "critic_verdict" in has:
