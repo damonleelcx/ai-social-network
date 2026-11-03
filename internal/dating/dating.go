@@ -17,6 +17,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/damonleelcx/ai-social-network/internal/chatstore"
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"github.com/damonleelcx/ai-social-network/internal/moderation"
 	"github.com/damonleelcx/ai-social-network/internal/notify"
 	"github.com/damonleelcx/ai-social-network/internal/profile"
@@ -79,6 +80,7 @@ func (s *Service) PostFromSuki(ctx context.Context, userID, body, mood string, c
 	if err != nil {
 		return err
 	}
+	body = i18n.T(s.Lang(ctx, userID), body)
 	meta := map[string]any{"mood": mood}
 	if len(cards) > 0 {
 		meta["cards"] = cards
@@ -151,7 +153,7 @@ func (s *Service) Announce(ctx context.Context, proposalID string) error {
 		if err != nil {
 			return err
 		}
-		body := fmt.Sprintf("I found someone! Meet %s. %s", name, x.pitch)
+		body := i18n.T(s.Lang(ctx, x.user), "I found someone! Meet {name}.", "name", name) + " " + x.pitch
 		cards := []map[string]any{{"kind": "proposal", "proposal_id": proposalID}}
 		if err := s.PostFromSuki(ctx, x.user, body, "happy", cards, "proposal:"+proposalID); err != nil {
 			return err
@@ -345,11 +347,12 @@ func (s *Service) onMatch(ctx context.Context, matchID, a, b string) {
 			slog.Error("match announce", "err", err)
 			continue
 		}
-		body := fmt.Sprintf("It's a match with %s! You both said yes. I'm thinking of an opener for you right now.", name)
+		lang := s.Lang(ctx, x[0])
+		body := i18n.T(lang, "It's a match with {name}! You both said yes. I'm thinking of an opener for you right now.", "name", name)
 		if err := s.PostFromSuki(ctx, x[0], body, "surprised", []map[string]any{{"kind": "match", "match_id": matchID}}, "match:"+matchID); err != nil {
 			slog.Error("match announce", "err", err)
 		}
-		if err := notify.Send(ctx, s.Pool, x[0], "match", "It's a match!", "You and "+name+" both said yes.",
+		if err := notify.Send(ctx, s.Pool, x[0], "match", "It's a match!", i18n.T(lang, "You and {name} both said yes.", "name", name),
 			map[string]any{"screen": "chat", "id": matchID}, "match:"+matchID+":"+x[0]); err != nil {
 			slog.Error("match notify", "err", err)
 		}
@@ -655,6 +658,7 @@ func (s *Service) Messages(ctx context.Context, matchID, userID string, after in
 	if err != nil {
 		return nil, err
 	}
+	localizeNotes(ms, s.Lang(ctx, userID))
 	if Prefs(ctx, s.Pool, other)["read_receipts"] == false {
 		for i := range ms {
 			if ms[i].SenderID == userID {

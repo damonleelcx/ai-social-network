@@ -381,7 +381,7 @@ func registerSukiTools() {
 		})
 
 	// ── Taste and memory ────────────────────────────────────────────────────
-	add("taste_note_add", "Save a short note about what this person likes in a partner, in plain words. They can read and delete every note. No numbers, and no names of other people.",
+	add("taste_note_add", "Save a short note about what this person likes in a partner, in plain words and in the language they write in. They can read and delete every note. No numbers, and no names of other people.",
 		`{"type":"object","required":["note"],"additionalProperties":false,"properties":{"note":{"type":"string","minLength":3,"maxLength":200}}}`, tools.Write,
 		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
 			if dating.GetSettings(ctx, d.Pool, env.UserID)["memory_enabled"] == false {

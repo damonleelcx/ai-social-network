@@ -15,6 +15,7 @@ import (
 	"github.com/damonleelcx/ai-social-network/internal/dating"
 	"github.com/damonleelcx/ai-social-network/internal/engine"
 	"github.com/damonleelcx/ai-social-network/internal/hidden"
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"github.com/damonleelcx/ai-social-network/internal/llm"
 	"github.com/damonleelcx/ai-social-network/internal/moderation"
 	"github.com/damonleelcx/ai-social-network/internal/places"
@@ -321,7 +322,7 @@ Do not comment on or assess attractiveness, body, race or anything about how the
 		}
 	case "rejected":
 		cards := []map[string]any{{"kind": "photo_upload"}}
-		if err := d.Dating.PostFromSuki(ctx, userID, "I can't use that photo. "+reason+" Want to try another?", "pouty", cards, "photo-no:"+env.Subject); err != nil {
+		if err := d.Dating.PostFromSuki(ctx, userID, i18n.T(d.Dating.Lang(ctx, userID), "I can't use that photo. {reason} Want to try another?", "reason", i18n.T(d.Dating.Lang(ctx, userID), reason)), "pouty", cards, "photo-no:"+env.Subject); err != nil {
 			return nil, err
 		}
 	case "review":
