@@ -1,0 +1,27 @@
+# The signed-in app on iOS, driven by position and checked by its screenshots. Runs after
+# ios-signedin, whose session is still in the keychain. No text is read from the screen.
+appId: space.herosagent.synagent
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "this text is never on screen"
+    timeout: 10000
+    optional: true
+- takeScreenshot: ios-shots/20-suki
+# The "Hi Suki!" quick reply, shown while the conversation is empty.
+- tapOn:
+    point: "12%,82%"
+- extendedWaitUntil:
+    visible: "this text is never on screen"
+    timeout: 45000
+    optional: true
+- takeScreenshot: ios-shots/21-replied
+- tapOn:
+    point: "37%,94%"
+- takeScreenshot: ios-shots/22-matches
+- tapOn:
+    point: "62%,94%"
+- takeScreenshot: ios-shots/23-dates
+- tapOn:
+    point: "87%,94%"
+- takeScreenshot: ios-shots/24-me

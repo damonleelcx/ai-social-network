@@ -4,8 +4,9 @@ appId: space.herosagent.synagent
 ---
 - launchApp
 # A retry can find it still signed in: the session survives in the keychain.
+# iOS reports the input's label twice over, so these match part of it.
 - extendedWaitUntil:
-    visible: "I already have an account|Matches"
+    visible: "I already have an account|.*Tell Suki anything.*"
     timeout: 30000
 - runFlow:
     when:
@@ -30,37 +31,45 @@ appId: space.herosagent.synagent
       - tapOn:
           text: "Not Now"
           optional: true
-# XCUITest doesn't expose a multiline input's placeholder or label, so wait for the tab bar
-# and find the input by where it sits.
 - extendedWaitUntil:
-    visible: "Matches"
+    visible: ".*Tell Suki anything.*"
     timeout: 30000
 - takeScreenshot: ios-shots/06-suki
 
 # Talk to Suki: the real model answers, on iOS.
-- tapOn:
-    point: "40%,88%"
+- tapOn: ".*Tell Suki anything.*"
 - inputText: "Hi Suki, what can you help me with?"
 - tapOn: "Send"
+- extendedWaitUntil:
+    visible: "this text is never on screen"
+    timeout: 30000
+    optional: true
+- assertVisible: "Hi Suki, what can you help me with?"
 - extendedWaitUntil:
     visible: "Hear Suki say this"
     timeout: 90000
 - takeScreenshot: ios-shots/07-suki-replied
 
 # Dragging the conversation dismisses the keyboard, which covers the tab bar.
+# The tab bar isn't in the iOS accessibility tree here, so its items are found by position.
 - swipe:
     start: "50%,25%"
     end: "50%,45%"
-- tapOn: "Matches"
+- tapOn:
+    point: "37%,94%"
 - assertVisible: "Good introductions, not endless swiping."
 - takeScreenshot: ios-shots/08-matches
-- tapOn: "Dates"
+- tapOn:
+    point: "62%,94%"
+- assertVisible: "Dates"
 - takeScreenshot: ios-shots/09-dates
-- tapOn: "Me"
+- tapOn:
+    point: "87%,94%"
 - assertVisible: "Edit profile"
 - takeScreenshot: ios-shots/10-me
 - tapOn: "Settings"
 - takeScreenshot: ios-shots/11-settings
-- tapOn: ".*How she talks.*"
+# iOS reports each row by its label alone, without the hint under it.
+- tapOn: "Suki"
 - assertVisible: "Tone"
 - takeScreenshot: ios-shots/12-suki-settings
