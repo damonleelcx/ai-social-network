@@ -21,6 +21,7 @@ import (
 	"github.com/damonleelcx/ai-social-network/internal/chatstore"
 	"github.com/damonleelcx/ai-social-network/internal/dating"
 	"github.com/damonleelcx/ai-social-network/internal/engine"
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"github.com/damonleelcx/ai-social-network/internal/llm"
 	"github.com/damonleelcx/ai-social-network/internal/moderation"
 	"github.com/damonleelcx/ai-social-network/internal/persona"
@@ -227,6 +228,10 @@ func truncate(s string, n int) string {
 }
 
 func (r *Runner) say(ctx context.Context, t *Turn, body, mood string, cards []map[string]any, replies []string) error {
+	// Her fixed lines follow the language setting. A model's reply isn't in the catalog,
+	// so it passes through as written.
+	lang, _ := dating.GetSettings(ctx, r.Pool, t.UserID)["language"].(string)
+	body = i18n.T(lang, body)
 	meta := map[string]any{"mood": mood}
 	if len(cards) > 0 {
 		meta["cards"] = cards
@@ -444,7 +449,8 @@ func (r *Runner) safetyTurn(ctx context.Context, t *Turn, class safety.Class, te
 	mood := "thinking"
 	var cards []map[string]any
 	if class == safety.Harass || class == safety.Scam {
-		cards = []map[string]any{{"kind": "open_screen", "screen": "matches", "label": "Go to my matches"}}
+		lang, _ := dating.GetSettings(ctx, r.Pool, t.UserID)["language"].(string)
+		cards = []map[string]any{{"kind": "open_screen", "screen": "matches", "label": i18n.T(lang, "Go to my matches")}}
 	}
 	return string(class), r.say(ctx, t, safety.Reply(class), mood, cards, nil)
 }
@@ -490,7 +496,12 @@ func (r *Runner) loadState(ctx context.Context, userID string) (string, persona.
 		b.WriteString("They already have a bio. Only draft another if they ask.\n")
 	}
 	if len(missing) > 0 {
-		fmt.Fprintf(&b, "Still needed for their profile: %s.\n", strings.Join(missing, ", "))
+		fmt.Fprintf(&b, "Still needed for their profile: %s. Ask only for these.\n", strings.Join(missing, ", "))
+	} else {
+		b.WriteString("Their profile is complete. Don't ask for their birthday, city or other profile details again.\n")
+	}
+	if p.Birthdate != "" {
+		b.WriteString("Their birthday is saved and can't change. Never ask for it again.\n")
 	}
 	if st["memory_enabled"] != false {
 		if notes := (&engine.Store{Pool: r.Pool}).Memories(ctx, userID, 12); len(notes) > 0 {

@@ -25,14 +25,14 @@ const (
 func re(s string) *regexp.Regexp { return regexp.MustCompile(`(?i)` + s) }
 
 var (
-	reSelfHarm = re(`\b(kill(ing)? myself|suicid\w*|end(ing)? (my life|it all)|don't want to (be here|live|be alive|wake up)|(want|wanna|going) to die|wanna die|hurt(ing)? myself|self[- ]harm|no reason to live)\b|自杀|不想活|죽고 싶|자살|死にたい|自殺`)
-	reDanger   = re(`\b(i'?m|i am|i feel) (in danger|unsafe|not safe)\b|\bi don'?t feel safe\b|\b(he|she|they)('s| is| are| was| were)? (following|stalking|hitting|hurting|attacking) me\b|\bassault(ed)? me\b|\braped?\b|\bhelp me,? (please|i'?m scared)\b|\bwon'?t let me leave\b`)
+	reSelfHarm = re(`\b(kill(ing)? myself|suicid\w*|end(ing)? (my life|it all)|don't want to (be here|live|be alive|wake up)|(want|wanna|going) to die|wanna die|hurt(ing)? myself|self[- ]harm|no reason to live)\b|自杀|不想活|죽고 싶|자살|死にたい|自殺` + "|" + selfHarmIntl)
+	reDanger   = re(`\b(i'?m|i am|i feel) (in danger|unsafe|not safe)\b|\bi don'?t feel safe\b|\b(he|she|they)('s| is| are| was| were)? (following|stalking|hitting|hurting|attacking) me\b|\bassault(ed)? me\b|\braped?\b|\bhelp me,? (please|i'?m scared)\b|\bwon'?t let me leave\b` + "|" + dangerIntl)
 	// A bare number counts only at the end of a sentence and only from 13 to 17:
 	// "I'm 5'10" and "I'm 15 minutes away" must not hold anyone's account.
-	reUnderage = re(`\b(i'?m|i am) (only |just )?(1[0-7]|[1-9])[ -]?(years?[ -]old|yrs?[ -]old|yo|y/o)\b|\b(i'?m|i am) (only |just )?1[3-7]\s*([.!?,]|$)|\b(i'?m|i am) (only |just )?(thirteen|fourteen|fifteen|sixteen|seventeen)\b|\b(i'?m|i am) in (middle|high|junior high) school\b`)
-	reHarass   = re(`\b(threaten(ed|ing)?|harass(ed|ing)?|stalk(ed|ing)?|blackmail(ed|ing)?|send(ing)? (me )?unsolicited|keeps? messaging me after)\b`)
-	reScam     = re(`\b(asked|asking|wants?|wanted) (me )?(for|to send) (money|cash|crypto|bitcoin|gift ?cards?|a loan)\b|\bwire (me|them|him|her) money\b`)
-	reScore    = re(`\b(my|his|her|their|sam'?s|what'?s the|hidden|secret) (score|rating|rank(ing)?|elo|reputation)\b|\b(score|rating|rank(ing)?|elo|reputation) (of|for) (me|him|her|them)\b|\bhow (did|do|does|would) .{0,30}\b(rate|score|rank|evaluate)\b|\bwhat did .{0,30}\bsay about me\b|\bhow (attractive|desirable) (am i|are they)\b`)
+	reUnderage = re(`\b(i'?m|i am) (only |just )?(1[0-7]|[1-9])[ -]?(years?[ -]old|yrs?[ -]old|yo|y/o)\b|\b(i'?m|i am) (only |just )?1[3-7]\s*([.!?,]|$)|\b(i'?m|i am) (only |just )?(thirteen|fourteen|fifteen|sixteen|seventeen)\b|\b(i'?m|i am) in (middle|high|junior high) school\b` + "|" + underageIntl)
+	reHarass   = re(`\b(threaten(ed|ing)?|harass(ed|ing)?|stalk(ed|ing)?|blackmail(ed|ing)?|send(ing)? (me )?unsolicited|keeps? messaging me after)\b` + "|" + harassIntl)
+	reScam     = re(`\b(asked|asking|wants?|wanted) (me )?(for|to send) (money|cash|crypto|bitcoin|gift ?cards?|a loan)\b|\bwire (me|them|him|her) money\b` + "|" + scamIntl)
+	reScore    = re(`\b(my|his|her|their|sam'?s|what'?s the|hidden|secret) (score|rating|rank(ing)?|elo|reputation)\b|\b(score|rating|rank(ing)?|elo|reputation) (of|for) (me|him|her|them)\b|\bhow (did|do|does|would) .{0,30}\b(rate|score|rank|evaluate)\b|\bwhat did .{0,30}\bsay about me\b|\bhow (attractive|desirable) (am i|are they)\b` + "|" + scoreIntl)
 
 	rePassword        = re(`(\bpass(word|code|wd)\b\s*(is|:|=)?\s*)(\S+)`)
 )
@@ -45,7 +45,8 @@ func Normalize(text string) string {
 
 // Classify runs the checks in order of how much a miss would hurt.
 func Classify(text string) Class {
-	text = Normalize(text)
+	// "想死你了" is "I miss you to death".
+	text = strings.ReplaceAll(Normalize(text), "想死你", "")
 	switch {
 	case reSelfHarm.MatchString(text):
 		return SelfHarm
@@ -71,7 +72,7 @@ const (
 	ReplyInDanger = "Your safety comes first. If you're in danger right now, call your local emergency number (911 in the US, 112 in the EU) and get to somewhere with other people around.\n\n" +
 		"I've flagged this for a person on our safety team. You can also block this person from their profile, and they'll lose all contact with you straight away."
 	ReplyUnderage = "Thanks for being honest with me. SynAgent is only for adults aged 18 and over, so I can't help you with dating here, and I've paused this account until someone on our team has looked at it. No hard feelings."
-	ReplyScore    = "I don't share how people are evaluated, and there's no number for you to look at. What you tell me does help me choose who to introduce you to next, though. So tell me: what made your favorite date your favorite?"
+	ReplyScore    = "Feedback after dates privately shapes who I introduce you to, and those details stay private, so there's no number for you to look at. The privacy policy explains more. So tell me: what made your favorite date your favorite?"
 	ReplyHarass   = "I'm sorry, that's not okay and it isn't on you. I've flagged it for a person on our safety team. If you want them gone from your life right now, blocking removes all contact straight away. Want to do that?"
 	ReplyScam     = "Please don't send money, gift cards or crypto to anyone you've met here. It's the classic sign of a scam, however good the story sounds, and real matches don't ask. I've flagged it for our safety team. Do you want to block them?"
 )
@@ -146,14 +147,14 @@ func ScanChat(text string) *Finding {
 
 // ── Checking what Suki says ─────────────────────────────────────────────────
 
-var reLeak = re(`\b(compatib\w*|match) (score|rating|percent\w*)\b|\b\d{1,3}\s?%\s?(match|compatib\w*)\b|\b(your|their|his|her) (score|rating|ranking|reputation|elo)\b|\b(scored|rated|ranked) (you|them|him|her)\b|\b(you|they|he|she) (scored|rated|ranked)\b|\b\d(\.\d)?\s?(/|out of )\s?10\b|\bhidden\.\w+\b|\btool_call\b`)
+var reLeak = re(`\b(compatib\w*|match) (score|rating|percent\w*)\b|\b\d{1,3}\s?%\s?(match|compatib\w*)\b|\b(your|their|his|her) (score|rating|ranking|reputation|elo)\b|\b(scored|rated|ranked) (you|them|him|her)\b|\b(you|they|he|she) (scored|rated|ranked)\b|\b\d(\.\d)?\s?(/|out of )\s?10\b|\bhidden\.\w+\b|\btool_call\b` + "|" + leakIntl)
 
 // LeaksScore reports whether Suki's draft sounds like it reveals an evaluation.
 // It catches more than it should, and the price is only one rewrite.
 func LeaksScore(text string) bool { return reLeak.MatchString(strings.ReplaceAll(Normalize(text), "\n", " ")) }
 
 // LeakFallback replaces a draft that still leaks after one rewrite.
-const LeakFallback = "I keep how people are evaluated to myself, and there's no number to look at. Tell me more about what you're looking for, and I'll keep it in mind for your next introduction."
+const LeakFallback = "Feedback after dates privately shapes who I introduce you to, and those details stay private. The privacy policy explains more. Tell me more about what you're looking for, and I'll keep it in mind for your next introduction."
 
 // Tips is the fixed date-safety advice.
 const Tips = "A few habits worth keeping for a first date:\n" +

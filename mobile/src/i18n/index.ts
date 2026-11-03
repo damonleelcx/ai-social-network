@@ -2,7 +2,7 @@ import { catalog } from './catalog';
 
 // Copy is written in English and looked up by its English text, so a string with no translation
 // just shows in English. Nothing reads the phone's language: English until someone chooses.
-const COLUMN = { zh: 0, ko: 1, ja: 2 } as const;
+const COLUMN = { zh: 0, ko: 1, ja: 2, es: 3 } as const;
 const LOCALE = { en: 'en', zh: 'zh-CN', ko: 'ko-KR', ja: 'ja-JP', es: 'es' } as const;
 
 export type Language = keyof typeof LOCALE;
@@ -12,13 +12,14 @@ export const LANGUAGE_NAMES: readonly { value: Language; label: string }[] = [
   { value: 'zh', label: '中文' },
   { value: 'ko', label: '한국어' },
   { value: 'ja', label: '日本語' },
+  { value: 'es', label: 'Español' },
 ];
 
 let current: Language = 'en';
 
 export const isLanguage = (v: unknown): v is Language => typeof v === 'string' && v in LOCALE;
 
-/** Callers remount the screens afterwards: copy is read as they render, and tables at import time stay in English. */
+/** Copy is read as screens render, and the session re-renders them. Tables built at import time would stay in English. */
 export function setLanguage(language: Language) {
   current = language;
 }

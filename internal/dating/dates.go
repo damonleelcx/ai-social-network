@@ -10,6 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"github.com/damonleelcx/ai-social-network/internal/moderation"
 	"github.com/damonleelcx/ai-social-network/internal/notify"
 	"github.com/damonleelcx/ai-social-network/internal/places"
@@ -155,7 +156,7 @@ func (s *Service) StartDate(ctx context.Context, matchID, userID string, constra
 		return "", err
 	}
 	_ = s.SetStage(ctx, matchID, userID, "planning")
-	s.chatNote(ctx, matchID, "Suki is looking for a place you'd both enjoy.", map[string]any{"date_id": id}, "date-start:"+id)
+	s.chatNote(ctx, matchID, "Suki is looking for a place you'd both enjoy.", nil, map[string]any{"date_id": id}, "date-start:"+id)
 	if s.Hooks.DatePlan != nil {
 		s.Hooks.DatePlan(ctx, id, matchID, userID)
 	}
@@ -164,7 +165,14 @@ func (s *Service) StartDate(ctx context.Context, matchID, userID string, constra
 	return id, nil
 }
 
-func (s *Service) chatNote(ctx context.Context, matchID, body string, meta map[string]any, key string) {
+// chatNote posts Suki's note on a date plan. One message is read by two people who may use
+// different languages, so it stores its English template and is rendered for whoever reads it.
+func (s *Service) chatNote(ctx context.Context, matchID, note string, vars map[string]string, meta map[string]any, key string) {
+	meta["note"] = note
+	if len(vars) > 0 {
+		meta["note_vars"] = vars
+	}
+	body := renderNote("en", note, vars)
 	if _, _, err := s.Chats.AddChat(ctx, matchID, "", "date", body, meta, key); err != nil {
 		slog.Error("date note", "err", err)
 	}
@@ -208,7 +216,7 @@ func (s *Service) PublishShortlist(ctx context.Context, dateID string, venues []
 	if err != nil {
 		return err
 	}
-	s.chatNote(ctx, matchID, "I found a few places you'd both like. Pick your favorite, and your pick stays private until you've both chosen.", map[string]any{"date_id": dateID, "card": "vote"}, "date-vote:"+dateID)
+	s.chatNote(ctx, matchID, "I found a few places you'd both like. Pick your favorite, and your pick stays private until you've both chosen.", nil, map[string]any{"date_id": dateID, "card": "vote"}, "date-vote:"+dateID)
 	a, b, _, err := s.Participants(ctx, matchID)
 	if err != nil {
 		return err
@@ -232,7 +240,7 @@ func (s *Service) FailSearch(ctx context.Context, dateID, why string) error {
 	if err != nil {
 		return err
 	}
-	s.chatNote(ctx, matchID, "I couldn't find good places nearby just now. "+why+" You can ask me to try again, or pick somewhere yourselves.", map[string]any{"date_id": dateID}, "date-fail:"+dateID)
+	s.chatNote(ctx, matchID, "I couldn't find good places nearby just now. {why} You can ask me to try again, or pick somewhere yourselves.", map[string]string{"why": why}, map[string]any{"date_id": dateID}, "date-fail:"+dateID)
 	if a, b, _, err := s.Participants(ctx, matchID); err == nil {
 		s.notifyUser(ctx, a, "dates")
 		s.notifyUser(ctx, b, "dates")
@@ -291,7 +299,7 @@ func (s *Service) Vote(ctx context.Context, dateID, userID, venueID string) erro
 		return err
 	}
 	if chosen != nil {
-		s.chatNote(ctx, matchID, fmt.Sprintf("It's %s! Now, when works for you both?", chosen.Name), map[string]any{"date_id": dateID, "card": "time"}, "date-chosen:"+dateID)
+		s.chatNote(ctx, matchID, "It's {venue}! Now, when works for you both?", map[string]string{"venue": chosen.Name}, map[string]any{"date_id": dateID, "card": "time"}, "date-chosen:"+dateID)
 	}
 	s.notifyUser(ctx, other, "dates")
 	s.notifyUser(ctx, userID, "dates")
@@ -327,7 +335,7 @@ func (s *Service) ProposeTime(ctx context.Context, dateID, userID string, at tim
 	if tag.RowsAffected() == 0 {
 		return userErr("this date can't take a time right now")
 	}
-	s.chatNote(ctx, matchID, "New time suggested. Does it work?", map[string]any{"date_id": dateID, "card": "confirm", "at": at.UTC().Format(time.RFC3339)}, fmt.Sprintf("date-time:%s:%d", dateID, at.Unix()))
+	s.chatNote(ctx, matchID, "New time suggested. Does it work?", nil, map[string]any{"date_id": dateID, "card": "confirm", "at": at.UTC().Format(time.RFC3339)}, fmt.Sprintf("date-time:%s:%d", dateID, at.Unix()))
 	if err := notify.Send(ctx, s.Pool, other, "date", "A time for your date", "Open SynAgent to say yes or suggest another.", map[string]any{"screen": "date", "id": dateID}, fmt.Sprintf("date-time:%s:%d:%s", dateID, at.Unix(), other)); err != nil {
 		return err
 	}
@@ -355,7 +363,7 @@ func (s *Service) ConfirmTime(ctx context.Context, dateID, userID string) error 
 		return err
 	}
 	_ = s.SetStage(ctx, matchID, userID, "planned")
-	s.chatNote(ctx, matchID, "You're on! Have a wonderful time. Remember to tell a friend where you'll be.", map[string]any{"date_id": dateID, "card": "confirmed", "at": at.UTC().Format(time.RFC3339)}, fmt.Sprintf("date-ok:%s:%d", dateID, at.Unix()))
+	s.chatNote(ctx, matchID, "You're on! Have a wonderful time. Remember to tell a friend where you'll be.", nil, map[string]any{"date_id": dateID, "card": "confirmed", "at": at.UTC().Format(time.RFC3339)}, fmt.Sprintf("date-ok:%s:%d", dateID, at.Unix()))
 	s.learn(ctx, userID, other, "date_set", "date_set:"+dateID+":"+userID)
 	s.learn(ctx, other, userID, "date_set", "date_set:"+dateID+":"+other)
 	for _, u := range []string{userID, other} {
@@ -381,7 +389,7 @@ func (s *Service) CancelDate(ctx context.Context, dateID, userID, reason string)
 	}
 	// The reason isn't posted: this note appears in Suki's name, and free text in it
 	// would be a way round the message filter.
-	s.chatNote(ctx, matchID, "This date plan was cancelled.", map[string]any{"date_id": dateID}, "date-cancel:"+dateID)
+	s.chatNote(ctx, matchID, "This date plan was cancelled.", nil, map[string]any{"date_id": dateID}, "date-cancel:"+dateID)
 	s.notifyUser(ctx, other, "dates")
 	s.notifyUser(ctx, userID, "dates")
 	return nil
@@ -509,5 +517,6 @@ func (s *Service) ShareText(ctx context.Context, dateID, userID string) (string,
 	if addr != "" {
 		addr = " (" + addr + ")"
 	}
-	return fmt.Sprintf("I'm meeting %s at %s%s on %s. Just letting you know where I'll be.", d.Person.DisplayName, d.Venue.Name, addr, d.ScheduledAt.UTC().Format("Mon Jan 2 at 15:04 UTC")), nil
+	return i18n.T(s.Lang(ctx, userID), "I'm meeting {name} at {venue}{address} on {time}. Just letting you know where I'll be.",
+		"name", d.Person.DisplayName, "venue", d.Venue.Name, "address", addr, "time", d.ScheduledAt.UTC().Format("Mon Jan 2 at 15:04 UTC")), nil
 }

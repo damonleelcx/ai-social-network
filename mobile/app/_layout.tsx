@@ -15,7 +15,7 @@ import { tr } from '@/i18n';
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function Routes() {
-  const { status, retry, language } = useSession();
+  const { status, retry } = useSession();
   const t = useTheme();
 
   useEffect(() => {
@@ -54,7 +54,7 @@ function Routes() {
 
   return (
     <>
-      <Stack key={language} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.bg[0] } }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.bg[0] } }}>
         <Stack.Screen name="index" />
         <Stack.Protected guard={status === 'signedOut'}>
           <Stack.Screen name="(auth)" />

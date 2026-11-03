@@ -34,7 +34,7 @@ kids: none | have
 wants_kids: yes | no | open
 languages: list of languages they speak
 bio: only if they dictate a bio word for word
-taste_note: if they say what they like or want in a partner, one short note in plain words starting with a verb, such as "Goes for creative types who love live music". Nothing about race, religion or looks.
+taste_note: if they say what they like or want in a partner, one short note in plain words starting with a verb, such as "Goes for creative types who love live music", written in the language of their message. Nothing about race, religion or looks.
 prompt_answer: their answer, if this message answers a personal question from the matchmaker (such as their ideal Sunday), without restating anything saved in another field`
 
 // extractProfile saves what someone stated, in code. Leaving it to the conversational
