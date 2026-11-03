@@ -2,20 +2,18 @@ package httpapi
 
 import "net/http"
 
-const pageStyle = `body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:720px;margin:0 auto;padding:40px 20px 56px;line-height:1.6;color:#2a2438;background:#fff}h1{font-size:30px;line-height:1.2;margin:0 0 8px}h2{font-size:19px;margin:34px 0 8px}h3{font-size:16px;margin:20px 0 4px}ul{padding-left:22px}li{margin:6px 0}a{color:#5b3fb5}.meta{color:#6b6478;font-size:14px;margin:0 0 24px}table{border-collapse:collapse;width:100%;font-size:15px}th,td{text-align:left;vertical-align:top;border-bottom:1px solid #e6e2ee;padding:8px 10px 8px 0}footer{margin-top:44px;padding-top:16px;border-top:1px solid #e6e2ee;font-size:14px;color:#6b6478}footer a{margin-right:14px}`
+// The same theme choice as the landing page: their pick if they made one, else the system's.
+const themeScript = `<script>(function(){var s=null;try{s=localStorage.getItem('synagent.theme')}catch(e){}document.documentElement.dataset.theme=s==='light'||s==='dark'?s:matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'})()</script>`
+
+const pageStyle = `:root,[data-theme=light]{color-scheme:light;--ink:#2a2438;--bg:#fff;--link:#5b3fb5;--soft:#6b6478;--line:#e6e2ee}[data-theme=dark]{color-scheme:dark;--ink:#f1ecfb;--bg:#0c0720;--link:#bfa2ff;--soft:#b3a8cc;--line:#352a55}body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:720px;margin:0 auto;padding:40px 20px 56px;line-height:1.6;color:var(--ink);background:var(--bg)}h1{font-size:30px;line-height:1.2;margin:0 0 8px}h2{font-size:19px;margin:34px 0 8px}h3{font-size:16px;margin:20px 0 4px}ul{padding-left:22px}li{margin:6px 0}a{color:var(--link)}.meta{color:var(--soft);font-size:14px;margin:0 0 24px}table{border-collapse:collapse;width:100%;font-size:15px}th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--line);padding:8px 10px 8px 0}footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;color:var(--soft)}footer a{margin-right:14px}`
 
 func legalPage(title, body string) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_, _ = w.Write([]byte(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>` + title + `</title>
-<style>` + pageStyle + `</style><body>` + body + `<footer><a href="/">SynAgent</a><a href="/legal/terms">Terms</a><a href="/legal/privacy">Privacy</a><a href="/legal/delete-account">Delete your account</a><a href="mailto:support@heros-agent.space">Contact</a></footer></body></html>`))
+` + themeScript + `<style>` + pageStyle + `</style><body>` + body + `<footer><a href="/">SynAgent</a><a href="/legal/terms">Terms</a><a href="/legal/privacy">Privacy</a><a href="/legal/delete-account">Delete your account</a><a href="mailto:support@heros-agent.space">Contact</a></footer></body></html>`))
 	}
 }
-
-const homeHTML = `<h1>SynAgent</h1>
-<p class="meta">A matchmaker you talk to, not a deck you swipe.</p>
-<p>SynAgent is a dating app for iOS and Android, built around an AI matchmaker named Suki. Suki helps you set up your profile, introduces you to people in your city, helps the conversation along, and shortlists public places for the date. It's only a match when you both say yes.</p>
-<p>SynAgent is for adults 18 and over. It isn't in the App Store or Google Play yet.</p>`
 
 const openHTML = `<h1>SynAgent</h1><p>Open the SynAgent app on your phone to continue.</p>`
 

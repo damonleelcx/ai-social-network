@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SynAgent: a matchmaker you talk to, not a deck you swipe</title>
+<meta name="description" content="SynAgent is a dating app built around Suki, an AI matchmaker. Tell her about you and she introduces you to people in your city. No swiping.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#05030c">
+<link rel="icon" href="/landing/img/heart.svg" type="image/svg+xml">
+<link rel="preload" href="/landing/fonts/press-start-2p-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<script>
+  // Before first paint, so a light-mode visitor never sees a dark flash.
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem('synagent.theme'); } catch (e) {}
+    var theme = saved === 'light' || saved === 'dark' ? saved : matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    document.documentElement.dataset.theme = theme;
+  })();
+</script>
+<link rel="stylesheet" href="/landing/style.css">
+<script type="module" src="/landing/app.js"></script>
+</head>
+<body>
+<a class="skip" href="#how">Skip to how it works</a>
+<canvas id="world" aria-hidden="true"></canvas>
+
+<header class="nav">
+  <a class="brand" href="/" aria-label="SynAgent home"><i data-sprite="heart" class="spr"></i><span>SYNAGENT</span></a>
+  <nav aria-label="Sections">
+    <a href="#how">How it works</a>
+    <a href="#why">Why Suki</a>
+    <a href="#control">Your control</a>
+  </nav>
+  <div class="nav-end">
+    <button class="theme-btn" id="themeBtn" type="button" aria-pressed="false">
+      <i data-sprite="sun" class="spr when-dark"></i><i data-sprite="moon" class="spr when-light"></i>
+      <span class="when-dark">Light</span><span class="when-light">Dark</span>
+    </button>
+    <a class="btn btn-heart btn-sm" href="#how">Meet Suki</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="ribbon">
+      <p><i data-sprite="heart" class="spr"></i>A matchmaker you talk to,<br>not a deck you swipe.</p>
+      <p class="ribbon-mid">No swiping. No endless decks.<br>Just someone worth meeting.</p>
+    </div>
+
+    <div class="hero-left">
+      <h1 id="hero-title"><span>Your next</span> <span>story starts</span> <span class="lit">with hello</span></h1>
+      <p class="lede">Tell Suki about you. She introduces you to people in your city, helps the conversation along, and finds a place for the date.</p>
+      <div class="cta-row">
+        <a class="btn btn-accent" href="#how">Start the story <i data-sprite="heart" class="spr"></i></a>
+        <p class="cta-note">Coming to iOS and Android.<br>For adults 18 and over.</p>
+      </div>
+    </div>
+
+    <div class="hero-stage" id="stage" aria-hidden="true"></div>
+
+    <aside class="suki-card" aria-label="Meet Suki">
+      <div class="suki-art"><img src="/landing/img/suki.png" width="96" height="96" alt="Suki in pixel art: long dark hair, a glowing cat hair clip, winking and flashing a peace sign"></div>
+      <div class="suki-body">
+        <div class="suki-title"><h2>Suki</h2><i data-sprite="heart" class="spr"></i></div>
+        <p class="suki-tags">Playful · Curious · Your AI wingwoman</p>
+        <blockquote>"Tell me about you, and I'll introduce you to people worth meeting."</blockquote>
+        <div class="suki-actions">
+          <a class="btn btn-accent btn-sm" href="#how">Talk</a>
+          <a class="btn btn-ghost btn-sm" href="#why">Why her?</a>
+        </div>
+      </div>
+    </aside>
+
+    <div class="dialogue" role="status" aria-live="off">
+      <i data-sprite="heart" class="spr"></i>
+      <p id="typed">* It's a good day to meet someone.</p>
+      <span class="dialogue-more" aria-hidden="true"></span>
+    </div>
+
+    <div class="hero-icons" aria-hidden="true">
+      <span><i data-sprite="chat" class="spr"></i>Talk</span>
+      <span><i data-sprite="heart" class="spr"></i>Meet</span>
+      <span><i data-sprite="pin" class="spr"></i>Date</span>
+      <span><i data-sprite="star" class="spr"></i>Learn</span>
+    </div>
+  </section>
+
+  <section class="fan-wrap" aria-labelledby="fan-title">
+    <h2 id="fan-title" class="eyebrow-title">Someone she might bring you</h2>
+    <p class="fan-note">Sample introductions, not real people. Suki explains each one in words. There's never a score.</p>
+    <ul class="fan" id="fan"></ul>
+    <div class="dialogue dialogue-small" role="status" aria-live="polite"><i data-sprite="heart" class="spr"></i><p id="fanSay">* Say yes or pass. It's only a match when you both say yes.</p></div>
+  </section>
+
+  <section class="forge" id="how" aria-labelledby="how-title">
+    <div class="forge-head" id="forgeHead">
+      <p class="divider-label">I · How it works</p>
+      <h2 id="how-title">One matchmaker.<br>Five small steps.</h2>
+      <p>Keep scrolling, or pick a step on her screen.</p>
+    </div>
+    <div class="crt-screen" id="screen">
+      <div class="crt-bar">
+        <strong>SUKI OS</strong><span>v1.0</span>
+        <span class="crt-chip">Status: <span id="crtState">listening</span></span>
+        <span class="crt-chip">Swipes: 0</span>
+      </div>
+      <div class="crt-grid">
+        <ol class="crt-steps" id="steps"></ol>
+        <div class="crt-holo" aria-hidden="true">
+          <div class="holo-img"></div>
+          <div class="holo-sweep"></div>
+          <p class="holo-label">Suki · <em id="holoState">listening</em></p>
+        </div>
+        <div class="crt-side">
+          <div class="crt-panel" id="stepDetail" aria-live="polite"></div>
+          <div class="crt-panel crt-learned">
+            <h3>Your type, in her words</h3>
+            <p class="crt-sample">Sample</p>
+            <ul><li>Laughs at bad puns</li><li>Prefers mornings</li><li>Wants someone curious</li></ul>
+          </div>
+        </div>
+      </div>
+      <div class="crt-scan" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section class="solid" id="why" aria-labelledby="why-title">
+    <div class="wrap">
+      <div class="divider"><i data-sprite="heart" class="spr flick"></i><span>II · Why Suki is different</span><i data-sprite="heart" class="spr flick"></i></div>
+      <h2 id="why-title" class="big">Not an algorithm with a chat box</h2>
+      <p class="section-lede">Most dating apps hand you a deck. SynAgent gives you someone to talk to, who gets a better sense of your type each time.</p>
+      <div class="rivets">
+        <article><i data-sprite="chat" class="spr tile"></i><div><h3>She has a personality</h3><p>Suki has her own character, face and voice, and she answers as she thinks instead of making you wait. You can choose how she talks to you.</p></div></article>
+        <article><i data-sprite="star" class="spr tile"></i><div><h3>She learns your type</h3><p>Her introductions improve with what you accept, what you pass on, and what you say after your dates.</p></div></article>
+        <article><i data-sprite="shield" class="spr tile"></i><div><h3>She keeps things respectful</h3><p>Explicit photos, messages and profile text are filtered, and you can block or report anyone.</p></div></article>
+        <article><i data-sprite="pin" class="spr tile"></i><div><h3>She finds the place</h3><p>She shortlists public places you'd both enjoy. You each pick a favorite privately, and the date is set once you both confirm.</p></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="solid solid-alt" id="control" aria-labelledby="control-title">
+    <div class="wrap control">
+      <div>
+        <div class="divider divider-left"><i data-sprite="heart" class="spr flick"></i><span>III · Your control</span></div>
+        <h2 id="control-title" class="big">You hold the save file</h2>
+        <p class="section-lede">Suki is an AI, not a person. What she remembers belongs to you.</p>
+      </div>
+      <ul class="save-list">
+        <li><i data-sprite="eye" class="spr"></i><span><b>Read</b> what Suki remembers about you.</span></li>
+        <li><i data-sprite="trash" class="spr"></i><span><b>Delete</b> any of it, or reset what she has learned.</span></li>
+        <li><i data-sprite="box" class="spr"></i><span><b>Export</b> your data whenever you like.</span></li>
+        <li><i data-sprite="door" class="spr"></i><span><b>Leave</b> by deleting your account in Settings.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="finale" aria-labelledby="finale-title">
+    <h2 id="finale-title">Your move</h2>
+    <p class="finale-sub">SynAgent isn't in the App Store or Google Play yet.<br>Want to hear when it is, or just say hi?</p>
+    <a class="btn btn-heart" href="mailto:support@heros-agent.space?subject=Tell%20me%20when%20SynAgent%20launches">Write to us <i data-sprite="heart" class="spr"></i></a>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>SynAgent is for adults 18 and over. Suki is an AI and can be wrong. Meet in public places and tell someone you trust where you're going.</p>
+  <nav aria-label="Legal">
+    <a href="/legal/terms">Terms</a>
+    <a href="/legal/privacy">Privacy</a>
+    <a href="/legal/delete-account">Delete your account</a>
+    <a href="mailto:support@heros-agent.space">Contact</a>
+  </nav>
+</footer>
+</body>
+</html>
