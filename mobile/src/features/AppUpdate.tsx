@@ -20,7 +20,8 @@ export function AppUpdate() {
   const [percent, setPercent] = useState<number | null>(null);
 
   useEffect(() => {
-    findUpdate().then(setRelease);
+    // Play updates its own builds, and doesn't allow an app to install itself.
+    if (process.env.EXPO_PUBLIC_STORE !== 'play') findUpdate().then(setRelease);
   }, []);
 
   if (!release) return null;

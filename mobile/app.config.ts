@@ -1,6 +1,8 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 const DEFAULT_API = 'https://match.heros-agent.space';
+// Google Play doesn't allow an app to install itself, so its build has no updater.
+const PLAY = process.env.EXPO_PUBLIC_STORE === 'play';
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   // Set by hand once an EAS project exists. Without it the app simply doesn't
@@ -33,8 +35,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       versionCode: Number(process.env.ANDROID_VERSION_CODE) || 1,
       softwareKeyboardLayoutMode: 'resize',
       // Lets the app hand a new release to the system installer. Android still asks the person.
-      permissions: ['android.permission.REQUEST_INSTALL_PACKAGES'],
-      blockedPermissions: ['android.permission.RECORD_AUDIO'],
+      permissions: PLAY ? [] : ['android.permission.REQUEST_INSTALL_PACKAGES'],
+      blockedPermissions: ['android.permission.RECORD_AUDIO', ...(PLAY ? ['android.permission.REQUEST_INSTALL_PACKAGES'] : [])],
     },
     plugins: [
       'expo-router',

@@ -16,7 +16,10 @@ import { showError } from '@/ui/sheet';
 import { SukiAvatar } from '@/ui/suki';
 import { tr } from '@/i18n';
 
-const DOWNLOAD_PAGE = 'https://match.heros-agent.space/#download';
+const DOWNLOAD_PAGE =
+  process.env.EXPO_PUBLIC_STORE === 'play'
+    ? 'https://play.google.com/store/apps/details?id=space.herosagent.synagent'
+    : 'https://match.heros-agent.space/#download';
 
 async function inviteFriends() {
   try {
