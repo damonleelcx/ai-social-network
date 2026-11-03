@@ -22,7 +22,7 @@ func TestLandingSaysWhatIsTrue(t *testing.T) {
 		t.Fatalf("home: %d %q", w.Code, w.Header().Get("Content-Type"))
 	}
 	page := w.Body.String()
-	for _, want := range []string{"isn't in the App Store", "adults 18 and over", "Suki is an AI", "/legal/privacy", "/legal/terms", "/legal/delete-account"} {
+	for _, want := range []string{"isn't in the App Store", "adults 18 and over", "Suki is an AI", "/legal/privacy", "/legal/terms", "/legal/delete-account", "download/SynAgent.apk", "download/SynAgent-unsigned.ipa", "not signed"} {
 		if !strings.Contains(page, want) {
 			t.Errorf("home page lost %q", want)
 		}
