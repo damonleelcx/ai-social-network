@@ -4,6 +4,10 @@ name: Android
 
 on:
   push:
+    # Without branches listed, a tags filter stops every branch push from running this.
+    branches:
+      - main
+      - "feat/android-*"
     tags:
       - "android-v*"
     paths:
