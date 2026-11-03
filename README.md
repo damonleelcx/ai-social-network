@@ -1,66 +1,53 @@
-# SynAgent
+<p align="center">
+  <img src="docs/assets/suki-avatar.png" alt="Suki, the SynAgent matchmaker: dark hair, a glowing cat hair clip, and a wink" width="160">
+</p>
 
-An agentic dating app for iOS and Android. **Suki**, an AI matchmaker with her own
-character, face and voice, gets to know you in conversation, introduces you to people in
-your city, coaches your chats, finds a date spot you'd both enjoy, and learns your type
-from how it all goes.
+<h1 align="center">SynAgent</h1>
 
-| Docs | |
-|---|---|
-| [Intents, tools and skills](docs/01-intents-tools-skills.md) | Everything the agents can understand and do |
-| [Architecture](docs/00-architecture.md) | How it works, and agent principles mapped to code |
-| [Suki's soul](docs/02-soul.md) | Her character |
-| [API](docs/03-api.md) | The contract with the mobile app |
-| [Mobile](mobile/README.md) | Running the app |
-| [Demo video](mobile/store/demo/synagent-demo.mp4) | The whole journey on Android, narrated by Suki |
-| [Store images](mobile/store/images) | Play Store and App Store assets, built from real screens by `mobile/store/make_store_images.py` |
+<p align="center"><strong>Meet Suki, a matchmaker you talk to, not a deck you swipe.</strong></p>
 
-## Run it locally
+<p align="center">
+  <a href="mobile/store/demo/synagent-demo.mp4">Watch the demo</a> ·
+  <a href="https://synagent.heros-agent.space/legal/privacy">Privacy</a> ·
+  <a href="https://synagent.heros-agent.space/legal/terms">Terms</a>
+</p>
 
-You need Go, Docker and an OpenAI-compatible model key.
+SynAgent is a dating app for iOS and Android, built around one AI character. Tell Suki about
+yourself, and she introduces you to people in your city, helps the conversation along, finds
+a place for the date, and gets a better sense of your type each time.
 
-```bash
-docker run -d --name syn-pg -e POSTGRES_USER=syn -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=syn -p 127.0.0.1:55870:5432 postgres:17
-```
+<table>
+  <tr>
+    <td><img src="mobile/store/images/play/phone/01-onboard.png" alt="Setting up a profile by talking to Suki" width="240"></td>
+    <td><img src="mobile/store/images/play/phone/02-suki_found.png" alt="Suki introduces someone" width="240"></td>
+    <td><img src="mobile/store/images/play/phone/03-coach.png" alt="Suki coaching a conversation" width="240"></td>
+  </tr>
+  <tr>
+    <td><img src="mobile/store/images/play/phone/04-venues.png" alt="A shortlist of places for the date" width="240"></td>
+    <td><img src="mobile/store/images/play/phone/05-confirmed.png" alt="A confirmed date" width="240"></td>
+    <td><img src="mobile/store/images/play/phone/06-memory.png" alt="What Suki remembers about you" width="240"></td>
+  </tr>
+</table>
 
-```bash
-docker run -d --name syn-mongo -p 127.0.0.1:55871:27017 mongo:7
-```
+## How it works
 
-Create a git-ignored `.env`, export it, then start the server:
+1. **Get to know Suki.** Set up your profile by talking to her: who you are, your photos, your interests, and what you're looking for.
+2. **Get introduced.** Suki looks for people in your city who suit you, and explains why she thinks you'd get along. It's only a match when you both say yes.
+3. **Start talking.** Chat with your match directly. Suki can suggest an opener or a question when things go quiet, and you can turn that off.
+4. **Plan the date.** She shortlists public places based on what you both enjoy. You each pick a favorite privately, and the date is set once you both confirm.
+5. **Tell her how it went.** What you share after a date helps her make better introductions next time.
 
-```
-SYN_DATABASE_URL=postgres://syn@127.0.0.1:55870/syn?sslmode=disable
-SYN_MONGO_URL=mongodb://127.0.0.1:55871
-SYN_PHOTO_DIR=./.photos
-SYN_LLM_API_KEY=...
-SYN_ADDR=:8080
-```
+## Why Suki is different
 
-```bash
-go run ./cmd/synagent serve
-```
+- **She has a personality.** Suki has her own character, face and voice, and she answers as she thinks instead of making you wait. You can choose how she talks to you.
+- **She learns your type.** Her introductions improve with what you accept, pass on and say after your dates.
+- **She keeps things respectful.** Explicit photos, messages and profile text are filtered, and you can block or report anyone.
+- **You stay in control.** You can read and delete what Suki remembers about you, reset what she has learned, export your data, or delete your account in Settings.
 
-Without a mail relay, emails (including verification codes) go to the server log.
+## Availability
 
-## Tests
+SynAgent is for adults 18 and over. It isn't in the App Store or Google Play yet.
 
-```bash
-go test ./...
-```
+## Contact
 
-The tests use real Postgres and MongoDB through the containers above, with the model and
-the map faked. They cover the whole journey, crash recovery, a model outage, NSFW
-filtering, and a search of every response body for leaked scores.
-
-## Deploy
-
-One-time AWS setup, then release. Both are idempotent. Set `ADMIN_EMAILS` so someone can moderate.
-
-```bash
-ADMIN_EMAILS=<moderators> ZONE=<route53 zone> NODE_IP=<node ip> deploy/bootstrap-aws.sh
-```
-
-```bash
-INSTANCE=i-05f4712279b04fac5 deploy/release.sh
-```
+[support@heros-agent.space](mailto:support@heros-agent.space)
