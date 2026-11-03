@@ -12,7 +12,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: 'SynAgent',
     slug: 'synagent',
     scheme: 'synagent',
-    version: '1.1.0',
+    version: '1.2.0',
     orientation: 'portrait',
     icon: './assets/brand/icon.png',
     userInterfaceStyle: 'automatic',
@@ -32,6 +32,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       },
       versionCode: Number(process.env.ANDROID_VERSION_CODE) || 1,
       softwareKeyboardLayoutMode: 'resize',
+      // Lets the app hand a new release to the system installer. Android still asks the person.
+      permissions: ['android.permission.REQUEST_INSTALL_PACKAGES'],
       blockedPermissions: ['android.permission.RECORD_AUDIO'],
     },
     plugins: [
