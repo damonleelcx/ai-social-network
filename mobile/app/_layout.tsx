@@ -3,6 +3,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AppUpdate } from '@/features/AppUpdate';
 import { SessionProvider, useSession } from '@/state/session';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
@@ -52,18 +53,21 @@ function Routes() {
   }
 
   return (
-    <Stack key={language} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.bg[0] } }}>
-      <Stack.Screen name="index" />
-      <Stack.Protected guard={status === 'signedOut'}>
-        <Stack.Screen name="(auth)" />
-      </Stack.Protected>
-      <Stack.Protected guard={status === 'unverified'}>
-        <Stack.Screen name="verify" />
-      </Stack.Protected>
-      <Stack.Protected guard={status === 'ready'}>
-        <Stack.Screen name="(app)" />
-      </Stack.Protected>
-    </Stack>
+    <>
+      <Stack key={language} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.bg[0] } }}>
+        <Stack.Screen name="index" />
+        <Stack.Protected guard={status === 'signedOut'}>
+          <Stack.Screen name="(auth)" />
+        </Stack.Protected>
+        <Stack.Protected guard={status === 'unverified'}>
+          <Stack.Screen name="verify" />
+        </Stack.Protected>
+        <Stack.Protected guard={status === 'ready'}>
+          <Stack.Screen name="(app)" />
+        </Stack.Protected>
+      </Stack>
+      <AppUpdate />
+    </>
   );
 }
 

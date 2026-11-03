@@ -76,7 +76,7 @@ const termsHTML = `<h1>Terms of Use</h1>
 <p>If you have a problem, please write to <a href="mailto:support@heros-agent.space">support@heros-agent.space</a> first so we can try to resolve it directly. If part of these terms can't be enforced, the rest still applies. If we don't enforce a term right away, we can still enforce it later.</p>`
 
 const privacyHTML = `<h1>Privacy Policy</h1>
-<p class="meta">Last updated November 2, 2026</p>
+<p class="meta">Last updated November 3, 2026</p>
 <p>This policy explains what personal data Heros Agents ("we", "us") collects through the SynAgent app and this website, how we use it, who receives it, and the choices you have. Questions and requests go to <a href="mailto:support@heros-agent.space">support@heros-agent.space</a>.</p>
 
 <h2>Summary</h2>
@@ -140,6 +140,7 @@ const privacyHTML = `<h1>Privacy Policy</h1>
 <tr><td>Fish Audio</td><td>Suki's voice, only when you play it or turn on auto-play</td><td>The text of Suki's reply. On the plan we use, Fish Audio may use it to improve its models, so you can leave the voice off in Settings.</td></tr>
 <tr><td>Expo, Apple and Google</td><td>Push notifications</td><td>Device token, notification title and text, and the screen to open. Notifications don't contain message text, though a match notification can include the other person's name.</td></tr>
 <tr><td>OpenStreetMap services, including Nominatim, Komoot Photon and public Overpass servers</td><td>Finding your city and places for dates</td><td>City name or coordinates and the type of place. These requests come from our server and don't include your name.</td></tr>
+<tr><td>GitHub</td><td>Checking for and downloading new versions of the app</td><td>Your IP address and device details, sent by your device when it asks for the latest version. No account data</td></tr>
 <tr><td>Email recipients' mail providers</td><td>Delivering account email</td><td>Your email address and the message we send you</td></tr>
 </table>
 
