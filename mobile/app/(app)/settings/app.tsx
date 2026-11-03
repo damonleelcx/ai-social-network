@@ -8,8 +8,6 @@ import { showError } from '@/ui/sheet';
 import { SukiLoading } from '@/ui/suki';
 import { LANGUAGE_NAMES, tr } from '@/i18n';
 
-// Suki speaks Spanish too. The app itself stays in English for it.
-const LANGUAGES = [...LANGUAGE_NAMES, { value: 'es', label: 'Español' }];
 const THEMES = [
   { value: 'system', label: 'Match my phone' },
   { value: 'light', label: 'Light' },
@@ -32,7 +30,7 @@ export default function AppSettings() {
         <Page>
           <Section title={tr('Language')} hint={tr('For the app and for Suki.')}>
             <Glass>
-              <SingleSelect options={LANGUAGES} value={s.language} onChange={(v) => set({ language: v as Settings['language'] })} />
+              <SingleSelect options={LANGUAGE_NAMES} value={s.language} onChange={(v) => set({ language: v as Settings['language'] })} />
             </Glass>
           </Section>
           <Section title={tr('Theme')}>
