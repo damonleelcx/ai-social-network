@@ -13,6 +13,7 @@ import { MediaImage, personLine, SharedChips } from '@/ui/person';
 import { Button, ErrorText, Glass, Pill, T, type IconName } from '@/ui/primitives';
 import { confirm, showError } from '@/ui/sheet';
 import { DecisionBar, useDecision } from './proposalActions';
+import { tr } from '@/i18n';
 
 function ActionCard({
   label,
@@ -51,11 +52,11 @@ function PhotoUploadCard() {
   const { refreshPhotos } = useLive();
   const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle');
   const [error, setError] = useState<string | null>(null);
-  if (state === 'done') return <Pill tone="good" icon="checkmark-circle" label="Got it. I'll take a look." />;
+  if (state === 'done') return <Pill tone="good" icon="checkmark-circle" label={tr("Got it. I'll take a look.")} />;
   return (
     <View style={{ gap: space.sm }}>
       <Button
-        label="Add a photo"
+        label={tr('Add a photo')}
         icon="image"
         small
         loading={state === 'busy'}
@@ -88,17 +89,15 @@ function BioDraftCard({ text }: { text: string }) {
   const saved = accepted || profile?.bio === text;
   return (
     <Glass strong style={{ gap: space.md }}>
-      <T v="label" soft>
-        A bio for you
-      </T>
+      <T v="label" soft>{tr('A bio for you')}</T>
       <T style={{ fontStyle: 'italic' }} color={t.ink}>
         {text}
       </T>
       {saved ? (
-        <Pill tone="good" icon="checkmark-circle" label="It's on your profile" />
+        <Pill tone="good" icon="checkmark-circle" label={tr("It's on your profile")} />
       ) : (
         <Button
-          label="Use this"
+          label={tr('Use this')}
           icon="checkmark"
           small
           loading={busy}
@@ -150,9 +149,7 @@ function ProposalCard({ id }: { id: string }) {
   if (gone) {
     return (
       <Glass strong>
-        <T v="small" soft>
-          This introduction isn't available any more.
-        </T>
+        <T v="small" soft>{tr("This introduction isn't available any more.")}</T>
       </Glass>
     );
   }
@@ -166,7 +163,7 @@ function ProposalCard({ id }: { id: string }) {
     <Glass strong padded={false} style={{ overflow: 'hidden', borderRadius: radius.lg, width: 280 }}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`See ${p.display_name}'s profile`}
+        accessibilityLabel={tr("See {name}'s profile", { name: p.display_name })}
         onPress={() => router.push(`/person?proposal=${proposal.id}`)}
       >
         <MediaImage id={p.photo_ids?.[0]} style={{ height: 240 }} />
@@ -180,13 +177,13 @@ function ProposalCard({ id }: { id: string }) {
         </View>
         <SharedChips shared={proposal.shared} />
         {proposal.match_id ? (
-          <Button label="Open chat" icon="chatbubbles" small onPress={() => router.push(`/chat/${proposal.match_id}`)} />
+          <Button label={tr('Open chat')} icon="chatbubbles" small onPress={() => router.push(`/chat/${proposal.match_id}`)} />
         ) : proposal.my_decision === 'accept' ? (
-          <Pill tone="good" icon="heart" label={`You said yes. Waiting on ${p.display_name}.`} />
+          <Pill tone="good" icon="heart" label={tr('You said yes. Waiting on {name}.', { name: p.display_name })} />
         ) : proposal.my_decision === 'pass' ? (
-          <Pill tone="plain" label="You passed on this one." />
+          <Pill tone="plain" label={tr('You passed on this one.')} />
         ) : expired || !open ? (
-          <Pill tone="plain" label="This introduction has ended." />
+          <Pill tone="plain" label={tr('This introduction has ended.')} />
         ) : (
           <DecisionBar proposal={proposal} decide={decide} busy={busy} />
         )}
@@ -199,15 +196,15 @@ function ConfirmCard({ card }: { card: Extract<Card, { kind: 'confirm' }> }) {
   const live = useLive();
   const { refreshMe } = useSession();
   const [done, setDone] = useState(false);
-  if (done) return <Pill tone="good" icon="checkmark-circle" label="Done." />;
+  if (done) return <Pill tone="good" icon="checkmark-circle" label={tr('Done.')} />;
 
   const copy: Record<typeof card.action, [string, string]> = {
-    remove_photo: ['Remove this photo?', "It comes off your profile right away."],
-    unmatch: ['Unmatch?', 'The chat ends for both of you, and any open date plan is cancelled.'],
-    block: ['Block this person?', "You'll stop seeing each other, and any match ends at once."],
-    reset_taste: ['Start over?', 'I forget my notes and everything I learned about your taste.'],
+    remove_photo: [tr('Remove this photo?'), tr('It comes off your profile right away.')],
+    unmatch: [tr('Unmatch?'), tr('The chat ends for both of you, and any open date plan is cancelled.')],
+    block: [tr('Block this person?'), tr("You'll stop seeing each other, and any match ends at once.")],
+    reset_taste: [tr('Start over?'), tr('I forget my notes and everything I learned about your taste.')],
   };
-  const [title, body] = copy[card.action] ?? ['Are you sure?', ''];
+  const [title, body] = copy[card.action] ?? [tr('Are you sure?'), ''];
 
   const run = async () => {
     switch (card.action) {
@@ -267,7 +264,7 @@ export function SukiCard({ card }: { card: Card }) {
         <ActionCard
           kind="primary"
           icon="chatbubbles"
-          label={name ? `Say hi to ${name}` : 'Open the chat'}
+          label={name ? tr('Say hi to {name}', { name: name }) : tr('Open the chat')}
           onPress={() => router.push(`/chat/${card.match_id}`)}
         />
       );
@@ -277,7 +274,7 @@ export function SukiCard({ card }: { card: Card }) {
         <ActionCard
           kind="primary"
           icon="calendar"
-          label={card.focus === 'time' ? 'Pick a time' : card.focus === 'change' ? 'Change the plan' : 'Open the date'}
+          label={card.focus === 'time' ? tr('Pick a time') : card.focus === 'change' ? tr('Change the plan') : tr('Open the date')}
           onPress={() =>
             router.push(card.focus ? `/date/${card.date_id}?focus=${card.focus}` : `/date/${card.date_id}`)
           }
@@ -287,7 +284,7 @@ export function SukiCard({ card }: { card: Card }) {
       return (
         <ActionCard
           icon="share-outline"
-          label="Share with a friend"
+          label={tr('Share with a friend')}
           onPress={async () => {
             const message = await api.dates.share(card.date_id);
             await Share.share({ message });
@@ -301,7 +298,7 @@ export function SukiCard({ card }: { card: Card }) {
           label={card.label}
           onPress={() => {
             if (card.screen === 'verify_email') {
-              if (user?.email_verified) Alert.alert('All set', 'Your email is already verified.');
+              if (user?.email_verified) Alert.alert(tr('All set'), tr('Your email is already verified.'));
               return;
             }
             openNamedScreen(card.screen);

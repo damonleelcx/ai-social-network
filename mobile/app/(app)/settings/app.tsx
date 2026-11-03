@@ -6,14 +6,10 @@ import { Backdrop, Page, ScreenHeader, Section } from '@/ui/layout';
 import { Glass } from '@/ui/primitives';
 import { showError } from '@/ui/sheet';
 import { SukiLoading } from '@/ui/suki';
+import { LANGUAGE_NAMES, tr } from '@/i18n';
 
-const LANGUAGES = [
-  { value: 'en', label: 'English' },
-  { value: 'zh', label: '中文' },
-  { value: 'ko', label: '한국어' },
-  { value: 'ja', label: '日本語' },
-  { value: 'es', label: 'Español' },
-];
+// Suki speaks Spanish too. The app itself stays in English for it.
+const LANGUAGES = [...LANGUAGE_NAMES, { value: 'es', label: 'Español' }];
 const THEMES = [
   { value: 'system', label: 'Match my phone' },
   { value: 'light', label: 'Light' },
@@ -27,38 +23,38 @@ export default function AppSettings() {
 
   return (
     <Backdrop>
-      <ScreenHeader title="App" />
+      <ScreenHeader title={tr('App')} />
       {!s ? (
         <View style={{ flex: 1, justifyContent: 'center' }}>
-          <SukiLoading line="Getting your settings..." />
+          <SukiLoading line={tr('Getting your settings...')} />
         </View>
       ) : (
         <Page>
-          <Section title="Language" hint="The language Suki talks to you in.">
+          <Section title={tr('Language')} hint={tr('For the app and for Suki.')}>
             <Glass>
               <SingleSelect options={LANGUAGES} value={s.language} onChange={(v) => set({ language: v as Settings['language'] })} />
             </Glass>
           </Section>
-          <Section title="Theme">
+          <Section title={tr('Theme')}>
             <Glass>
               <SingleSelect options={THEMES} value={s.theme} onChange={(v) => set({ theme: v as Settings['theme'] })} />
             </Glass>
           </Section>
-          <Section title="Notify me about">
+          <Section title={tr('Notify me about')}>
             <Group>
-              <ToggleRow label="New introductions and matches" value={s.notify_matches} onChange={(v) => set({ notify_matches: v })} />
-              <ToggleRow label="Messages" value={s.notify_messages} onChange={(v) => set({ notify_messages: v })} />
-              <ToggleRow label="Dates" value={s.notify_dates} onChange={(v) => set({ notify_dates: v })} />
-              <ToggleRow label="Things Suki wants to tell me" value={s.notify_suki} onChange={(v) => set({ notify_suki: v })} />
-              <ToggleRow label="Also by email" value={s.notify_email} onChange={(v) => set({ notify_email: v })} />
+              <ToggleRow label={tr('New introductions and matches')} value={s.notify_matches} onChange={(v) => set({ notify_matches: v })} />
+              <ToggleRow label={tr('Messages')} value={s.notify_messages} onChange={(v) => set({ notify_messages: v })} />
+              <ToggleRow label={tr('Dates')} value={s.notify_dates} onChange={(v) => set({ notify_dates: v })} />
+              <ToggleRow label={tr('Things Suki wants to tell me')} value={s.notify_suki} onChange={(v) => set({ notify_suki: v })} />
+              <ToggleRow label={tr('Also by email')} value={s.notify_email} onChange={(v) => set({ notify_email: v })} />
             </Group>
           </Section>
-          <Section title="Chats">
+          <Section title={tr('Chats')}>
             <Group>
-              <ToggleRow label="Read receipts" hint="People can see when you've read their message." value={s.read_receipts} onChange={(v) => set({ read_receipts: v })} />
+              <ToggleRow label={tr('Read receipts')} hint={tr("People can see when you've read their message.")} value={s.read_receipts} onChange={(v) => set({ read_receipts: v })} />
             </Group>
           </Section>
-          <Section title="Introductions per day" hint="The most Suki will bring you in one day. She may bring fewer.">
+          <Section title={tr('Introductions per day')} hint={tr('The most Suki will bring you in one day. She may bring fewer.')}>
             <Glass>
               <SingleSelect options={DAILY} value={String(s.daily_matches)} onChange={(v) => set({ daily_matches: Number(v) })} />
             </Glass>

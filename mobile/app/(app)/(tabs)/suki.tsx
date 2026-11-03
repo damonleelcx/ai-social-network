@@ -17,6 +17,7 @@ import { Chip } from '@/ui/form';
 import { IconButton, IrisRule, T } from '@/ui/primitives';
 import { FadeIn, SukiAvatar, SukiLoading, SukiSays, TypingDots } from '@/ui/suki';
 import { LinearGradient } from 'expo-linear-gradient';
+import { tr } from '@/i18n';
 
 type Row =
   | { type: 'msg'; key: string; msg: Message }
@@ -174,14 +175,10 @@ function FailedFooter({ pending, onRetry, onDiscard }: { pending: PendingMessage
       ) : null}
       <View style={{ flexDirection: 'row', gap: space.md }}>
         <Pressable onPress={onDiscard} hitSlop={8} accessibilityRole="button">
-          <T v="caption" soft style={{ fontWeight: '700' }}>
-            Remove
-          </T>
+          <T v="caption" soft style={{ fontWeight: '700' }}>{tr('Remove')}</T>
         </Pressable>
         <Pressable onPress={onRetry} hitSlop={8} accessibilityRole="button">
-          <T v="caption" color={t.accent} style={{ fontWeight: '700' }}>
-            Tap to retry
-          </T>
+          <T v="caption" color={t.accent} style={{ fontWeight: '700' }}>{tr('Tap to retry')}</T>
         </Pressable>
       </View>
     </View>
@@ -279,23 +276,19 @@ export default function SukiChat() {
             Suki
           </T>
           {typing ? (
-            <T v="small" color={t.accent} style={{ fontWeight: '600' }}>
-              Thinking about what you said...
-            </T>
+            <T v="small" color={t.accent} style={{ fontWeight: '600' }}>{tr('Thinking about what you said...')}</T>
           ) : (
-            <T v="small" soft>
-              Your wingwoman. Openly an AI.
-            </T>
+            <T v="small" soft>{tr('Your wingwoman. Openly an AI.')}</T>
           )}
         </View>
-        <IconButton icon="options-outline" label="Suki's settings" filled onPress={() => router.push('/settings/suki')} />
+        <IconButton icon="options-outline" label={tr("Suki's settings")} filled onPress={() => router.push('/settings/suki')} />
       </View>
       <IrisRule style={{ opacity: 0.6 }} />
 
       <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
         {!live.loaded.suki && !sukiMessages.length ? (
           <View style={{ flex: 1, justifyContent: 'center' }}>
-            <SukiLoading line="Finding our conversation..." />
+            <SukiLoading line={tr('Finding our conversation...')} />
           </View>
         ) : (
           <FlatList
@@ -312,8 +305,8 @@ export default function SukiChat() {
                 <SukiSays
                   face="chibi"
                   size={148}
-                  title="Hi, I'm Suki!"
-                  body="I'm an AI matchmaker, and I'm on your side. Say hi and we'll get to know each other. No forms, I promise."
+                  title={tr("Hi, I'm Suki!")}
+                  body={tr("I'm an AI matchmaker, and I'm on your side. Say hi and we'll get to know each other. No forms, I promise.")}
                 />
               </View>
             }
@@ -327,9 +320,7 @@ export default function SukiChat() {
                       p.state === 'failed' ? (
                         <FailedFooter pending={p} onRetry={() => retryToSuki(p.client_id)} onDiscard={() => discardPending(p.client_id)} />
                       ) : (
-                        <T v="caption" faint style={{ marginRight: 4 }}>
-                          Sending...
-                        </T>
+                        <T v="caption" faint style={{ marginRight: 4 }}>{tr('Sending...')}</T>
                       )
                     }
                   />
@@ -346,12 +337,12 @@ export default function SukiChat() {
         <View style={{ paddingHorizontal: space.md, paddingBottom: space.sm, gap: space.sm }}>
           {replies.length || !sukiMessages.length ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 8, paddingHorizontal: 2 }}>
-              {(sukiMessages.length ? replies : STARTERS).map((r) => (
+              {(sukiMessages.length ? replies : STARTERS.map((s) => tr(s))).map((r) => (
                 <Chip key={r} label={r} onPress={() => send(r)} />
               ))}
             </ScrollView>
           ) : null}
-          <ChatInput value={text} onChangeText={setText} onSend={() => send(text)} placeholder="Tell Suki anything" />
+          <ChatInput value={text} onChangeText={setText} onSend={() => send(text)} placeholder={tr('Tell Suki anything')} />
         </View>
       </KeyboardAvoidingView>
     </Backdrop>

@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space, type, type TypeName } from '@/theme/tokens';
+import { tr } from '@/i18n';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -300,7 +301,7 @@ export function Field({ label, hint, secure, multiline, inputStyle, ...rest }: F
           <Pressable
             hitSlop={10}
             accessibilityRole="button"
-            accessibilityLabel={shown ? 'Hide password' : 'Show password'}
+            accessibilityLabel={shown ? tr('Hide password') : tr('Show password')}
             onPress={() => setShown((s) => !s)}
           >
             <Ionicons name={shown ? 'eye-off-outline' : 'eye-outline'} size={20} color={t.inkFaint} />

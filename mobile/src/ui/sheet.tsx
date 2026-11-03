@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
 import { IrisRule, T, type IconName } from './primitives';
+import { tr } from '@/i18n';
 
 /** A bottom sheet. Android alerts only hold three buttons, so anything longer goes here. */
 export function Sheet({
@@ -23,7 +24,7 @@ export function Sheet({
   return (
     <Modal visible={visible} transparent animationType="slide" statusBarTranslucent navigationBarTranslucent onRequestClose={onClose}>
       <KeyboardAvoidingView behavior="padding" style={{ flex: 1, justifyContent: 'flex-end' }}>
-        <Pressable accessibilityLabel="Close" onPress={onClose} style={{ flex: 1, backgroundColor: t.scrim }} />
+        <Pressable accessibilityLabel={tr('Close')} onPress={onClose} style={{ flex: 1, backgroundColor: t.scrim }} />
         <View
           style={{
             backgroundColor: t.sheet,
@@ -89,7 +90,7 @@ export function confirm(title: string, body: string, yes: string, destructive = 
       title,
       body,
       [
-        { text: 'Not now', style: 'cancel', onPress: () => resolve(false) },
+        { text: tr('Not now'), style: 'cancel', onPress: () => resolve(false) },
         { text: yes, style: destructive ? 'destructive' : 'default', onPress: () => resolve(true) },
       ],
       { cancelable: true, onDismiss: () => resolve(false) },
@@ -99,6 +100,6 @@ export function confirm(title: string, body: string, yes: string, destructive = 
 
 /** For an action that failed away from any form: the API's own words. */
 export function showError(e: unknown) {
-  const message = e instanceof Error && e.message ? e.message : 'Something went wrong. Please try again.';
-  Alert.alert("That didn't work", message);
+  const message = e instanceof Error && e.message ? e.message : tr('Something went wrong. Please try again.');
+  Alert.alert(tr("That didn't work"), message);
 }

@@ -5,6 +5,7 @@ import { Pressable, Switch, View } from 'react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
 import { Badge, Button, Field, Glass, T, type IconName } from './primitives';
+import { tr } from '@/i18n';
 
 type Option = { value: string; label: string };
 
@@ -22,7 +23,7 @@ export function Chip({ label, on, onPress, onRemove }: { label: string; on?: boo
     <Pressable
       accessibilityRole={onRemove ? 'button' : 'checkbox'}
       accessibilityState={{ checked: !!on }}
-      accessibilityLabel={onRemove ? `Remove ${label}` : label}
+      accessibilityLabel={onRemove ? tr('Remove {label}', { label: label }) : label}
       disabled={!onPress && !onRemove}
       onPress={onRemove ?? onPress}
       style={({ pressed }) => ({
@@ -66,7 +67,7 @@ export function SingleSelect({
       ) : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {options.map((o) => (
-          <Chip key={o.value} label={o.label} on={value === o.value} onPress={() => onChange(o.value)} />
+          <Chip key={o.value} label={tr(o.label)} on={value === o.value} onPress={() => onChange(o.value)} />
         ))}
       </View>
     </View>
@@ -97,7 +98,7 @@ export function MultiSelect({
           return (
             <Chip
               key={o.value}
-              label={o.label}
+              label={tr(o.label)}
               on={on}
               onPress={() => onChange(on ? value.filter((v) => v !== o.value) : [...value, o.value])}
             />
@@ -151,7 +152,7 @@ export function TagInput({
         submitBehavior="submit"
         returnKeyType="done"
       />
-      {draft.trim() ? <Button label={`Add "${draft.trim()}"`} icon="add" small kind="secondary" onPress={commit} /> : null}
+      {draft.trim() ? <Button label={tr('Add "{value}"', { value: draft.trim() })} icon="add" small kind="secondary" onPress={commit} /> : null}
       {value.length ? (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {value.map((v) => (

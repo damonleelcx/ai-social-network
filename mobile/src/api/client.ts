@@ -1,5 +1,7 @@
 import Constants from 'expo-constants';
 
+import { tr } from '@/i18n';
+
 const DEFAULT_API = 'https://match.heros-agent.space';
 
 export const API_URL: string = (
@@ -18,7 +20,8 @@ export class ApiError extends Error {
     public status: number,
     message: string,
   ) {
-    super(message);
+    // Every failure ends up on screen through here, the server's words included.
+    super(tr(message));
   }
 }
 

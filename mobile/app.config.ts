@@ -12,7 +12,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: 'SynAgent',
     slug: 'synagent',
     scheme: 'synagent',
-    version: '1.0.1',
+    version: '1.1.0',
     orientation: 'portrait',
     icon: './assets/brand/icon.png',
     userInterfaceStyle: 'automatic',

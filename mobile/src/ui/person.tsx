@@ -10,6 +10,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
 import { Glass, Pill, T } from './primitives';
 import { Chip } from './form';
+import { tr } from '@/i18n';
 
 /** An authed photo, with a soft placeholder if there's none or it won't load. */
 export function MediaImage({
@@ -73,7 +74,7 @@ export function PhotoPager({ ids, height, onPress }: { ids: string[]; height: nu
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={(e) => setPage(Math.round(e.nativeEvent.contentOffset.x / width))}
         renderItem={({ item }) => (
-          <Pressable onPress={onPress} disabled={!onPress} accessibilityLabel="Photo">
+          <Pressable onPress={onPress} disabled={!onPress} accessibilityLabel={tr('Photo')}>
             <MediaImage id={item} style={{ width, height }} />
           </Pressable>
         )}
@@ -105,15 +106,15 @@ export function personLine(p: Person) {
 export function PersonDetails({ person }: { person: Person }) {
   const details: [string, string][] = (
     [
-      ['Looking for', labelOf(GOALS, person.goal)],
-      ['Work', person.occupation],
-      ['Studied', person.education],
-      ['Height', person.height_cm ? `${person.height_cm} cm` : ''],
-      ['Smokes', labelOf(HABITS, person.smoking)],
-      ['Drinks', labelOf(HABITS, person.drinking)],
-      ['Kids', labelOf(KIDS, person.kids)],
-      ['Future kids', labelOf(WANTS_KIDS, person.wants_kids)],
-      ['Speaks', (person.languages ?? []).join(', ')],
+      [tr('Looking for'), labelOf(GOALS, person.goal)],
+      [tr('Work'), person.occupation],
+      [tr('Studied'), person.education],
+      [tr('Height'), person.height_cm ? tr('{name} cm', { name: person.height_cm }) : ''],
+      [tr('Smokes'), labelOf(HABITS, person.smoking)],
+      [tr('Drinks'), labelOf(HABITS, person.drinking)],
+      [tr('Kids'), labelOf(KIDS, person.kids)],
+      [tr('Future kids'), labelOf(WANTS_KIDS, person.wants_kids)],
+      [tr('Speaks'), (person.languages ?? []).join(', ')],
     ] as [string, string][]
   ).filter(([, v]) => !!v);
   return (
@@ -135,9 +136,7 @@ export function PersonDetails({ person }: { person: Person }) {
       ))}
       {person.interests?.length ? (
         <View style={{ gap: space.sm }}>
-          <T v="label" soft style={{ marginLeft: 4 }}>
-            Into
-          </T>
+          <T v="label" soft style={{ marginLeft: 4 }}>{tr('Into')}</T>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {person.interests.map((x) => (
               <Chip key={x} label={x} />

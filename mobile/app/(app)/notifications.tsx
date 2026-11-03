@@ -11,6 +11,7 @@ import { space } from '@/theme/tokens';
 import { Backdrop, ScreenHeader } from '@/ui/layout';
 import { Glass, T, type IconName } from '@/ui/primitives';
 import { SukiLoading, SukiSays } from '@/ui/suki';
+import { tr } from '@/i18n';
 
 function iconFor(n: AppNotification): IconName {
   switch (n.data?.screen) {
@@ -45,7 +46,7 @@ export default function Notifications() {
 
   return (
     <Backdrop>
-      <ScreenHeader title="Notifications" />
+      <ScreenHeader title={tr('Notifications')} />
       <FlatList
         data={notifications}
         keyExtractor={(n) => String(n.id)}
@@ -64,9 +65,9 @@ export default function Notifications() {
         }
         ListEmptyComponent={
           !loaded.notifications ? (
-            <SukiLoading line="Checking..." />
+            <SukiLoading line={tr('Checking...')} />
           ) : (
-            <SukiSays face="happy" title="All quiet" body="When something happens, you'll hear it from me first." />
+            <SukiSays face="happy" title={tr('All quiet')} body={tr("When something happens, you'll hear it from me first.")} />
           )
         }
         renderItem={({ item }) => {

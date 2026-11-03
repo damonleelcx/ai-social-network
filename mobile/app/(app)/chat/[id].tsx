@@ -17,6 +17,7 @@ import { PersonAvatar } from '@/ui/person';
 import { Button, ErrorText, Field, Glass, IconButton, IrisRule, Pill, T } from '@/ui/primitives';
 import { confirm, Sheet, SheetAction, showError } from '@/ui/sheet';
 import { FadeIn, SukiAvatar, SukiLoading, SukiSays, TypingDots } from '@/ui/suki';
+import { tr } from '@/i18n';
 
 const TYPING_MS = 4000;
 const TYPING_THROTTLE = 3000;
@@ -50,7 +51,7 @@ function CoachPanel({
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.lg, paddingVertical: 6 }}>
         <SukiAvatar mood={asking && !hint ? 'thinking' : 'playful'} size={22} />
         <T v="caption" soft>
-          {asking && !hint ? 'Suki is thinking about this.' : 'Suki left you a note. Close the keyboard to see it.'}
+          {asking && !hint ? tr('Suki is thinking about this.') : tr('Suki left you a note. Close the keyboard to see it.')}
         </T>
       </View>
     );
@@ -63,14 +64,10 @@ function CoachPanel({
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
               <SukiAvatar mood={asking && !hint ? 'thinking' : 'playful'} size={30} />
               <View style={{ flex: 1 }}>
-                <T v="small" style={{ fontWeight: '700' }}>
-                  Suki, just to you
-                </T>
-                <T v="caption" faint>
-                  Only you can see this.
-                </T>
+                <T v="small" style={{ fontWeight: '700' }}>{tr('Suki, just to you')}</T>
+                <T v="caption" faint>{tr('Only you can see this.')}</T>
               </View>
-              {hint ? <IconButton icon="close" size={18} label="Dismiss this hint" onPress={() => onDismiss(hint)} /> : null}
+              {hint ? <IconButton icon="close" size={18} label={tr('Dismiss this hint')} onPress={() => onDismiss(hint)} /> : null}
             </View>
             {hint ? (
               <>
@@ -81,7 +78,7 @@ function CoachPanel({
                       <Pressable
                         key={s}
                         accessibilityRole="button"
-                        accessibilityLabel={`Put in the message box: ${s}`}
+                        accessibilityLabel={tr('Put in the message box: {s}', { s: s })}
                         onPress={() => onPick(s)}
                         style={({ pressed }) => ({
                           backgroundColor: t.accentSoft,
@@ -96,18 +93,14 @@ function CoachPanel({
                         </T>
                       </Pressable>
                     ))}
-                    <T v="caption" faint>
-                      Tap one to put it in your message box. Nothing sends until you do.
-                    </T>
+                    <T v="caption" faint>{tr('Tap one to put it in your message box. Nothing sends until you do.')}</T>
                   </View>
                 ) : null}
               </>
             ) : (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
                 <TypingDots />
-                <T v="small" soft>
-                  Let me think about this.
-                </T>
+                <T v="small" soft>{tr('Let me think about this.')}</T>
               </View>
             )}
           </View>
@@ -129,10 +122,10 @@ function SukiNote({ msg, onAnswer }: { msg: Message; onAnswer: () => void }) {
   const isPrompt = msg.role === 'prompt';
   const dateId = msg.meta?.date_id;
   const label: Record<string, string> = {
-    vote: 'See the places',
-    time: 'Pick a time',
-    confirm: 'Check the time',
-    confirmed: 'See the plan',
+    vote: tr('See the places'),
+    time: tr('Pick a time'),
+    confirm: tr('Check the time'),
+    confirmed: tr('See the plan'),
   };
   return (
     <View style={{ alignItems: 'center', paddingVertical: space.xs }}>
@@ -150,15 +143,15 @@ function SukiNote({ msg, onAnswer }: { msg: Message; onAnswer: () => void }) {
       >
         <SukiAvatar mood={isPrompt ? 'playful' : 'happy'} size={34} />
         <T v="caption" soft style={{ fontWeight: '700' }}>
-          {isPrompt ? 'Suki asks you both' : 'From Suki'}
+          {isPrompt ? tr('Suki asks you both') : tr('From Suki')}
         </T>
         <T center style={isPrompt ? { fontWeight: '600' } : undefined}>
           {msg.body}
         </T>
-        {isPrompt ? <Button label="Answer" small kind="secondary" onPress={onAnswer} /> : null}
+        {isPrompt ? <Button label={tr('Answer')} small kind="secondary" onPress={onAnswer} /> : null}
         {!isPrompt && dateId ? (
           <Button
-            label={label[msg.meta?.card ?? ''] ?? 'Open the date'}
+            label={label[msg.meta?.card ?? ''] ?? tr('Open the date')}
             icon="calendar"
             small
             onPress={() => router.push(`/date/${dateId}`)}
@@ -187,7 +180,7 @@ function Bubble({ msg, mine, showRead }: { msg: Message; mine: boolean; showRead
         </LinearGradient>
         <T v="caption" faint style={{ marginRight: 4 }}>
           {shortTime(msg.created_at)}
-          {showRead ? ' · Read' : ''}
+          {showRead ? tr(' · Read') : ''}
         </T>
       </View>
     );
@@ -450,11 +443,11 @@ export default function ChatScreen() {
     return (
       <Backdrop>
         <View style={{ paddingTop: insets.top + space.xs, paddingHorizontal: space.sm }}>
-          <IconButton icon="chevron-back" label="Back" onPress={() => router.back()} />
+          <IconButton icon="chevron-back" label={tr('Back')} onPress={() => router.back()} />
         </View>
         <View style={{ flex: 1, justifyContent: 'center' }}>
-          <SukiSays face="pouty" title="I can't open this chat" body={loadError}>
-            <Button label="Try again" kind="secondary" onPress={loadMatch} />
+          <SukiSays face="pouty" title={tr("I can't open this chat")} body={loadError}>
+            <Button label={tr('Try again')} kind="secondary" onPress={loadMatch} />
           </SukiSays>
         </View>
       </Backdrop>
@@ -465,10 +458,10 @@ export default function ChatScreen() {
     <Backdrop>
       <View style={{ paddingTop: insets.top + space.xs }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.sm, paddingBottom: space.sm, gap: space.xs }}>
-          <IconButton icon="chevron-back" label="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/matches'))} />
+          <IconButton icon="chevron-back" label={tr('Back')} onPress={() => (router.canGoBack() ? router.back() : router.replace('/matches'))} />
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`View ${person?.display_name ?? ''}'s profile`}
+            accessibilityLabel={tr("View {name}'s profile", { name: person?.display_name ?? '' })}
             onPress={() => id && router.push(`/person?match=${id}`)}
             style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.sm }}
           >
@@ -478,11 +471,11 @@ export default function ChatScreen() {
                 {person?.display_name ?? ' '}
               </T>
               <T v="caption" color={typing ? t.accent : t.inkFaint} numberOfLines={1}>
-                {typing ? 'Typing...' : 'View profile'}
+                {typing ? tr('Typing...') : tr('View profile')}
               </T>
             </View>
           </Pressable>
-          <IconButton icon="ellipsis-horizontal" label="More" onPress={() => setMenu(true)} />
+          <IconButton icon="ellipsis-horizontal" label={tr('More')} onPress={() => setMenu(true)} />
         </View>
         <IrisRule style={{ opacity: 0.55 }} />
       </View>
@@ -501,7 +494,7 @@ export default function ChatScreen() {
 
         {!loaded ? (
           <View style={{ flex: 1, justifyContent: 'center' }}>
-            <SukiLoading line="Opening your chat..." />
+            <SukiLoading line={tr('Opening your chat...')} />
           </View>
         ) : (
           <FlatList
@@ -517,8 +510,8 @@ export default function ChatScreen() {
                 <SukiSays
                   face="playful"
                   size={96}
-                  title={`Say hi to ${person?.display_name ?? 'them'}`}
-                  body="First messages don't have to be clever. Ask about something on their profile. Stuck? Tap Ask Suki."
+                  title={tr('Say hi to {name}', { name: person?.display_name ?? 'them' })}
+                  body={tr("First messages don't have to be clever. Ask about something on their profile. Stuck? Tap Ask Suki.")}
                 />
               </View>
             }
@@ -553,21 +546,15 @@ export default function ChatScreen() {
                         ) : null}
                         <View style={{ flexDirection: 'row', gap: space.md }}>
                           <Pressable hitSlop={8} accessibilityRole="button" onPress={() => setPending((a) => a.filter((x) => x.client_id !== p.client_id))}>
-                            <T v="caption" soft style={{ fontWeight: '700' }}>
-                              Remove
-                            </T>
+                            <T v="caption" soft style={{ fontWeight: '700' }}>{tr('Remove')}</T>
                           </Pressable>
                           <Pressable hitSlop={8} accessibilityRole="button" onPress={() => deliver(p)}>
-                            <T v="caption" color={t.accent} style={{ fontWeight: '700' }}>
-                              Tap to retry
-                            </T>
+                            <T v="caption" color={t.accent} style={{ fontWeight: '700' }}>{tr('Tap to retry')}</T>
                           </Pressable>
                         </View>
                       </View>
                     ) : (
-                      <T v="caption" faint style={{ marginRight: 4 }}>
-                        Sending...
-                      </T>
+                      <T v="caption" faint style={{ marginRight: 4 }}>{tr('Sending...')}</T>
                     )}
                   </View>
                 );
@@ -582,18 +569,16 @@ export default function ChatScreen() {
         <View style={{ paddingHorizontal: space.md, paddingBottom: insets.bottom + space.sm, gap: space.sm }}>
           {ended ? (
             <Glass>
-              <T v="small" soft center>
-                This chat has ended. I'm sorry. There are more people to meet.
-              </T>
+              <T v="small" soft center>{tr("This chat has ended. I'm sorry. There are more people to meet.")}</T>
             </Glass>
           ) : (
             <>
               <View style={{ flexDirection: 'row', gap: space.sm }}>
-                <Button label="Ask Suki" icon="sparkles" small kind="secondary" loading={asking} onPress={askSuki} />
-                <Button label={match?.open_date_id ? 'Open our date' : 'Plan a date'} icon="calendar-outline" small kind="secondary" onPress={openPlan} />
+                <Button label={tr('Ask Suki')} icon="sparkles" small kind="secondary" loading={asking} onPress={askSuki} />
+                <Button label={match?.open_date_id ? tr('Open our date') : tr('Plan a date')} icon="calendar-outline" small kind="secondary" onPress={openPlan} />
               </View>
               <ErrorText message={sendError} />
-              <ChatInput ref={input} value={text} onChangeText={onChangeText} onSend={send} placeholder={`Message ${person?.display_name ?? ''}`} />
+              <ChatInput ref={input} value={text} onChangeText={onChangeText} onSend={send} placeholder={tr('Message {name}', { name: person?.display_name ?? '' })} />
             </>
           )}
         </View>
@@ -602,7 +587,7 @@ export default function ChatScreen() {
       <Sheet visible={menu} onClose={() => setMenu(false)}>
         <SheetAction
           icon="person-outline"
-          label="View profile"
+          label={tr('View profile')}
           onPress={() => {
             setMenu(false);
             if (id) router.push(`/person?match=${id}`);
@@ -610,11 +595,11 @@ export default function ChatScreen() {
         />
         <SheetAction
           icon="heart-dislike-outline"
-          label="Unmatch"
+          label={tr('Unmatch')}
           danger
           onPress={async () => {
             setMenu(false);
-            const yes = await confirm(`Unmatch ${person?.display_name ?? ''}?`, 'The chat ends for both of you, and any open date plan is cancelled.', 'Unmatch', true);
+            const yes = await confirm(tr('Unmatch {name}?', { name: person?.display_name ?? '' }), tr('The chat ends for both of you, and any open date plan is cancelled.'), tr('Unmatch'), true);
             if (!yes || !id) return;
             try {
               await api.matches.unmatch(id);
@@ -626,12 +611,12 @@ export default function ChatScreen() {
         />
         <SheetAction
           icon="ban-outline"
-          label="Block"
+          label={tr('Block')}
           danger
           onPress={async () => {
             setMenu(false);
             if (!person) return;
-            const yes = await confirm(`Block ${person.display_name}?`, "You'll stop seeing each other, and this match ends right away.", 'Block', true);
+            const yes = await confirm(tr('Block {name}?', { name: person.display_name }), tr("You'll stop seeing each other, and this match ends right away."), tr('Block'), true);
             if (!yes) return;
             try {
               await api.safety.block(person.user_id);
@@ -643,7 +628,7 @@ export default function ChatScreen() {
         />
         <SheetAction
           icon="flag-outline"
-          label="Report"
+          label={tr('Report')}
           danger
           onPress={() => {
             setMenu(false);
@@ -674,7 +659,7 @@ export default function ChatScreen() {
           if (!person || !id) return;
           await api.safety.report({ user_id: person.user_id, match_id: id, reason, details });
           setReportOpen(false);
-          Alert.alert('Thank you for telling us', 'A person on our team will look at this. You can also block them from this menu.');
+          Alert.alert(tr('Thank you for telling us'), tr('A person on our team will look at this. You can also block them from this menu.'));
         }}
       />
     </Backdrop>
@@ -696,19 +681,19 @@ function PlanSheet({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   return (
-    <Sheet visible={visible} onClose={onClose} title={`A date with ${name}`}>
-      <T soft>I'll find a few places near you both. You each pick a favorite, then choose a time.</T>
+    <Sheet visible={visible} onClose={onClose} title={tr('A date with {name}', { name: name })}>
+      <T soft>{tr("I'll find a few places near you both. You each pick a favorite, then choose a time.")}</T>
       <Field
-        label="Anything I should keep in mind?"
-        placeholder="Not too loud, under $40"
+        label={tr('Anything I should keep in mind?')}
+        placeholder={tr('Not too loud, under $40')}
         value={note}
         onChangeText={setNote}
         maxLength={120}
-        hint="Optional."
+        hint={tr('Optional.')}
       />
       <ErrorText message={error} />
       <Button
-        label="Find us a place"
+        label={tr('Find us a place')}
         icon="sparkles"
         full
         loading={busy}
@@ -746,8 +731,8 @@ function ReportSheet({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   return (
-    <Sheet visible={visible} onClose={onClose} title={`Report ${name}`}>
-      <T soft>They won't know you reported them. What happened?</T>
+    <Sheet visible={visible} onClose={onClose} title={tr('Report {name}', { name: name })}>
+      <T soft>{tr("They won't know you reported them. What happened?")}</T>
       <View style={{ gap: 2 }}>
         {REPORT_REASONS.map((r) => (
           <Pressable
@@ -766,14 +751,14 @@ function ReportSheet({
                 borderColor: reason === r.value ? t.accent : t.inkFaint,
               }}
             />
-            <T>{r.label}</T>
+            <T>{tr(r.label)}</T>
           </Pressable>
         ))}
       </View>
-      <Field label="Anything else?" value={details} onChangeText={setDetails} multiline maxLength={2000} hint="Optional, and it helps." />
+      <Field label={tr('Anything else?')} value={details} onChangeText={setDetails} multiline maxLength={2000} hint={tr('Optional, and it helps.')} />
       <ErrorText message={error} />
       <Button
-        label="Send report"
+        label={tr('Send report')}
         kind="danger"
         full
         disabled={!reason}
@@ -794,7 +779,7 @@ function ReportSheet({
         }}
       />
       {/* Kept visible so it's clear reporting and leaving are separate choices. */}
-      <Pill tone="plain" label="Reporting doesn't end the match. Block or unmatch for that." />
+      <Pill tone="plain" label={tr("Reporting doesn't end the match. Block or unmatch for that.")} />
     </Sheet>
   );
 }

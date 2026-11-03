@@ -6,6 +6,7 @@ import { useLive } from '@/state/live';
 import { useTheme } from '@/theme/ThemeProvider';
 import { IrisRule, type IconName } from '@/ui/primitives';
 import { SukiAvatar } from '@/ui/suki';
+import { tr } from '@/i18n';
 
 function TabIcon({ name, focused, color }: { name: IconName; focused: boolean; color: ColorValue }) {
   const t = useTheme();
@@ -58,7 +59,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="matches"
         options={{
-          title: 'Matches',
+          title: tr('Matches'),
           tabBarBadge: badges.matches > 0 ? badges.matches : undefined,
           tabBarIcon: ({ focused, color }) => <TabIcon name={focused ? 'heart' : 'heart-outline'} focused={focused} color={color} />,
         }}
@@ -66,7 +67,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="dates"
         options={{
-          title: 'Dates',
+          title: tr('Dates'),
           tabBarBadge: badges.dates > 0 ? badges.dates : undefined,
           tabBarIcon: ({ focused, color }) => <TabIcon name={focused ? 'calendar' : 'calendar-outline'} focused={focused} color={color} />,
         }}
@@ -74,7 +75,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="me"
         options={{
-          title: 'Me',
+          title: tr('Me'),
           tabBarBadge: badges.me > 0 ? badges.me : undefined,
           tabBarIcon: ({ focused, color }) => <TabIcon name={focused ? 'person' : 'person-outline'} focused={focused} color={color} />,
         }}

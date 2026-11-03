@@ -5,10 +5,12 @@ import { ApiError, setApiHandlers, setToken } from '@/api/client';
 import { auth, settings as settingsApi } from '@/api/endpoints';
 import type { Me, Profile, Settings, User } from '@/api/types';
 import { socket } from '@/lib/socket';
+import { isLanguage, setLanguage as applyLanguageToCopy, type Language } from '@/i18n';
 import { voice } from '@/lib/voice';
 
 const TOKEN_KEY = 'synagent.token';
 const THEME_KEY = 'synagent.theme';
+const LANGUAGE_KEY = 'synagent.language';
 export const SEEN_KEY = 'synagent.suki.seen';
 
 export type SessionStatus = 'loading' | 'unreachable' | 'signedOut' | 'unverified' | 'ready';
@@ -31,6 +33,9 @@ type SessionValue = {
   updateSettings: (patch: Partial<Settings>) => Promise<void>;
   /** Works signed out too: the choice stays on this device until there's an account to save it to. */
   setTheme: (theme: Settings['theme']) => Promise<void>;
+  /** The same for the language. Changes `language`, which remounts the screens. */
+  setLanguage: (language: Language) => Promise<void>;
+  language: Language;
 };
 
 const Ctx = createContext<SessionValue | null>(null);
@@ -40,7 +45,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [me, setMe] = useState<Me | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [cachedTheme, setCachedTheme] = useState<Settings['theme'] | null>(null);
+  const [language, setLanguageState] = useState<Language>('en');
   const alive = useRef(true);
+
+  const applyLanguage = useCallback((next: Language) => {
+    applyLanguageToCopy(next);
+    setLanguageState(next);
+    SecureStore.setItemAsync(LANGUAGE_KEY, next).catch(() => {});
+  }, []);
 
   const forget = useCallback(async () => {
     setToken(null);
@@ -75,16 +87,25 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       // An account that never chose keeps what they picked on this device before signing in.
       const local = await SecureStore.getItemAsync(THEME_KEY).catch(() => null);
       if (s.theme === 'system' && (local === 'light' || local === 'dark')) s = await settingsApi.patch({ theme: local });
+      const chosen = await SecureStore.getItemAsync(LANGUAGE_KEY).catch(() => null);
+      if (s.language === 'en' && isLanguage(chosen) && chosen !== 'en') s = await settingsApi.patch({ language: chosen });
       setSettings(s);
       setCachedTheme(s.theme);
       SecureStore.setItemAsync(THEME_KEY, s.theme).catch(() => {});
+      applyLanguage(s.language);
     } catch {
       // Screens that need settings show their own state; the theme stays as it was.
     }
-  }, []);
+  }, [applyLanguage]);
 
   const boot = useCallback(async () => {
     setStatus('loading');
+    // Before anything renders, so nobody sees a flash of English.
+    const chosen = await SecureStore.getItemAsync(LANGUAGE_KEY).catch(() => null);
+    if (isLanguage(chosen)) {
+      applyLanguageToCopy(chosen);
+      setLanguageState(chosen);
+    }
     let stored: string | null = null;
     try {
       stored = await SecureStore.getItemAsync(TOKEN_KEY);
@@ -153,12 +174,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         setSettings(s);
         setCachedTheme(s.theme);
         SecureStore.setItemAsync(THEME_KEY, s.theme).catch(() => {});
+        applyLanguage(s.language);
       } catch (e) {
         if (before) setSettings(before);
         throw e;
       }
     },
-    [settings],
+    [settings, applyLanguage],
+  );
+
+  const setLanguage = useCallback(
+    async (next: Language) => {
+      if (settings) return updateSettings({ language: next });
+      applyLanguage(next);
+    },
+    [settings, updateSettings, applyLanguage],
   );
 
   const setTheme = useCallback(
@@ -185,8 +215,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       forget,
       updateSettings,
       setTheme,
+      setLanguage,
+      language,
     }),
-    [status, me, settings, cachedTheme, adoptToken, refreshMe, boot, signOut, forget, updateSettings, setTheme],
+    [status, me, settings, cachedTheme, adoptToken, refreshMe, boot, signOut, forget, updateSettings, setTheme, setLanguage, language],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -10,28 +10,29 @@ import { Backdrop, TabHeader } from '@/ui/layout';
 import { PersonAvatar } from '@/ui/person';
 import { Glass, Pill, T } from '@/ui/primitives';
 import { SukiLoading, SukiSays } from '@/ui/suki';
+import { tr } from '@/i18n';
 
 const OPEN = ['searching', 'voting', 'scheduling', 'confirmed'];
 
 export function dateLine(d: DatePlan) {
   switch (d.status) {
     case 'searching':
-      return "I'm looking for a place you'd both enjoy.";
+      return tr("I'm looking for a place you'd both enjoy.");
     case 'voting':
-      return d.my_vote ? `Waiting for ${d.person.display_name} to pick.` : 'Pick your favorite place.';
+      return d.my_vote ? tr('Waiting for {name} to pick.', { name: d.person.display_name }) : tr('Pick your favorite place.');
     case 'scheduling':
-      if (!d.proposed_at) return `${d.venue?.name ?? 'Place chosen'}. When works for you both?`;
+      if (!d.proposed_at) return tr('{name}. When works for you both?', { name: d.venue?.name ?? tr('Place chosen') });
       return d.proposed_by_me
-        ? `You suggested ${longDateTime(d.proposed_at)}.`
-        : `${d.person.display_name} suggested ${longDateTime(d.proposed_at)}.`;
+        ? tr('You suggested {time}.', { time: longDateTime(d.proposed_at) })
+        : tr('{name} suggested {time}.', { name: d.person.display_name, time: longDateTime(d.proposed_at) });
     case 'confirmed':
       return `${d.venue?.name ?? ''}, ${longDateTime(d.scheduled_at)}`;
     case 'completed':
-      return `You met at ${d.venue?.name ?? 'your spot'}.`;
+      return tr('You met at {name}.', { name: d.venue?.name ?? tr('your spot') });
     case 'cancelled':
-      return 'This one was called off.';
+      return tr('This one was called off.');
     case 'failed':
-      return "I couldn't find a good place for this one.";
+      return tr("I couldn't find a good place for this one.");
     default:
       return '';
   }
@@ -41,18 +42,18 @@ function DateRow({ date }: { date: DatePlan }) {
   const needsMe = dateNeedsMe(date);
   const tone = date.status === 'confirmed' ? 'good' : OPEN.includes(date.status) ? 'accent' : 'plain';
   const statusLabel: Record<string, string> = {
-    searching: 'Looking',
-    voting: 'Choosing a place',
-    scheduling: 'Finding a time',
-    confirmed: 'On!',
-    completed: 'Done',
-    cancelled: 'Cancelled',
-    failed: 'Fell through',
+    searching: tr('Looking'),
+    voting: tr('Choosing a place'),
+    scheduling: tr('Finding a time'),
+    confirmed: tr('On!'),
+    completed: tr('Done'),
+    cancelled: tr('Cancelled'),
+    failed: tr('Fell through'),
   };
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Date with ${date.person.display_name}`}
+      accessibilityLabel={tr('Date with {name}', { name: date.person.display_name })}
       onPress={() => router.push(`/date/${date.id}`)}
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
     >
@@ -65,7 +66,7 @@ function DateRow({ date }: { date: DatePlan }) {
           </T>
           <View style={{ flexDirection: 'row', gap: 6, marginTop: 2 }}>
             <Pill tone={tone} label={statusLabel[date.status] ?? date.status} />
-            {needsMe ? <Pill tone="warn" label="Your turn" /> : null}
+            {needsMe ? <Pill tone="warn" label={tr('Your turn')} /> : null}
           </View>
         </View>
       </Glass>
@@ -80,7 +81,7 @@ export default function Dates() {
 
   return (
     <Backdrop>
-      <TabHeader title="Dates" subtitle="I handle the logistics. You bring the charm." />
+      <TabHeader title={tr('Dates')} subtitle={tr('I handle the logistics. You bring the charm.')} />
       <FlatList
         data={dates}
         keyExtractor={(d) => d.id}
@@ -99,13 +100,13 @@ export default function Dates() {
         }
         ListEmptyComponent={
           !loaded.dates ? (
-            <SukiLoading line="Checking your calendar..." />
+            <SukiLoading line={tr('Checking your calendar...')} />
           ) : (
             <SukiSays
               face="playful"
               size={132}
-              title="No dates yet"
-              body="When a chat feels ready, tap Plan a date, or just ask me. I'll find a spot you'd both like."
+              title={tr('No dates yet')}
+              body={tr("When a chat feels ready, tap Plan a date, or just ask me. I'll find a spot you'd both like.")}
             />
           )
         }

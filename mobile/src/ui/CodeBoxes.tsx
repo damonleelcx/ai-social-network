@@ -3,6 +3,7 @@ import { Pressable, TextInput, View } from 'react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
 import { T } from './primitives';
+import { tr } from '@/i18n';
 
 /** Six boxes over one real text input, so paste and autofill still work. */
 export function CodeBoxes({ value, onChange, autoFocus }: { value: string; onChange: (v: string) => void; autoFocus?: boolean }) {
@@ -10,7 +11,7 @@ export function CodeBoxes({ value, onChange, autoFocus }: { value: string; onCha
   const input = useRef<ComponentRef<typeof TextInput>>(null);
   const [focused, setFocused] = useState(false);
   return (
-    <Pressable onPress={() => input.current?.focus()} accessibilityLabel="Six digit code" style={{ alignItems: 'center' }}>
+    <Pressable onPress={() => input.current?.focus()} accessibilityLabel={tr('Six digit code')} style={{ alignItems: 'center' }}>
       <View style={{ flexDirection: 'row', gap: space.sm }}>
         {Array.from({ length: 6 }, (_, i) => {
           const active = focused && i === Math.min(value.length, 5);

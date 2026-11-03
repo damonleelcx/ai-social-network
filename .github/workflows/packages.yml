@@ -89,6 +89,15 @@ jobs:
             adb shell monkey -p space.herosagent.synagent -c android.intent.category.LAUNCHER 1
             sleep 30
             adb exec-out screencap -p > out/launch.png
+            python3 ../.github/scripts/tap.py Language
+            sleep 3
+            python3 ../.github/scripts/tap.py 한국어
+            sleep 5
+            adb exec-out screencap -p > out/launch-ko.png
+            adb shell am force-stop space.herosagent.synagent
+            adb shell monkey -p space.herosagent.synagent -c android.intent.category.LAUNCHER 1
+            sleep 15
+            adb exec-out screencap -p > out/relaunch-ko.png
             adb logcat -d -b crash > out/crash.log
             adb shell pidof space.herosagent.synagent
       - name: Keep the results

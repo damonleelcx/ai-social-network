@@ -13,6 +13,7 @@ import { Backdrop } from '@/ui/layout';
 import { PersonDetails, personLine, PhotoPager, SharedChips } from '@/ui/person';
 import { Button, Glass, IconButton, Pill, T } from '@/ui/primitives';
 import { SukiAvatar, SukiLoading, SukiSays } from '@/ui/suki';
+import { tr } from '@/i18n';
 
 /** Someone's profile, opened from an introduction (?proposal=) or a match (?match=). */
 export default function PersonScreen() {
@@ -48,7 +49,7 @@ export default function PersonScreen() {
   const back = (
     <View style={{ position: 'absolute', top: insets.top + space.sm, left: space.sm }}>
       <View style={{ backgroundColor: t.glassStrong, borderRadius: 21 }}>
-        <IconButton icon="chevron-back" label="Back" onPress={() => router.back()} />
+        <IconButton icon="chevron-back" label={tr('Back')} onPress={() => router.back()} />
       </View>
     </View>
   );
@@ -57,7 +58,7 @@ export default function PersonScreen() {
     return (
       <Backdrop>
         <View style={{ flex: 1, justifyContent: 'center' }}>
-          {error ? <SukiSays face="pouty" title="I can't open this profile" body={error} /> : <SukiLoading line="Pulling up their profile..." />}
+          {error ? <SukiSays face="pouty" title={tr("I can't open this profile")} body={error} /> : <SukiLoading line={tr('Pulling up their profile...')} />}
         </View>
         {back}
       </Backdrop>
@@ -93,10 +94,10 @@ export default function PersonScreen() {
             </Glass>
           ) : null}
           {proposal?.my_decision === 'accept' && !proposal.match_id ? (
-            <Pill tone="good" icon="heart" label={`You said yes. Waiting on ${person.display_name}.`} />
+            <Pill tone="good" icon="heart" label={tr('You said yes. Waiting on {name}.', { name: person.display_name })} />
           ) : null}
           {proposal?.match_id ? (
-            <Button label={`Chat with ${person.display_name}`} icon="chatbubbles" full onPress={() => router.replace(`/chat/${proposal.match_id}`)} />
+            <Button label={tr('Chat with {name}', { name: person.display_name })} icon="chatbubbles" full onPress={() => router.replace(`/chat/${proposal.match_id}`)} />
           ) : null}
           <PersonDetails person={person} />
         </View>

@@ -7,6 +7,7 @@ import { useLive } from '@/state/live';
 import { space } from '@/theme/tokens';
 import { Button } from '@/ui/primitives';
 import { showError } from '@/ui/sheet';
+import { tr } from '@/i18n';
 
 /** Yes and Pass, with what happens afterwards. Shared by every place an introduction shows. */
 export function useDecision(onDone?: (decision: 'accept' | 'pass', matchId: string) => void) {
@@ -19,9 +20,9 @@ export function useDecision(onDone?: (decision: 'accept' | 'pass', matchId: stri
       await Promise.all([refreshProposals(), refreshMatches()]);
       onDone?.(decision, matchId);
       if (decision === 'accept' && matchId) {
-        Alert.alert(`You and ${p.person.display_name} both said yes!`, "That's a match. Go say hi.", [
-          { text: 'Later', style: 'cancel' },
-          { text: 'Open chat', onPress: () => router.push(`/chat/${matchId}`) },
+        Alert.alert(tr('You and {name} both said yes!', { name: p.person.display_name }), tr("That's a match. Go say hi."), [
+          { text: tr('Later'), style: 'cancel' },
+          { text: tr('Open chat'), onPress: () => router.push(`/chat/${matchId}`) },
         ]);
       }
     } catch (e) {
@@ -45,7 +46,7 @@ export function DecisionBar({
   return (
     <View style={{ flexDirection: 'row', gap: space.md }}>
       <Button
-        label="Pass"
+        label={tr('Pass')}
         icon="close"
         kind="secondary"
         loading={busy === 'pass'}
@@ -54,7 +55,7 @@ export function DecisionBar({
         style={{ flex: 1 }}
       />
       <Button
-        label="Yes"
+        label={tr('Yes')}
         icon="heart"
         loading={busy === 'accept'}
         disabled={!!busy}

@@ -6,6 +6,7 @@ import type { Mood } from '@/api/types';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
 import { T } from './primitives';
+import { tr } from '@/i18n';
 
 const FACES: Record<string, ImageSourcePropType> = {
   happy: require('../../assets/suki/happy.png'),
@@ -66,7 +67,7 @@ export function TypingDots({ color }: { color?: string }) {
     return () => loop.stop();
   }, [anim]);
   return (
-    <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center', height: 18 }} accessibilityLabel="Typing">
+    <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center', height: 18 }} accessibilityLabel={tr('Typing')}>
       {[0, 1, 2].map((i) => (
         <Animated.View
           key={i}
@@ -124,7 +125,7 @@ export function SukiSays({
   );
 }
 
-export function SukiLoading({ line = 'One second, let me look.' }: { line?: string }) {
+export function SukiLoading({ line = tr('One second, let me look.') }: { line?: string }) {
   return (
     <View style={{ alignItems: 'center', paddingVertical: space.huge, gap: space.md }}>
       <SukiAvatar mood="thinking" size={72} />

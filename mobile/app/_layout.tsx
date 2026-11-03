@@ -9,11 +9,12 @@ import { space } from '@/theme/tokens';
 import { Backdrop } from '@/ui/layout';
 import { Button } from '@/ui/primitives';
 import { SukiSays } from '@/ui/suki';
+import { tr } from '@/i18n';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function Routes() {
-  const { status, retry } = useSession();
+  const { status, retry, language } = useSession();
   const t = useTheme();
 
   useEffect(() => {
@@ -40,10 +41,10 @@ function Routes() {
           <SukiSays
             face="pouty"
             size={132}
-            title="I can't reach the server"
-            body="It might be your connection, or it might be us. Your account is safe. Try again in a moment."
+            title={tr("I can't reach the server")}
+            body={tr('It might be your connection, or it might be us. Your account is safe. Try again in a moment.')}
           >
-            <Button label="Try again" icon="refresh" onPress={retry} />
+            <Button label={tr('Try again')} icon="refresh" onPress={retry} />
           </SukiSays>
         </View>
       </Backdrop>
@@ -51,7 +52,7 @@ function Routes() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.bg[0] } }}>
+    <Stack key={language} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.bg[0] } }}>
       <Stack.Screen name="index" />
       <Stack.Protected guard={status === 'signedOut'}>
         <Stack.Screen name="(auth)" />

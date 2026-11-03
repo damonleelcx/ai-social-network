@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -18,7 +18,8 @@ import { useSession } from '@/state/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
 import { IconButton, IrisRule, T } from './primitives';
-import { showError } from './sheet';
+import { Sheet, SheetAction, showError } from './sheet';
+import { currentLanguage, LANGUAGE_NAMES, tr } from '@/i18n';
 
 /** The lilac (or deep violet) gradient everything sits on. */
 export function Backdrop({ children }: { children?: ReactNode }) {
@@ -39,6 +40,30 @@ export function Backdrop({ children }: { children?: ReactNode }) {
   );
 }
 
+/** Before there's an account to keep it on. Signed in, it's under Settings > App. */
+export function LanguagePicker() {
+  const { setLanguage } = useSession();
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <IconButton icon="language-outline" label={tr('Language')} onPress={() => setOpen(true)} />
+      <Sheet visible={open} onClose={() => setOpen(false)} title={tr('Language')}>
+        {LANGUAGE_NAMES.map((l) => (
+          <SheetAction
+            key={l.value}
+            icon={l.value === currentLanguage() ? 'checkmark' : undefined}
+            label={l.label}
+            onPress={() => {
+              setOpen(false);
+              setLanguage(l.value);
+            }}
+          />
+        ))}
+      </Sheet>
+    </>
+  );
+}
+
 /** One tap between light and dark. "Match my phone" lives in Settings > App. */
 export function ThemeToggle() {
   const t = useTheme();
@@ -47,7 +72,7 @@ export function ThemeToggle() {
   return (
     <IconButton
       icon={toDark ? 'moon-outline' : 'sunny-outline'}
-      label={toDark ? 'Switch to dark mode' : 'Switch to light mode'}
+      label={toDark ? tr('Switch to dark mode') : tr('Switch to light mode')}
       onPress={() => setTheme(toDark ? 'dark' : 'light').catch(showError)}
     />
   );
@@ -69,7 +94,7 @@ export function ScreenHeader({
         {back ? (
           <IconButton
             icon="chevron-back"
-            label="Back"
+            label={tr('Back')}
             onPress={() => (router.canGoBack() ? router.back() : router.replace('/suki'))}
           />
         ) : (
