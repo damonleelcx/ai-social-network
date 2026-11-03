@@ -6,6 +6,8 @@ export const catalog: Record<string, readonly [string, string, string]> = {
   ' · Read': [' · 已读', ' · 읽음', ' · 既読'],
   ', new messages': ['，有新消息', ', 새 메시지', '、新着メッセージあり'],
   "A JSON file of your profile, your words and Suki's notes.": ['一个 JSON 文件，包含你的资料、你说过的话和 Suki 的笔记。', '프로필, 대화 내용, Suki의 메모가 담긴 JSON 파일이에요.', 'プロフィール、あなたの言葉、Suki のメモをまとめた JSON ファイルです。'],
+  '{count} people have joined': ['已有 {count} 人加入', '{count}명이 함께하고 있어요', '{count} 人が参加しています'],
+  'World map of where people use SynAgent': ['SynAgent 用户分布的世界地图', 'SynAgent 사용자가 있는 곳을 보여 주는 세계 지도', 'SynAgent を使っている人がいる場所の世界地図'],
   'A bio for you': ['给你写的简介', '당신을 위한 소개글', 'あなたの自己紹介文'],
   'A bio or a prompt answer': ['一段简介或一个问答', '소개글 또는 질문 답변', '自己紹介か質問への回答'],
   'A blank page': ['还是一张白纸', '아직 빈 페이지예요', 'まだ白紙です'],

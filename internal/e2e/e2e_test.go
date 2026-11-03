@@ -377,6 +377,63 @@ func TestAuthFlow(t *testing.T) {
 	}
 }
 
+func TestUserMapOnlyShowsCrowds(t *testing.T) {
+	e := setup(t)
+	ctx := context.Background()
+	add := func(prefix string, n int, lat, lon float64, status string, verified bool) {
+		for i := 0; i < n; i++ {
+			var id string
+			var at any
+			if verified {
+				at = time.Now()
+			}
+			if err := e.pool.QueryRow(ctx, `INSERT INTO users (email, password_hash, email_verified_at) VALUES ($1, 'x', $2) RETURNING id`,
+				fmt.Sprintf("%s%d@test", prefix, i), at).Scan(&id); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := e.pool.Exec(ctx, `INSERT INTO profiles (user_id, display_name, city_key, city_name, city_lat, city_lon, status) VALUES ($1, 'Secret Name', 'k', 'Secret City', $2, $3, $4)`,
+				id, lat, lon, status); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	add("tokyo", 7, 35.68, 139.69, "active", true)
+	add("reykjavik", 4, 64.15, -21.94, "active", true) // too few to show
+	add("lima", 5, -12.05, -77.04, "paused", true)     // stepped back
+	add("oslo", 5, 59.91, 10.75, "onboarding", false)  // never verified
+
+	res, err := http.Get(e.api.URL + "/v1/public/user-map") // no session
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	body, _ := io.ReadAll(res.Body)
+	if res.StatusCode != 200 {
+		t.Fatalf("status %d: %s", res.StatusCode, body)
+	}
+	var got struct {
+		Total int `json:"total"`
+		Cells []struct {
+			Lat float64 `json:"lat"`
+			Lon float64 `json:"lon"`
+			N   int     `json:"n"`
+		} `json:"cells"`
+	}
+	if err := json.Unmarshal(body, &got); err != nil {
+		t.Fatal(err)
+	}
+	if got.Total != 16 {
+		t.Fatalf("total = %d, want the 16 verified accounts", got.Total)
+	}
+	// Seven people in Tokyo come back as a rounded five, at the middle of the cell.
+	if len(got.Cells) != 1 || got.Cells[0].Lat != 37.5 || got.Cells[0].Lon != 137.5 || got.Cells[0].N != 5 {
+		t.Fatalf("cells = %+v", got.Cells)
+	}
+	if strings.Contains(string(body), "Secret") || strings.Contains(string(body), "139.69") {
+		t.Fatalf("leaked detail: %s", body)
+	}
+}
+
 func TestUnderageIsStopped(t *testing.T) {
 	e := setup(t)
 	c := e.signup(t, "Kid", "kid@example.com")

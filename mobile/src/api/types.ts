@@ -223,3 +223,6 @@ export type AppNotification = {
 };
 
 export type ReportReason = 'harassment' | 'fake_profile' | 'inappropriate_content' | 'scam' | 'underage' | 'other';
+
+/** Crowds only: areas about 500 km across, with rounded counts. */
+export type UserMap = { total: number; cells: { lat: number; lon: number; n: number }[] };

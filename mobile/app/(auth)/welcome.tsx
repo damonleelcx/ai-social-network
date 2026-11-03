@@ -9,6 +9,7 @@ import { space } from '@/theme/tokens';
 import { Backdrop, LanguagePicker, ThemeToggle } from '@/ui/layout';
 import { Button, Glass, T } from '@/ui/primitives';
 import { sukiFace } from '@/ui/suki';
+import { WorldMap } from '@/ui/WorldMap';
 import { tr } from '@/i18n';
 
 export default function Welcome() {
@@ -72,6 +73,9 @@ export default function Welcome() {
               SynAgent
             </T>
             <T v="heading" center color={t.accent} style={{ marginTop: space.xs }}>{tr('Meet someone, share ideas, explore together')}</T>
+            <View style={{ marginTop: space.md }}>
+              <WorldMap width={width - space.xl * 2} />
+            </View>
           </View>
         </View>
 

@@ -76,7 +76,7 @@ const termsHTML = `<h1>Terms of Use</h1>
 <p>If you have a problem, please write to <a href="mailto:support@heros-agent.space">support@heros-agent.space</a> first so we can try to resolve it directly. If part of these terms can't be enforced, the rest still applies. If we don't enforce a term right away, we can still enforce it later.</p>`
 
 const privacyHTML = `<h1>Privacy Policy</h1>
-<p class="meta">Last updated November 2, 2026</p>
+<p class="meta">Last updated November 3, 2026</p>
 <p>This policy explains what personal data Heros Agents ("we", "us") collects through the SynAgent app and this website, how we use it, who receives it, and the choices you have. Questions and requests go to <a href="mailto:support@heros-agent.space">support@heros-agent.space</a>.</p>
 
 <h2>Summary</h2>
@@ -100,6 +100,7 @@ const privacyHTML = `<h1>Privacy Policy</h1>
 <tr><td>Device and technical</td><td>IP address and device or browser description for each signed-in session, and your push notification token and device platform. We also log failed sign-in attempts, including the email address used.</td></tr>
 </table>
 <p>We don't use your device's GPS: you type your city, and we look up its approximate coordinates.</p>
+<p>The app's first screen shows a public map of where people use SynAgent. It only shows areas about 500 km across with at least five people in each, and rounded counts. It never shows who anyone is or which city they live in, and paused accounts aren't counted.</p>
 <p>Some of this data may be sensitive, for example who you're looking for, which can suggest your sexual orientation, and your religion or political views. Providing the optional items is your choice, and you can remove them from your profile at any time.</p>
 
 <h2>How we use it</h2>
