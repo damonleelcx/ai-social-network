@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Share, View } from 'react-native';
 import * as api from '@/api/endpoints';
 import { missingLabel } from '@/lib/format';
 import { useLive } from '@/state/live';
@@ -15,6 +15,16 @@ import { Button, Glass, Pill, T } from '@/ui/primitives';
 import { showError } from '@/ui/sheet';
 import { SukiAvatar } from '@/ui/suki';
 import { tr } from '@/i18n';
+
+const DOWNLOAD_PAGE = 'https://match.heros-agent.space/#download';
+
+async function inviteFriends() {
+  try {
+    await Share.share({ message: tr('Come try SynAgent with me. Suki, an AI wingwoman, introduces you to people worth meeting. Download it here: {url}', { url: DOWNLOAD_PAGE }) });
+  } catch (e) {
+    showError(e);
+  }
+}
 
 /** Nine things make a profile whole on the server (see profile.Missing). */
 const PROFILE_STEPS = 9;
@@ -122,6 +132,7 @@ export default function Me() {
             onPress={() => router.push('/profile/photos')}
           />
           <NavRow icon="notifications-outline" label={tr('Notifications')} badge={live.badges.me} onPress={() => router.push('/notifications')} />
+          <NavRow icon="person-add-outline" label={tr('Invite friends')} hint={tr('Send them the download link')} onPress={inviteFriends} />
           <NavRow icon="settings-outline" label={tr('Settings')} onPress={() => router.push('/settings')} />
         </Group>
 
