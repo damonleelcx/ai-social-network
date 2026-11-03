@@ -71,7 +71,7 @@ img { image-rendering: pixelated; }
 .spr svg { display: block; width: 100%; height: 100%; }
 
 /* Notched corners: the frame is four offset shadows, so the corner pixel stays empty. */
-.pixel, .btn, .dialogue, .suki-card, .nav, .fan-card, .rivets, .save-list li, .theme-btn, .crt-panel {
+.pixel, .btn, .dialogue, .suki-card, .nav, .fan-card, .rivets, .save-list li, .theme-btn, .crt-panel, .download {
   box-shadow: 0 calc(var(--px) * -1) 0 0 var(--frame, var(--line)), 0 var(--px) 0 0 var(--frame, var(--line)),
     calc(var(--px) * -1) 0 0 0 var(--frame, var(--line)), var(--px) 0 0 0 var(--frame, var(--line));
 }
@@ -249,6 +249,15 @@ h1 .lit { color: var(--accent); }
 .save-list .spr { font-size: 28px; color: var(--accent); }
 .save-list b { font: 700 17px/1 var(--label); text-transform: uppercase; }
 
+.downloads { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 38px; }
+.download { --frame: var(--line-soft); display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin: var(--px); padding: 24px; background: var(--panel); }
+.download h3 { font: 400 18px/1.2 var(--display); text-transform: uppercase; }
+.download p { font-size: 23px; line-height: 1.12; color: var(--soft); }
+.download b { color: var(--ink); font-weight: 400; }
+.download .download-file { font: 400 13px/1.2 var(--label); color: var(--faint); }
+.download .btn { margin-top: auto; }
+.download-note { margin-top: 20px; color: var(--soft); }
+.btn-ghost-solid { background: var(--panel); }
 .finale { position: relative; z-index: 2; min-height: 88vh; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 70px max(24px, 7vw); }
 .finale h2 { font: 400 clamp(30px, 5.5vw, 84px)/1.15 var(--display); text-transform: uppercase; text-shadow: .08em .08em 0 var(--drop); }
 .finale-sub { margin: 22px 0 26px; max-width: 28em; font-size: 26px; line-height: 1.12; background: var(--bg); padding: 6px 10px; }
@@ -278,7 +287,7 @@ h1 .lit { color: var(--accent); }
   .fan { flex-wrap: wrap; gap: 26px 20px; }
   .fan-card { margin: 0; transform: none; }
   .fan-card:hover, .fan-card:focus-within, .fan-card.is-yes { transform: translateY(-4px); }
-  .rivets, .control { grid-template-columns: 1fr; }
+  .rivets, .control, .downloads { grid-template-columns: 1fr; }
   .crt-grid { grid-template-columns: 1fr; }
   .crt-steps button { min-height: 46px; }
   .crt-bar { flex-wrap: wrap; }
