@@ -10,6 +10,23 @@
   --body: "VT323", ui-monospace, monospace;
 }
 
+/* Trimmed to the characters on this page by the steps in fonts/README.md. */
+@font-face { font-family: "Fusion ZH"; src: url(fonts/fusion-pixel-zh.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: "Fusion KO"; src: url(fonts/fusion-pixel-ko.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: "Fusion JA"; src: url(fonts/fusion-pixel-ja.woff2) format("woff2"); font-display: swap; }
+:root[data-lang="zh"] { --display: "Fusion ZH", sans-serif; --label: "Fusion ZH", sans-serif; --body: "Fusion ZH", sans-serif; }
+:root[data-lang="ko"] { --display: "Fusion KO", sans-serif; --label: "Fusion KO", sans-serif; --body: "Fusion KO", sans-serif; }
+:root[data-lang="ja"] { --display: "Fusion JA", sans-serif; --label: "Fusion JA", sans-serif; --body: "Fusion JA", sans-serif; }
+:root[data-lang] { font-synthesis: none; }
+/* These faces run wider and sit taller than the Latin ones, so body text steps down to fit. */
+:root[data-lang] body { font-size: 20px; line-height: 1.45; }
+:root[data-lang] .lede, :root[data-lang] .section-lede, :root[data-lang] .finale-sub, :root[data-lang] .suki-body blockquote,
+:root[data-lang] .dialogue p, :root[data-lang] .rivets p, :root[data-lang] .download p, :root[data-lang] .save-list li,
+:root[data-lang] .fan-card p, :root[data-lang] .foot p, :root[data-lang] .crt-panel p, :root[data-lang] .crt-learned ul { font-size: 18px; line-height: 1.4; }
+:root[data-lang] .fan-card p { font-size: 16px; }
+:root[data-lang] h1 { line-height: 1.5; }
+.i18n-pending body { visibility: hidden; }
+
 /* Keep in step with the ramps in scene.js. */
 :root[data-theme="dark"] {
   color-scheme: dark;
@@ -105,6 +122,11 @@ img { image-rendering: pixelated; }
   --frame: var(--line-soft);
 }
 .theme-btn .spr { font-size: 16px; }
+.lang-select {
+  appearance: none; border: 0; padding: 9px 11px; margin: var(--px); cursor: pointer;
+  background: var(--panel-2); color: var(--ink); font: 700 12px/1 var(--label);
+  box-shadow: 0 0 0 var(--px) var(--line-soft);
+}
 [data-theme="dark"] .when-light, [data-theme="light"] .when-dark { display: none; }
 
 /* Hero: words left, world centre, Suki right, the way a game's title screen is laid out. */
