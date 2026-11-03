@@ -71,7 +71,7 @@ const (
 	ReplyInDanger = "Your safety comes first. If you're in danger right now, call your local emergency number (911 in the US, 112 in the EU) and get to somewhere with other people around.\n\n" +
 		"I've flagged this for a person on our safety team. You can also block this person from their profile, and they'll lose all contact with you straight away."
 	ReplyUnderage = "Thanks for being honest with me. SynAgent is only for adults aged 18 and over, so I can't help you with dating here, and I've paused this account until someone on our team has looked at it. No hard feelings."
-	ReplyScore    = "I don't share how people are evaluated, and there's no number for you to look at. What you tell me does help me choose who to introduce you to next, though. So tell me: what made your favorite date your favorite?"
+	ReplyScore    = "Feedback after dates privately shapes who I introduce you to, and those details stay private, so there's no number for you to look at. The privacy policy explains more. So tell me: what made your favorite date your favorite?"
 	ReplyHarass   = "I'm sorry, that's not okay and it isn't on you. I've flagged it for a person on our safety team. If you want them gone from your life right now, blocking removes all contact straight away. Want to do that?"
 	ReplyScam     = "Please don't send money, gift cards or crypto to anyone you've met here. It's the classic sign of a scam, however good the story sounds, and real matches don't ask. I've flagged it for our safety team. Do you want to block them?"
 )
@@ -153,7 +153,7 @@ var reLeak = re(`\b(compatib\w*|match) (score|rating|percent\w*)\b|\b\d{1,3}\s?%
 func LeaksScore(text string) bool { return reLeak.MatchString(strings.ReplaceAll(Normalize(text), "\n", " ")) }
 
 // LeakFallback replaces a draft that still leaks after one rewrite.
-const LeakFallback = "I keep how people are evaluated to myself, and there's no number to look at. Tell me more about what you're looking for, and I'll keep it in mind for your next introduction."
+const LeakFallback = "Feedback after dates privately shapes who I introduce you to, and those details stay private. The privacy policy explains more. Tell me more about what you're looking for, and I'll keep it in mind for your next introduction."
 
 // Tips is the fixed date-safety advice.
 const Tips = "A few habits worth keeping for a first date:\n" +
