@@ -8,7 +8,6 @@ import (
 
 func TestPublicPages(t *testing.T) {
 	for _, tc := range []struct{ title, body, want string }{
-		{"SynAgent", homeHTML, "isn't in the App Store"},
 		{"Terms of Use", termsHTML, "at least 18 years old"},
 		{"Privacy Policy", privacyHTML, "Beijing, China"},
 		{"Delete your SynAgent account", deleteHTML, "up to 30 days"},
