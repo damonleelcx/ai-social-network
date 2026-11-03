@@ -11,13 +11,14 @@ import { tr } from '@/i18n';
 // The picture runs from 84°N to 58°S, drawn with even degrees (see assets/brand/world-dots.png).
 const TOP = 84;
 const BOTTOM = -58;
-const ASPECT = 960 / 376;
+export const MAP_ASPECT = 960 / 376;
+export const MAP_CAPTION_HEIGHT = 26;
 
 /** Where people are, in crowds only. If the numbers don't arrive it's still a map. */
 export function WorldMap({ width }: { width: number }) {
   const t = useTheme();
   const [data, setData] = useState<UserMap | null>(null);
-  const height = width / ASPECT;
+  const height = width / MAP_ASPECT;
 
   useEffect(() => {
     let live = true;
@@ -39,7 +40,7 @@ export function WorldMap({ width }: { width: number }) {
           contentFit="contain"
         />
         {cells.map((c) => {
-          const size = 7 + 9 * Math.sqrt(c.n / biggest);
+          const size = (width / 320) * (7 + 9 * Math.sqrt(c.n / biggest));
           return (
             <View
               key={`${c.lat},${c.lon}`}
@@ -59,7 +60,7 @@ export function WorldMap({ width }: { width: number }) {
         })}
       </View>
       {cells.length > 0 && data ? (
-        <T soft center style={{ marginTop: space.xs }}>
+        <T v="small" soft center numberOfLines={1} style={{ marginTop: space.xs }}>
           {tr('{count} people have joined', { count: data.total.toLocaleString() })}
         </T>
       ) : null}

@@ -9,8 +9,10 @@ import { space } from '@/theme/tokens';
 import { Backdrop, LanguagePicker, ThemeToggle } from '@/ui/layout';
 import { Button, Glass, T } from '@/ui/primitives';
 import { sukiFace } from '@/ui/suki';
-import { WorldMap } from '@/ui/WorldMap';
+import { MAP_ASPECT, MAP_CAPTION_HEIGHT, WorldMap } from '@/ui/WorldMap';
 import { tr } from '@/i18n';
+
+const SMALLEST_SUKI = 72;
 
 export default function Welcome() {
   const t = useTheme();
@@ -19,7 +21,11 @@ export default function Welcome() {
   // Small phones can't fit her at full size, so she gives up whatever the words need.
   const [room, setRoom] = useState(height);
   const [wordsHeight, setWordsHeight] = useState(0);
-  const size = Math.max(88, Math.min(width - 72, height * 0.38, room - wordsHeight - 28));
+  const [titleHeight, setTitleHeight] = useState(0);
+  const size = Math.max(SMALLEST_SUKI, Math.min(width - 72, height * 0.38, room - wordsHeight - 28));
+  // The map takes what's left once she's at her smallest, and small phones go without it.
+  const mapRoom = room - SMALLEST_SUKI - 28 - space.xl - titleHeight - space.md - MAP_CAPTION_HEIGHT;
+  const mapWidth = Math.min(width - space.xl * 2, mapRoom * MAP_ASPECT);
   const glow = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -69,13 +75,17 @@ export default function Welcome() {
             />
           </View>
           <View style={{ paddingTop: space.xl }} onLayout={(e) => setWordsHeight(e.nativeEvent.layout.height)}>
-            <T v="display" center>
-              SynAgent
-            </T>
-            <T v="heading" center color={t.accent} style={{ marginTop: space.xs }}>{tr('Meet someone, share ideas, explore together')}</T>
-            <View style={{ marginTop: space.md }}>
-              <WorldMap width={width - space.xl * 2} />
+            <View onLayout={(e) => setTitleHeight(e.nativeEvent.layout.height)}>
+              <T v="display" center>
+                SynAgent
+              </T>
+              <T v="heading" center color={t.accent} style={{ marginTop: space.xs }}>{tr('Meet someone, share ideas, explore together')}</T>
             </View>
+            {mapWidth >= 140 ? (
+              <View style={{ marginTop: space.md }}>
+                <WorldMap width={mapWidth} />
+              </View>
+            ) : null}
           </View>
         </View>
 
