@@ -151,4 +151,4 @@ event costs nothing: the stored message replaces it.
   Nightly dumps go to S3, so a node loss can lose up to a day.
 - **NSFW text with the model down** falls back to the word list. Photos wait instead.
 - **Moderation is an API, not a console**, and needs a person to act on it.
-- **Legal text is a draft.** See the top of `internal/httpapi/legal.go`.
+- **Legal text has not had a lawyer's review**, and it names no legal entity, address or governing law yet. See `internal/httpapi/legal.go`.

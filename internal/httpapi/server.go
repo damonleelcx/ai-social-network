@@ -270,10 +270,11 @@ func (s *Server) Handler() http.Handler {
 
 	m.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { writeJSON(w, 200, map[string]bool{"ok": true}) })
 	m.HandleFunc("GET /readyz", s.ready)
-	m.HandleFunc("GET /legal/terms", legalPage(termsHTML))
-	m.HandleFunc("GET /legal/privacy", legalPage(privacyHTML))
-	m.HandleFunc("GET /legal/delete-account", legalPage(deleteHTML))
-	m.HandleFunc("GET /open", legalPage(openHTML))
+	m.HandleFunc("GET /{$}", legalPage("SynAgent", homeHTML))
+	m.HandleFunc("GET /legal/terms", legalPage("Terms of Use", termsHTML))
+	m.HandleFunc("GET /legal/privacy", legalPage("Privacy Policy", privacyHTML))
+	m.HandleFunc("GET /legal/delete-account", legalPage("Delete your SynAgent account", deleteHTML))
+	m.HandleFunc("GET /open", legalPage("SynAgent", openHTML))
 
 	// Accounts
 	m.HandleFunc("POST /v1/auth/signup", lim("signup", 30, time.Hour, s.signup))

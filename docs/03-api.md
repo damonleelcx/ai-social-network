@@ -47,7 +47,7 @@ Suki's replies also stream: `{"topic":"agent_stream","data":{"turn","offset","te
 
 `user`: `{id, email, name, role, email_verified, created_at, admin}`. A password has at least 10 characters.
 
-Legal pages (open in a browser): `/legal/terms`, `/legal/privacy`, `/legal/delete-account`.
+Public pages (open in a browser): `/`, `/legal/terms`, `/legal/privacy`, `/legal/delete-account`.
 
 ## Profile and photos
 
