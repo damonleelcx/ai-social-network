@@ -181,30 +181,20 @@ func (Log) Send(_ context.Context, m Message) (string, error) {
 // SenderName is the display name on every message: Suki writes the emails.
 const SenderName = "Suki · SynAgent"
 
-// Signature is how Suki signs off, per language.
-func Signature(lang string) string {
-	switch lang {
-	case "zh":
-		return "—— 葵 · SynAgent"
-	case "ja":
-		return "—— 葵（あおい） · SynAgent"
-	case "ko":
-		return "— 아오이 · SynAgent"
-	}
-	return "— Suki · SynAgent"
-}
+// Signature is how Suki signs off. Her name is the same in every language.
+func Signature(string) string { return "— Suki · SynAgent" }
 
-// playMoneyNote is the footer line under every email, per language.
-var playMoneyNote = map[string]string{
-	"en": "Play money only — no purchases, no cash-out, no real-money wagering.",
-	"zh": "仅限娱乐筹码——无需购买，不能兑现，不涉及任何真钱下注。",
-	"ko": "게임 머니 전용 — 구매도, 현금화도, 실제 돈을 건 베팅도 없어요.",
-	"ja": "遊び用のチップのみ — 購入・換金・リアルマネーでの賭けは一切ありません。",
+// footerNote is the footer line under every email, per language.
+var footerNote = map[string]string{
+	"en": "You're receiving this because you have a SynAgent account.",
+	"zh": "你收到这封邮件，是因为你有一个 SynAgent 账户。",
+	"ko": "SynAgent 계정이 있어서 이 메일을 보내 드렸어요.",
+	"ja": "SynAgent のアカウントをお持ちのため、このメールをお送りしています。",
 }
 
 // htmlLang is the lang attribute of the email page.
 func htmlLang(lang string) string {
-	if _, ok := playMoneyNote[lang]; ok {
+	if _, ok := footerNote[lang]; ok {
 		return lang
 	}
 	return "en"
@@ -219,7 +209,7 @@ func Page(lang, title, lead, cta, link, foot string) string {
 	return `<!doctype html><html lang="` + htmlLang(lang) + `"><body style="margin:0;background:#0b1430;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#e8eeff">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0b1430"><tr><td align="center" style="padding:40px 16px">
 <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;background:#121e45;border:1px solid #23346e;border-radius:20px;padding:36px">
-<tr><td style="font-size:12px;letter-spacing:.22em;font-weight:700;color:#4f8cff">PLAY WITH AGENTS</td></tr>
+<tr><td style="font-size:12px;letter-spacing:.22em;font-weight:700;color:#4f8cff">SYNAGENT</td></tr>
 <tr><td style="padding-top:18px;font-size:26px;font-weight:700;line-height:1.25;color:#ffffff">` + e(title) + `</td></tr>
 <tr><td style="padding-top:14px;font-size:15px;line-height:1.65;color:#c3cdee">` + e(lead) + `</td></tr>
 <tr><td style="padding-top:26px"><a href="` + e(link) + `" style="display:inline-block;background:#4f8cff;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:999px;font-weight:600">` + e(cta) + `</a></td></tr>
@@ -227,7 +217,7 @@ func Page(lang, title, lead, cta, link, foot string) string {
 <tr><td style="padding-top:18px;font-size:13px;line-height:1.6;color:#7f8bb5">` + e(foot) + `</td></tr>
 <tr><td style="padding-top:26px;font-size:14px;color:#3fd2ff">` + e(Signature(lang)) + `</td></tr>
 </table>
-<p style="margin:18px 0 0;font-size:11px;color:#56618a">` + e(playMoneyNote[htmlLang(lang)]) + `</p>
+<p style="margin:18px 0 0;font-size:11px;color:#56618a">` + e(footerNote[htmlLang(lang)]) + `</p>
 </td></tr></table></body></html>`
 }
 
