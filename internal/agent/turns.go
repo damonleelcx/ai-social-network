@@ -496,7 +496,12 @@ func (r *Runner) loadState(ctx context.Context, userID string) (string, persona.
 		b.WriteString("They already have a bio. Only draft another if they ask.\n")
 	}
 	if len(missing) > 0 {
-		fmt.Fprintf(&b, "Still needed for their profile: %s.\n", strings.Join(missing, ", "))
+		fmt.Fprintf(&b, "Still needed for their profile: %s. Ask only for these.\n", strings.Join(missing, ", "))
+	} else {
+		b.WriteString("Their profile is complete. Don't ask for their birthday, city or other profile details again.\n")
+	}
+	if p.Birthdate != "" {
+		b.WriteString("Their birthday is saved and can't change. Never ask for it again.\n")
 	}
 	if st["memory_enabled"] != false {
 		if notes := (&engine.Store{Pool: r.Pool}).Memories(ctx, userID, 12); len(notes) > 0 {
