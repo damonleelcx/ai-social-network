@@ -67,13 +67,13 @@ def answer(body):
         return json.dumps({"intent": route_for(user)}), []
 
     if "compat_record" in has:
-        if done:
+        if done or not aliases(user):
             return "Evaluated.", []
         return "", [call(a, "compat_record", {"alias": a, "score": 88, "reasons": ["shared interests"], "shared": ["jazz"],
                                               "pitch_for_viewer": "You both light up about live jazz.",
                                               "pitch_for_candidate": "You two share a love of jazz."}) for a in aliases(user)]
     if "critic_verdict" in has:
-        if done:
+        if done or not aliases(user):
             return "Reviewed.", []
         return "", [call(a, "critic_verdict", {"alias": a, "verdict": "approved", "notes": "fine"}) for a in aliases(user)]
     if "venue_shortlist" in has:
@@ -150,7 +150,8 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as e:
             print("fake model error:", repr(e), flush=True)
             return self.send_json({"error": "fake model error"}, 400)
-        print(p, "tools" if calls else "text", (content or calls[0]["function"]["name"])[:70].replace("\n", " "), flush=True)
+        said = calls[0]["function"]["name"] if calls else content
+        print(p, "tools" if calls else "text", said[:70].replace("\n", " "), flush=True)
         if not body.get("stream"):
             msg = {"role": "assistant", "content": content}
             if calls:
