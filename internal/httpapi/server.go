@@ -345,6 +345,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /v1/billing/stripe", s.stripeWebhook)
 	m.HandleFunc("POST /v1/credits/wechat/prepay", v(lim("checkout", 20, time.Hour, s.wechatPrepay)))
 	m.HandleFunc("POST /v1/billing/wechat", s.wechatNotify)
+	m.HandleFunc("POST /v1/credits/google/verify", v(lim("google-verify", 60, time.Hour, s.googleVerify)))
 	m.HandleFunc("GET /credits/done", s.creditsDone)
 
 	// Buddies
@@ -1032,6 +1033,28 @@ func (s *Server) wechatPrepay(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, p)
+}
+
+func (s *Server) googleVerify(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		ProductID     string `json:"product_id"`
+		PurchaseToken string `json:"purchase_token"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	res, err := s.Billing.VerifyGooglePurchase(r.Context(), userOf(r).ID, b.ProductID, b.PurchaseToken)
+	var ue *billing.UserError
+	if errors.As(err, &ue) {
+		fail(w, 422, ue.Msg)
+		return
+	}
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	s.announcePaid(r, res.Paid)
+	writeJSON(w, 200, map[string]any{"pending": res.Pending})
 }
 
 // wechatNotify answers anything but 2xx to have WeChat send it again.

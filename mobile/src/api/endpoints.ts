@@ -114,6 +114,8 @@ export const dates = {
 export const credits = {
   status: () => api<CreditStatus>('/v1/credits'),
   usage: async () => (await api<{ usage: CreditUsage[] }>('/v1/credits/usage')).usage,
+  verifyGoogle: (product_id: string, purchase_token: string) =>
+    api<{ pending: boolean }>('/v1/credits/google/verify', { method: 'POST', body: { product_id, purchase_token } }),
   checkout: async (pack: string) => (await api<{ url: string }>('/v1/credits/checkout', { method: 'POST', body: { package: pack } })).url,
 };
 

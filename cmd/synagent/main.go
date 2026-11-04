@@ -113,6 +113,11 @@ func run(mode string) error {
 	} else {
 		bill.WeChat = wc
 	}
+	if gp, err := billing.NewGooglePlay(cfg.GooglePlayPackage, cfg.GooglePlayServiceAccount); err != nil {
+		slog.Error("google play billing is off", "err", err)
+	} else {
+		bill.Google = gp
+	}
 	workflows.Init(&workflows.Deps{Billing: bill, Pool: pool, Store: store, Model: model, Chats: chats, Photos: photos, Places: plc, Dating: svc,
 		FastModel: cfg.LLMFastModel, PhotoAutoApprove: cfg.PhotoAutoApprove, DebriefDelay: cfg.DebriefDelay})
 

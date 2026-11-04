@@ -57,7 +57,7 @@ Nobody to see a movie with tonight? Dates aren't the only reason to meet someone
 
 ## Pricing
 
-Your first 5 matches are free. After that, each message to Suki uses a credit, and you can buy more by asking her. Chatting with your matches is always free, and so is anything about your safety or your account.
+Your first 5 matches are free. After that, each message to Suki uses a credit, and you can buy more by asking her: by card on the web and the direct download, with Google Play in the Play version of the Android app, and with WeChat Pay in the mini program. Chatting with your matches is always free, and so is anything about your safety or your account.
 
 ## Also in the app
 

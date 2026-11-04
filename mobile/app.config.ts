@@ -70,6 +70,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // Playback only: never ask for the microphone, and stop when the app leaves the foreground.
       ['expo-audio', { microphonePermission: false, recordAudioAndroid: false, enableBackgroundPlayback: false }],
       './plugins/withDebugNetworking',
+      'expo-iap',
     ],
     extra: {
       apiUrl: process.env.EXPO_PUBLIC_API_URL || DEFAULT_API,

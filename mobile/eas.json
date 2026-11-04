@@ -14,7 +14,7 @@
     },
     "production": {
       "autoIncrement": true,
-      "env": { "EXPO_PUBLIC_API_URL": "https://match.heros-agent.space" },
+      "env": { "EXPO_PUBLIC_API_URL": "https://match.heros-agent.space", "EXPO_PUBLIC_PLAY_STORE": "1" },
       "android": { "buildType": "app-bundle" }
     }
   },
