@@ -1267,6 +1267,47 @@ func TestBirthdateYearMustBeInTheirOwnWords(t *testing.T) {
 	}
 }
 
+// Suki can correct a birthdate the form can't change, but only from what they said, only
+// when they mean it, and never in a way that gets round being 18.
+func TestSukiCanCorrectABirthdate(t *testing.T) {
+	e := setup(t)
+	c := e.signup(t, "Rue", "rue@example.com")
+	c.verify()
+	birthdate := func() string {
+		var r struct {
+			Profile struct {
+				Birthdate string `json:"birthdate"`
+			} `json:"profile"`
+		}
+		c.do("GET", "/v1/profile", nil, 200, &r)
+		return r.Profile.Birthdate
+	}
+	c.do("PATCH", "/v1/profile", map[string]any{"birthdate": "2005-10-20"}, 200, nil)
+
+	c.do("PATCH", "/v1/profile", map[string]any{"birthdate": "1995-10-20"}, 422, nil) // the form stays locked
+	c.askSuki("my friend was born March 2, 1990")
+	if got := birthdate(); got != "2005-10-20" {
+		t.Fatalf("someone else's birthday was saved: %q", got)
+	}
+	c.askSuki("please correct my birthday, it's wrong")
+	if got := birthdate(); got != "2005-10-20" {
+		t.Fatalf("corrected to a year they never said: %q", got)
+	}
+	c.askSuki("please correct my birthday, it should be 1995")
+	if got := birthdate(); got != "1995-10-20" {
+		t.Fatalf("birthdate = %q", got)
+	}
+	var st string
+	year := time.Now().AddDate(-16, 0, 0).Format("2006")
+	c.askSuki("minor correction, I was born in " + year)
+	if err := e.pool.QueryRow(context.Background(), `SELECT status FROM profiles WHERE user_id=$1`, c.id).Scan(&st); err != nil {
+		t.Fatal(err)
+	}
+	if st != "held" || birthdate() != "1995-10-20" {
+		t.Fatalf("a correction to under 18 must hold the account: status %q, birthdate %q", st, birthdate())
+	}
+}
+
 // The app's lists depend on these signals: an introduction must reach the Matches tab
 // without anyone reopening the app.
 func TestListsAreToldWhenSomethingArrives(t *testing.T) {

@@ -501,7 +501,7 @@ func (r *Runner) loadState(ctx context.Context, userID string) (string, persona.
 		b.WriteString("Their profile is complete. Don't ask for their birthday, city or other profile details again.\n")
 	}
 	if p.Birthdate != "" {
-		b.WriteString("Their birthday is saved and can't change. Never ask for it again.\n")
+		b.WriteString("Their birthday is saved, so don't ask for it, but if they say it's wrong, correct it with profile_save using the part they gave and what's already saved.\n")
 	}
 	if st["memory_enabled"] != false {
 		if notes := (&engine.Store{Pool: r.Pool}).Memories(ctx, userID, 12); len(notes) > 0 {

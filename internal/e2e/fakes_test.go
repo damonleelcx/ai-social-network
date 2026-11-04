@@ -97,6 +97,8 @@ func (f *fakeLLM) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case strings.Contains(user, "creative types"):
 			reply(w, `{"taste_note":"Goes for creative types","occupation":"should not be saved"}`, nil)
+		case strings.Contains(user, "my friend was born"):
+			reply(w, `{"birthdate":"1990-03-02"}`, nil)
 		case strings.Contains(user, "misread my birthday"):
 			reply(w, `{"birthdate":"2005-03-02"}`, nil)
 		case strings.Contains(user, "read my birthday"):
@@ -212,6 +214,10 @@ func (f *fakeLLM) suki(w http.ResponseWriter, msgs []fakeMsg, has map[string]boo
 		reply(w, "Saved! <<mood=happy|replies=Tell me more>>", nil)
 	case strings.Contains(user, "leak please"):
 		reply(w, "Between us, your score is 9/10. <<mood=playful>>", nil)
+	case strings.Contains(user, "minor correction") && has["profile_save"]:
+		reply(w, "", []any{call("p", "profile_save", map[string]any{"birthdate": time.Now().AddDate(-16, 0, 0).Format("2006-01-02")})})
+	case strings.Contains(user, "correct my birthday") && has["profile_save"]:
+		reply(w, "", []any{call("p", "profile_save", map[string]any{"birthdate": "1995-10-20"})})
 	case strings.Contains(user, "nurse") && has["profile_save"]:
 		reply(w, "", []any{call("p", "profile_save", map[string]any{"occupation": "nurse"})})
 	case strings.Contains(user, "all done") && has["debrief_close"]:
@@ -225,6 +231,8 @@ func routeFor(text string) string {
 	switch {
 	case strings.Contains(text, "nurse"):
 		return "profile_work_education"
+	case strings.Contains(text, "correct my birthday"), strings.Contains(text, "my friend was born"), strings.Contains(text, "minor correction"):
+		return "profile_basics"
 	case strings.Contains(text, "laughed"), strings.Contains(text, "all done"):
 		return "debrief_answer"
 	}

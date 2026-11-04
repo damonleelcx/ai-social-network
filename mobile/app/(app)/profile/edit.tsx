@@ -105,7 +105,7 @@ function Birthdate({ value, onSaved }: { value: string; onSaved: () => void }) {
     const s = ymd(d);
     const yes = await confirm(
       tr('Is {time} right?', { time: fullDate(s) }),
-      tr('You can only set your birthday once, so please check it. SynAgent is for people 18 and over.'),
+      tr("Please check it. SynAgent is for people 18 and over. If it's ever wrong, just tell Suki."),
       tr('Yes, save it'),
     );
     if (!yes) return;
@@ -123,7 +123,7 @@ function Birthdate({ value, onSaved }: { value: string; onSaved: () => void }) {
       <View style={{ gap: 4 }}>
         <T v="small" soft style={{ fontWeight: '600', marginLeft: 4 }}>{tr('Birthday')}</T>
         <T style={{ marginLeft: 4 }}>{fullDate(value)}</T>
-        <T v="caption" faint style={{ marginLeft: 4 }}>{tr("Set once. Contact support if it's wrong.")}</T>
+        <T v="caption" faint style={{ marginLeft: 4 }}>{tr("Wrong? Just tell Suki and she'll fix it.")}</T>
       </View>
     );
   }

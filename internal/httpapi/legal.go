@@ -76,7 +76,7 @@ const termsHTML = `<h1>Terms of Use</h1>
 <p>If you have a problem, please write to <a href="mailto:support@heros-agent.space">support@heros-agent.space</a> first so we can try to resolve it directly. If part of these terms can't be enforced, the rest still applies. If we don't enforce a term right away, we can still enforce it later.</p>`
 
 const privacyHTML = `<h1>Privacy Policy</h1>
-<p class="meta">Last updated November 3, 2026</p>
+<p class="meta">Last updated November 4, 2026</p>
 <p>This policy explains what personal data Heros Agents ("we", "us") collects through the SynAgent app and this website, how we use it, who receives it, and the choices you have. Questions and requests go to <a href="mailto:support@heros-agent.space">support@heros-agent.space</a>.</p>
 
 <h2>Summary</h2>
@@ -163,7 +163,7 @@ const privacyHTML = `<h1>Privacy Policy</h1>
 <h2>Your choices and rights</h2>
 <p>In the app you can:</p>
 <ul>
-<li>edit your profile (your birthdate can't be changed once set; write to us if it's wrong);</li>
+<li>edit your profile, or ask Suki to correct anything on it, including your birthdate;</li>
 <li>read and delete Suki's notes about you, and reset what she has learned;</li>
 <li>turn off coaching and post-date check-ins, and leave her voice off;</li>
 <li>block and report people, and see and end your signed-in sessions;</li>

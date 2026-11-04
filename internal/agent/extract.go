@@ -94,6 +94,10 @@ func (r *Runner) extractProfile(ctx context.Context, t *Turn, env *tools.Env, te
 		save("city_resolve", "city", map[string]any{"query": c})
 	}
 	delete(got, "city")
+	// A correction needs judging, so that's Suki's call: "my friend was born in 1990" isn't one.
+	if p.Birthdate != "" {
+		delete(got, "birthdate")
+	}
 	// One call per field, so a bad value can't cost the good ones.
 	keys := make([]string, 0, len(got))
 	for k := range got {
