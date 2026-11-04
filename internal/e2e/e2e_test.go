@@ -84,6 +84,8 @@ type env struct {
 	model    *engine.Model
 	svc      *dating.Service
 	billing  *billing.Service
+	srv      *httpapi.Server
+	auth     *auth.Service
 	fake     *fakeLLM
 	cancel   context.CancelFunc
 	wg       sync.WaitGroup
@@ -146,6 +148,7 @@ func setup(t *testing.T) *env {
 	srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill}
 	a.BeforeDelete = srv.BeforeDelete
 	e := &env{billing: bill, pool: pool, chats: chats, mail: m, bodies: &bytes.Buffer{}, store: store, model: model, svc: svc, fake: fake, cancel: cancel, photos: photos}
+	e.srv, e.auth = srv, a
 	// Every response body is kept, so the test can search all of them for scores.
 	handler := srv.Handler()
 	e.api = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

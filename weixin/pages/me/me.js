@@ -90,6 +90,20 @@ Page({
   },
   async onDelete() {
     if (!(await confirm('删除账号？', '你的资料、匹配和聊天都会删除，无法恢复。'))) return;
+    if (!this.data.user.has_password) {
+      wx.login({
+        success: async (r) => {
+          try {
+            await api.auth.deleteWithWeChat(r.code);
+            this.leave();
+          } catch (e) {
+            showError(e);
+          }
+        },
+        fail: () => showError(new Error('微信登录失败，请再试一次。')),
+      });
+      return;
+    }
     wx.showModal({
       title: '输入密码确认',
       editable: true,

@@ -2,7 +2,7 @@
 
 A native mini program that talks to the same server as the app. React Native can't run in WeChat, so these are separate pages. The account, Suki, matches, chats and credits are all shared with the app.
 
-**In it:** sign in, sign up and email verification; Suki's conversation and cards; matches and chat, with report and block; date plans and your buddy posts; photos, credits balance and history; account deletion. Chinese only.
+**In it:** WeChat sign-in, plus email sign-in, sign-up and verification; Suki's conversation and cards; matches and chat, with report and block; date plans and your buddy posts; photos, credits balance and history; account deletion. Chinese only.
 
 **Not in it yet:** voice, notifications and settings. Credits can be bought with WeChat Pay, except on iOS (below).
 
@@ -16,6 +16,7 @@ These need the owner's accounts and can't be done from the repo:
 
 1. **Register the mini program** at mp.weixin.qq.com and put the AppID in `project.config.json`.
 2. **ICP filing.** WeChat only allows ICP-filed domains on its server lists. The server is in us-east-1, so this probably means a filed domain with a proxy hosted in China. Set the domain in `config.js`.
+3. **Sign-in.** Add `SYN_WECHAT_APP_ID` and `SYN_WECHAT_APP_SECRET` to `synagent/prod`. WeChat sign-in stays off until they exist. Someone who first used email and then signs in with WeChat gets a separate account, because WeChat gives no address to match on.
 3. **Server domains.** Add that domain under request, socket, downloadFile and uploadFile.
 4. **Category and qualifications.** Social and dating categories are restricted, and an AI assistant may need generative-AI filing. Check the current rules for the category you choose before building on it.
 5. **WeChat Pay.** Get a merchant account, bind it to this AppID, and enable JSAPI payments. In the merchant console, use the WeChat Pay public key mode. Add these to `synagent/prod` (all of them, or it stays off):

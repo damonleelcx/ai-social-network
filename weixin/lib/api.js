@@ -13,6 +13,8 @@ const ZH = {
   'too many attempts; try again in 15 minutes': '尝试次数太多，请 15 分钟后再试',
   'too many codes requested; try again in an hour': '验证码请求太多，请一小时后再试',
   'please accept the terms to continue': '请先同意用户协议',
+  "WeChat sign-in isn't open yet.": '微信登录暂未开放。',
+  "WeChat couldn't confirm who you are. Please try again.": '微信没能确认你的身份，请再试一次。',
   "this email can't be used on SynAgent": '这个邮箱不能使用 SynAgent',
   'Slow down a little and try again in a moment.': '操作太频繁，请稍后再试。',
 };
@@ -133,6 +135,8 @@ module.exports = {
     signUp: (b) => post('/v1/auth/signup', b),
     signIn: (email, password) => post('/v1/auth/signin', { email, password }),
     signOut: () => post('/v1/auth/signout'),
+    wechat: (code, accept_terms) => post('/v1/auth/wechat', { code, accept_terms, language: 'zh' }),
+    deleteWithWeChat: (code) => post('/v1/auth/wechat/delete', { code }),
     verify: (code) => post('/v1/auth/verify', { code }),
     resend: () => post('/v1/auth/resend'),
     forgot: (email) => post('/v1/auth/forgot', { email }),

@@ -28,6 +28,7 @@ import (
 	"github.com/damonleelcx/ai-social-network/internal/dating"
 	"github.com/damonleelcx/ai-social-network/internal/db"
 	"github.com/damonleelcx/ai-social-network/internal/engine"
+	"github.com/damonleelcx/ai-social-network/internal/externalauth"
 	"github.com/damonleelcx/ai-social-network/internal/httpapi"
 	"github.com/damonleelcx/ai-social-network/internal/llm"
 	"github.com/damonleelcx/ai-social-network/internal/mail"
@@ -129,6 +130,9 @@ func run(mode string) error {
 		hub := httpapi.NewHub()
 		a := &auth.Service{Pool: pool, Mailer: mailer, PublicOrigin: cfg.PublicOrigin, SessionTTL: cfg.SessionTTL, AdminEmails: cfg.AdminEmails}
 		srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill}
+		if cfg.WeChat.AppID != "" && cfg.WeChat.AppSecret != "" {
+			srv.WeChatLogin = &externalauth.WeChat{AppID: cfg.WeChat.AppID, AppSecret: cfg.WeChat.AppSecret}
+		}
 		a.BeforeDelete = srv.BeforeDelete
 		srv.SpeechDailyChars = cfg.TTSDailyChars
 		if cfg.TTSAPIKey != "" && cfg.TTSVoiceID != "" {

@@ -44,6 +44,10 @@ type SMTP struct {
 func (s *SMTP) Enabled() bool { return true }
 
 func (s *SMTP) Send(ctx context.Context, m Message) (string, error) {
+	// Someone who signed in through a service that gives no address has a placeholder.
+	if strings.HasSuffix(m.To, ".invalid") {
+		return "", nil
+	}
 	if m.MessageID == "" {
 		b := make([]byte, 12)
 		_, _ = rand.Read(b)

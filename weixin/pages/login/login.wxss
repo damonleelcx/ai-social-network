@@ -3,4 +3,5 @@
 .link { text-align: center; color: #d9c8ff; font-size: 26rpx; padding: 22rpx 0 0; }
 .terms { display: flex; align-items: flex-start; font-size: 24rpx; color: #a99fc4; margin-bottom: 8rpx; }
 .under { text-decoration: underline; }
+.terms-line { font-size: 24rpx; color: #a99fc4; }
 .lead { margin-bottom: 20rpx; }
