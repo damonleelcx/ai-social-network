@@ -18,10 +18,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/damonleelcx/ai-social-network/internal/externalauth"
 )
 
 // WeChatPackages are what's for sale in the mini program, in fen.
@@ -53,9 +54,10 @@ type WeChatConfig struct {
 
 // NewWeChat returns nil when nothing is configured, and an error when only some of it is.
 func NewWeChat(c WeChatConfig) (*WeChat, error) {
-	all := []string{c.AppID, c.AppSecret, c.MchID, c.MchSerial, c.APIv3Key, c.PrivateKeyPEM, c.PublicKeyID, c.PublicKeyPEM}
+	// The app id and secret are also for sign-in, so only the merchant settings say it's on.
+	merchant := []string{c.MchID, c.MchSerial, c.APIv3Key, c.PrivateKeyPEM, c.PublicKeyID, c.PublicKeyPEM}
 	set := 0
-	for _, v := range all {
+	for _, v := range merchant {
 		if v != "" {
 			set++
 		}
@@ -63,7 +65,7 @@ func NewWeChat(c WeChatConfig) (*WeChat, error) {
 	if set == 0 {
 		return nil, nil
 	}
-	if set != len(all) {
+	if set != len(merchant) || c.AppID == "" || c.AppSecret == "" {
 		return nil, errors.New("wechat pay: some settings are missing")
 	}
 	if len(c.APIv3Key) != 32 {
@@ -114,35 +116,14 @@ func nonce() (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
-// openID turns the code from wx.login into who this person is to this mini program.
+// openID is who this person is to the mini program.
 func (s *Service) openID(ctx context.Context, code string) (string, error) {
 	w := s.WeChat
-	base := w.AuthURL
-	if base == "" {
-		base = "https://api.weixin.qq.com"
-	}
-	q := url.Values{"appid": {w.AppID}, "secret": {w.AppSecret}, "js_code": {code}, "grant_type": {"authorization_code"}}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, base+"/sns/jscode2session?"+q.Encode(), nil)
-	if err != nil {
-		return "", errors.New("wechat login: bad request")
-	}
-	resp, err := s.client().Do(req)
-	if err != nil {
-		// This error quotes the URL, and the URL holds the app secret.
-		return "", errors.New("wechat login: can't reach WeChat")
-	}
-	defer resp.Body.Close()
-	var out struct {
-		OpenID  string `json:"openid"`
-		ErrCode int    `json:"errcode"`
-	}
-	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<16)).Decode(&out); err != nil {
-		return "", errors.New("wechat login: unreadable answer")
-	}
-	if out.OpenID == "" {
+	id, err := (&externalauth.WeChat{AppID: w.AppID, AppSecret: w.AppSecret, URL: w.AuthURL, HTTP: s.HTTP}).OpenID(ctx, code)
+	if errors.Is(err, externalauth.ErrRejected) {
 		return "", &UserError{"WeChat couldn't confirm who you are. Please try again."}
 	}
-	return out.OpenID, nil
+	return id, err
 }
 
 func (s *Service) client() *http.Client {

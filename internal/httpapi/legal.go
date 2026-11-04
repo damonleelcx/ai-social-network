@@ -144,6 +144,7 @@ const privacyHTML = `<h1>Privacy Policy</h1>
 <tr><th>Provider</th><th>Purpose</th><th>Data</th></tr>
 <tr><td>Alibaba Cloud (Beijing, China)</td><td>AI model that powers Suki, matching, coaching and moderation</td><td>Messages to Suki, messages between matches, profile details and photos</td></tr>
 <tr><td>Amazon Web Services (United States)</td><td>Hosting, photo storage and backups</td><td>All the data described in this policy</td></tr>
+<tr><td>Tencent (WeChat)</td><td>Signing in to the mini program with WeChat</td><td>A sign-in code, which WeChat exchanges for your identifier for the mini program. We keep that identifier with your account.</td></tr>
 <tr><td>Tenpay (WeChat Pay)</td><td>Taking payment when you buy credits in the WeChat mini program</td><td>Your WeChat identifier for the mini program, and the pack you're buying</td></tr>
 <tr><td>Google Play</td><td>Taking payment when you buy credits in the Android app from Google Play</td><td>A one-way code for your account, and the pack you're buying</td></tr>
 <tr><td>Stripe</td><td>Taking payment when you buy credits</td><td>The payment details you enter on Stripe's page, and the pack you're buying</td></tr>

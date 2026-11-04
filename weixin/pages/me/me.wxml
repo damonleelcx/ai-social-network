@@ -1,7 +1,7 @@
 <view class="page">
   <view class="card">
     <view class="title">{{user.name}}</view>
-    <view class="soft">{{user.email}}</view>
+    <view wx:if="{{user.has_password}}" class="soft">{{user.email}}</view>
     <view class="soft gap">想改资料？直接告诉 Suki。</view>
   </view>
 

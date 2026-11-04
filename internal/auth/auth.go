@@ -30,6 +30,8 @@ type User struct {
 	Name          string     `json:"name"`
 	Role          string     `json:"role"` // member | moderator | admin
 	EmailVerified bool       `json:"email_verified"`
+	// HasPassword is false for someone who only signs in through another service.
+	HasPassword bool `json:"has_password"`
 	CreatedAt     time.Time  `json:"created_at"`
 	Admin         bool       `json:"admin"`
 	VerifiedAt    *time.Time `json:"-"`
@@ -236,9 +238,9 @@ func (s *Service) SignIn(ctx context.Context, email, password string) (*User, er
 
 func (s *Service) UserByID(ctx context.Context, id string) (*User, error) {
 	var u User
-	err := s.Pool.QueryRow(ctx, `SELECT u.id, u.email, u.name, u.role, u.email_verified_at, u.created_at
+	err := s.Pool.QueryRow(ctx, `SELECT u.id, u.email, u.name, u.role, u.email_verified_at, u.created_at, u.password_hash <> ''
 		FROM users u WHERE u.id=$1 AND u.deleted_at IS NULL`, id).
-		Scan(&u.ID, &u.Email, &u.Name, &u.Role, &u.VerifiedAt, &u.CreatedAt)
+		Scan(&u.ID, &u.Email, &u.Name, &u.Role, &u.VerifiedAt, &u.CreatedAt, &u.HasPassword)
 	if err != nil {
 		return nil, err
 	}
@@ -383,6 +385,10 @@ func (s *Service) DeleteAccount(ctx context.Context, userID, password string) er
 	if !CheckPassword(hash, password) {
 		return ErrInvalidCredentials
 	}
+	return s.deleteUser(ctx, userID)
+}
+
+func (s *Service) deleteUser(ctx context.Context, userID string) error {
 	// Sign every session out first, so nothing can sit down again while the
 	// account is being taken apart.
 	if _, err := s.Pool.Exec(ctx, `UPDATE sessions SET revoked_at=now() WHERE user_id=$1 AND revoked_at IS NULL`, userID); err != nil {
