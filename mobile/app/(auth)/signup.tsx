@@ -5,6 +5,7 @@ import { Pressable, View } from 'react-native';
 import { legalUrl } from '@/api/client';
 import { auth } from '@/api/endpoints';
 import { openLegal } from '@/lib/links';
+import { GoogleSignInButton } from '@/features/GoogleSignInButton';
 import { useSession } from '@/state/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
@@ -112,6 +113,7 @@ export default function SignUp() {
             disabled={!name.trim() || !email.trim() || !password || !accepted}
             onPress={submit}
           />
+          <GoogleSignInButton />
           <Button label={tr('I already have an account')} kind="ghost" full onPress={() => router.replace('/signin')} />
         </View>
       </Page>

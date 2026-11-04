@@ -7,6 +7,7 @@ export type User = {
   name: string;
   role: string;
   email_verified: boolean;
+  has_password: boolean;
   created_at: string;
   admin: boolean;
 };

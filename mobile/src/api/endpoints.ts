@@ -19,6 +19,7 @@ import type {
   User,
   UserMap,
 } from './types';
+import { currentLanguage } from '@/i18n';
 import { api } from './client';
 
 type AuthResult = { token: string; expires_at: string; user: User };
@@ -34,6 +35,9 @@ export const auth = {
     api<AuthResult>('/v1/auth/signup', { method: 'POST', body: b }),
   signIn: (email: string, password: string) =>
     api<AuthResult>('/v1/auth/signin', { method: 'POST', body: { email, password }, checksPassword: true }),
+  google: (id_token: string, accept_terms: boolean) =>
+    api<AuthResult>('/v1/auth/google', { method: 'POST', body: { id_token, accept_terms, language: currentLanguage() }, checksPassword: true }),
+  deleteWithGoogle: (id_token: string) => api<Ok>('/v1/auth/google/delete', { method: 'POST', body: { id_token }, timeoutMs: 60000 }),
   signOut: () => api<Ok>('/v1/auth/signout', { method: 'POST', body: {} }),
   verify: (code: string) => api<{ user: User }>('/v1/auth/verify', { method: 'POST', body: { code } }),
   resend: () => api<Ok>('/v1/auth/resend', { method: 'POST', body: {} }),

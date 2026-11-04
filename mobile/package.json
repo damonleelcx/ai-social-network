@@ -13,6 +13,7 @@
     "@expo/metro-runtime": "~58.0.17",
     "@expo/vector-icons": "^15.0.2",
     "@react-native-community/datetimepicker": "9.2.1",
+    "@react-native-google-signin/google-signin": "^17.0.0",
     "expo": "^58.0.22",
     "expo-audio": "~58.0.11",
     "expo-constants": "~58.0.14",

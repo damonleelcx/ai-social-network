@@ -146,6 +146,7 @@ const privacyHTML = `<h1>Privacy Policy</h1>
 <tr><td>Amazon Web Services (United States)</td><td>Hosting, photo storage and backups</td><td>All the data described in this policy</td></tr>
 <tr><td>Tencent (WeChat)</td><td>Signing in to the mini program with WeChat</td><td>A sign-in code, which WeChat exchanges for your identifier for the mini program. We keep that identifier with your account.</td></tr>
 <tr><td>Tenpay (WeChat Pay)</td><td>Taking payment when you buy credits in the WeChat mini program</td><td>Your WeChat identifier for the mini program, and the pack you're buying</td></tr>
+<tr><td>Google</td><td>Signing in to the Android app with Google</td><td>Your Google account's identifier, name and verified email address, which we keep with your account</td></tr>
 <tr><td>Google Play</td><td>Taking payment when you buy credits in the Android app from Google Play</td><td>A one-way code for your account, and the pack you're buying</td></tr>
 <tr><td>Stripe</td><td>Taking payment when you buy credits</td><td>The payment details you enter on Stripe's page, and the pack you're buying</td></tr>
 <tr><td>Fish Audio</td><td>Suki's voice, only when you play it or turn on auto-play</td><td>The text of Suki's reply. On the plan we use, Fish Audio may use it to improve its models, so you can leave the voice off in Settings.</td></tr>

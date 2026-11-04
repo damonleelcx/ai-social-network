@@ -25,6 +25,7 @@ permissions:
 
 env:
   EXPO_PUBLIC_API_URL: https://match.heros-agent.space
+  EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ vars.GOOGLE_WEB_CLIENT_ID }}
   EXPO_NO_TELEMETRY: "1"
   CI: "1"
 
