@@ -19,7 +19,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     backgroundColor: '#EDE5FF',
     platforms: ['ios', 'android', 'web'],
     // Served by the API server at /app (internal/httpapi/webapp.go).
-    web: { bundler: 'metro', output: 'single', favicon: './assets/brand/icon.png' },
+    web: { bundler: 'metro', output: 'single', favicon: './assets/brand/favicon.png' },
     experiments: { ...config.experiments, baseUrl: '/app' },
     ios: {
       bundleIdentifier: 'space.herosagent.synagent',
