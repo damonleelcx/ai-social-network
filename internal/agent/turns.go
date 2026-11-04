@@ -66,7 +66,7 @@ type Billing interface {
 }
 
 // OutOfCredits is what Suki says when a message can't be paid for.
-const OutOfCredits = "You're out of credits, so I can't answer this one yet. Your first 5 matches were free, and now each message to me costs a credit. Top up and we'll pick up right here. Anything about your safety or your account is always free."
+const OutOfCredits = "You're out of credits, so I can't answer this one yet. Your first match was free, and now each message to me costs a credit. Top up and we'll pick up right here. Anything about your safety or your account is always free."
 
 // Enqueue stores a person's message and queues the answer. A retried POST with
 // the same client id lands on the same message and the same turn.

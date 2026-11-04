@@ -34,8 +34,8 @@ func (e *env) stripeEvent(t *testing.T, payload []byte, secret string) int {
 	return resp.StatusCode
 }
 
-// The whole money path: free until the fifth match, then out of credits, buy, spend.
-func TestCreditsAfterFiveMatches(t *testing.T) {
+// The whole money path: free until the first match, then out of credits, buy, spend.
+func TestCreditsAfterFirstMatch(t *testing.T) {
 	e := setup(t)
 	var form string
 	stripe := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +53,7 @@ func TestCreditsAfterFiveMatches(t *testing.T) {
 		a.do("GET", "/v1/credits", nil, 200, &st)
 		return st
 	}
-	if s := status(); !s.Free || s.Balance != 0 || s.FreeMatches != 5 {
+	if s := status(); !s.Free || s.Balance != 0 || s.FreeMatches != 1 {
 		t.Fatalf("a new person: %+v", s)
 	}
 	body, _ := a.askSuki("hello there")
@@ -61,7 +61,7 @@ func TestCreditsAfterFiveMatches(t *testing.T) {
 		t.Fatal("charged before the free matches were used")
 	}
 
-	// Five matches, the last of them ended: unmatching mustn't refill the free ones.
+	// Five matches, the last of them ended: unmatching mustn't refill the free one.
 	ctx := context.Background()
 	for i := 0; i < 5; i++ {
 		o := e.signup(t, fmt.Sprintf("P%d", i), fmt.Sprintf("p%d@example.com", i))
@@ -75,6 +75,13 @@ func TestCreditsAfterFiveMatches(t *testing.T) {
 		}
 		if _, err := e.pool.Exec(ctx, `INSERT INTO matches (proposal_id,user_a,user_b,status) VALUES ($1,least($2::uuid,$3::uuid),greatest($2::uuid,$3::uuid),$4)`, pid, a.id, o.id, status); err != nil {
 			t.Fatal(err)
+		}
+		if i == 0 {
+			var first billing.Status
+			a.do("GET", "/v1/credits", nil, 200, &first)
+			if first.Free || first.MatchesUsed != 1 {
+				t.Fatalf("after the first match: %+v", first)
+			}
 		}
 	}
 	if s := status(); s.Free || s.MatchesUsed != 5 {
