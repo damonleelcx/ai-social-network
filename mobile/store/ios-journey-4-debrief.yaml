@@ -24,12 +24,14 @@ appId: space.herosagent.synagent
     visible: ".*Tell me more.*"
     timeout: 60000
 - takeScreenshot: ios-shots/j17-debrief-answer
+- tapOn: ".*Tell Suki anything.*"
 - inputText: "That is all done from me"
 - tapOn: "Send"
 - extendedWaitUntil:
     visible: ".*Saved.*"
     timeout: 60000
 - takeScreenshot: ios-shots/j18-debrief-closed
+- tapOn: ".*Tell Suki anything.*"
 - inputText: "I usually go for creative types"
 - tapOn: "Send"
 - extendedWaitUntil:

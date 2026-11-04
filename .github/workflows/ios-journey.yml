@@ -76,8 +76,8 @@ jobs:
         run: |
           curl -fsSL "https://get.maestro.mobile.dev" | bash
           export PATH="$PATH:$HOME/.maestro/bin"
-          # Each stage starts from a tab, so a dropped driver connection can be retried. A real
-          # failure stops the journey, because every later stage depends on it.
+          # Each stage starts from a tab, so a dropped driver connection can be retried. Later
+          # stages still run after a failure, because each can show something by itself.
           run_flow() {
             for try in 1 2; do
               echo "::group::$1, try $try"
@@ -90,11 +90,13 @@ jobs:
             done
             return 1
           }
+          status=0
           for stage in ios-journey-1-intro ios-journey-2-chat ios-journey-3-date ios-journey-4-debrief ios-journey-5-safety; do
-            run_flow "$stage" || exit 1
+            run_flow "$stage" || status=1
           done
           perl -e 'alarm 120; exec @ARGV' maestro --device "$DEVICE" hierarchy > ios-shots/final-hierarchy.json 2>&1 || true
-          echo "JOURNEY PASSED"
+          [ "$status" = 0 ] && echo "JOURNEY PASSED"
+          exit $status
       - name: Collect crash reports and logs
         if: always()
         run: |

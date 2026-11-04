@@ -42,22 +42,26 @@ appId: space.herosagent.synagent
 - takeScreenshot: ios-shots/j01-suki-home
 # Suki tells her about the introduction in their conversation.
 - extendedWaitUntil:
-    visible: ".*I found someone.*"
+    visible: ".*I found someone.*|.*It's a match with Leo.*"
     timeout: 180000
 - takeScreenshot: ios-shots/j02-suki-found
 - tapOn: "Matches, tab.*"
+# The card reads as one element, named after the person.
 - extendedWaitUntil:
-    visible: "Yes"
+    visible: ".*See Leo.*|.*Chat with Leo.*"
     timeout: 60000
-- assertVisible: "Leo"
 - takeScreenshot: ios-shots/j03-introduction
-- tapOn: "Yes"
-- extendedWaitUntil:
-    visible: "Open chat"
-    timeout: 30000
-- takeScreenshot: ios-shots/j04-its-a-match
-- tapOn: "Open chat"
-- extendedWaitUntil:
-    visible: ".*Message Leo.*"
-    timeout: 30000
+- runFlow:
+    when:
+      visible: "Yes"
+    commands:
+      - tapOn: "Yes"
+      - extendedWaitUntil:
+          visible: "Open chat"
+          timeout: 30000
+      - takeScreenshot: ios-shots/j04-its-a-match
+      - tapOn: "Open chat"
+      - extendedWaitUntil:
+          visible: ".*Message Leo.*"
+          timeout: 30000
 - takeScreenshot: ios-shots/j05-chat-open

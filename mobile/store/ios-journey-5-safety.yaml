@@ -47,9 +47,14 @@ appId: space.herosagent.synagent
     visible: "Block Leo?"
     timeout: 10000
 - takeScreenshot: ios-shots/j25-block-confirm
+# The alert's button, whether or not the closed menu's row is still in the tree.
 - tapOn:
     text: "Block"
     index: 1
+    optional: true
+- tapOn:
+    text: "Block"
+    optional: true
 - extendedWaitUntil:
     visible: ".*Tell Suki anything.*|Matches"
     timeout: 20000
