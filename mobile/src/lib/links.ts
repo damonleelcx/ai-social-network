@@ -19,6 +19,9 @@ export function openNotificationTarget(data?: NotificationData | null) {
     case 'date':
       if (data.id) router.push(`/date/${data.id}`);
       break;
+    case 'buddies':
+      router.navigate('/buddies');
+      break;
   }
 }
 
@@ -33,13 +36,14 @@ const SCREENS: Record<string, Href> = {
   photos: '/profile/photos',
   matches: '/matches',
   dates: '/dates',
+  buddies: '/buddies',
 };
 
 /** Suki's `open_screen` cards. Returns false for a screen this version doesn't know. */
 export function openNamedScreen(screen: string) {
   const href = SCREENS[screen];
   if (!href) return false;
-  if (screen === 'matches' || screen === 'dates') router.navigate(href);
+  if (screen === 'matches' || screen === 'dates' || screen === 'buddies') router.navigate(href);
   else router.push(href);
   return true;
 }

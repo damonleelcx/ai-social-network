@@ -65,6 +65,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="buddies"
+        options={{
+          title: tr('Buddies'),
+          tabBarIcon: ({ focused, color }) => <TabIcon name={focused ? 'people' : 'people-outline'} focused={focused} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="dates"
         options={{
           title: tr('Dates'),

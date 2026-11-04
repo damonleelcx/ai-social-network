@@ -447,9 +447,54 @@ func registerSukiTools() {
 		})
 
 	add("app_open_screen", "Show a button to a screen in the app. Password, email and account deletion are handled only there, never in chat.",
-		`{"type":"object","required":["screen","label"],"additionalProperties":false,"properties":{"screen":{"type":"string","enum":["settings","settings_app","settings_agent","settings_account","settings_memory","settings_blocked","profile_edit","photos","matches","dates","verify_email"]},"label":{"type":"string","maxLength":40}}}`, tools.Read,
+		`{"type":"object","required":["screen","label"],"additionalProperties":false,"properties":{"screen":{"type":"string","enum":["settings","settings_app","settings_agent","settings_account","settings_memory","settings_blocked","profile_edit","photos","matches","dates","verify_email","buddies"]},"label":{"type":"string","maxLength":40}}}`, tools.Read,
 		func(_ context.Context, _ *tools.Env, a map[string]any) (map[string]any, error) {
 			return card("open_screen", "screen", objStr(a, "screen"), "label", objStr(a, "label")), nil
+		})
+
+	add("buddy_prepare_post", "Show a card with a buddy post for this person to check. Only their tap posts it. Nothing goes out until then.",
+		`{"type":"object","required":["kind","when","expires_in_hours"],"additionalProperties":false,"properties":{"kind":{"type":"string","enum":["movie","meal","show","travel","sports","games","business","study","other"]},"when":{"type":"string","minLength":1,"maxLength":60,"description":"When, in their own words"},"note":{"type":"string","maxLength":200,"description":"What they want to do, in their voice"},"expires_in_hours":{"type":"integer","minimum":1,"maximum":336,"description":"How long until the plan has passed"},"same_gender":{"type":"boolean"}}}`, tools.Read,
+		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
+			missing, err := d.Dating.BuddyMissing(ctx, env.UserID)
+			if err != nil {
+				return nil, err
+			}
+			if len(missing) > 0 {
+				return map[string]any{"missing": missing}, nil
+			}
+			same, _ := a["same_gender"].(bool)
+			hours, _ := a["expires_in_hours"].(float64)
+			return card("buddy_post", "activity", objStr(a, "kind"), "when", objStr(a, "when"), "note", objStr(a, "note"), "expires_in_hours", int(hours), "same_gender", same), nil
+		})
+
+	add("buddy_board", "Buddy posts in this person's city that they could join.", noArgs, tools.Read,
+		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
+			list, missing, err := d.Dating.BuddyBoard(ctx, env.UserID)
+			if err != nil {
+				return nil, err
+			}
+			out := []map[string]any{}
+			for _, b := range list {
+				out = append(out, map[string]any{"kind": b.Kind, "when": b.When, "note": b.Note, "name": b.Person.DisplayName, "already_in": b.Offered})
+			}
+			return map[string]any{"posts": out, "missing": missing}, nil
+		})
+
+	add("buddy_mine", "This person's own buddy posts, and who has said they're in.", noArgs, tools.Read,
+		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
+			list, err := d.Dating.MyBuddyRequests(ctx, env.UserID)
+			if err != nil {
+				return nil, err
+			}
+			out := []map[string]any{}
+			for _, b := range list {
+				names := []string{}
+				for _, o := range b.Offers {
+					names = append(names, o.Person.DisplayName)
+				}
+				out = append(out, map[string]any{"kind": b.Kind, "when": b.When, "status": b.Status, "in": names})
+			}
+			return map[string]any{"posts": out}, nil
 		})
 
 	add("app_explain", "A truthful general explanation of how matching works, to put in your own words.", noArgs, tools.Read,

@@ -4,6 +4,7 @@ import { Pressable, View } from 'react-native';
 import { Alert, Share } from '@/lib/dialogs';
 import * as api from '@/api/endpoints';
 import type { Card, Proposal } from '@/api/types';
+import { buddyKindLabel } from './BuddyPostSheet';
 import { openNamedScreen } from '@/lib/links';
 import { pickAndUploadPhoto } from '@/lib/photos';
 import { useLive, useTopic } from '@/state/live';
@@ -249,12 +250,56 @@ function ConfirmCard({ card }: { card: Extract<Card, { kind: 'confirm' }> }) {
   );
 }
 
+function BuddyPostCard({ card }: { card: Extract<Card, { kind: 'buddy_post' }> }) {
+  const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle');
+  const [error, setError] = useState<string | null>(null);
+  if (state === 'done') return <Pill tone="good" icon="checkmark-circle" label={tr('Posted.')} />;
+  return (
+    <Glass style={{ gap: space.sm }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+        <Pill tone="accent" label={buddyKindLabel(card.activity)} />
+        <T v="small" style={{ fontWeight: '700' }}>
+          {card.when}
+        </T>
+      </View>
+      {card.note ? <T>{card.note}</T> : null}
+      {card.same_gender ? <T v="small" soft>{tr('Only people of my gender')}</T> : null}
+      <ErrorText message={error} />
+      <Button
+        label={tr('Post it')}
+        icon="paper-plane"
+        small
+        loading={state === 'busy'}
+        onPress={async () => {
+          setState('busy');
+          setError(null);
+          try {
+            await api.buddies.post({
+              kind: card.activity,
+              when: card.when,
+              note: card.note ?? '',
+              expires_in_hours: card.expires_in_hours,
+              same_gender: !!card.same_gender,
+            });
+            setState('done');
+          } catch (e: any) {
+            setError(e.message);
+            setState('idle');
+          }
+        }}
+      />
+    </Glass>
+  );
+}
+
 export function SukiCard({ card }: { card: Card }) {
   const { matches } = useLive();
   const { user } = useSession();
   switch (card.kind) {
     case 'photo_upload':
       return <PhotoUploadCard />;
+    case 'buddy_post':
+      return <BuddyPostCard card={card} />;
     case 'bio_draft':
       return <BioDraftCard text={card.text} />;
     case 'proposal':

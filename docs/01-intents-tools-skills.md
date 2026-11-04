@@ -52,6 +52,14 @@ automated. Effects: **R** read, **W** writes our database, **X** reaches outside
 | `match_unmatch` | "unmatch from Sam" | `match_prepare_unmatch` (G1 tap) |
 | `match_reconsider` | "can I see that person again?" | refused kindly, passes are final for 90 days |
 
+### 1.2b Buddies (`buddy`)
+
+| Intent | Example | Handling |
+|---|---|---|
+| `buddy_find` | "I want someone to see a movie with tonight" | `buddy_prepare_post` (G1 tap) |
+| `buddy_browse` | "what are people doing nearby?" | `buddy_board` |
+| `buddy_status` | "has anyone said yes to my post?" | `buddy_mine` |
+
 ### 1.3 Guided conversation (`chat`)
 
 | Intent | Example | Handled by |
@@ -217,6 +225,14 @@ Column **Agents** lists who may call a tool. The worker refuses anyone else.
 | `compat_record` | W | G0 | Matchmaker | **hidden, write-only.** One evaluation per candidate |
 | `critic_verdict` | W | G0 | Critic | **hidden.** Approves or rejects each evaluation |
 | `proposal_publish` | W | G0 | Publisher | idempotent per pair. Copy comes from public data only |
+
+### 2.2b Buddies
+
+| Tool | Effect | Gate | Agents | Contract |
+|---|---|---|---|---|
+| `buddy_prepare_post` | R | G1 | Suki | renders the post for a tap, or says what's missing |
+| `buddy_board` | R | G0 | Suki | open posts this person can see, by the one visibility rule |
+| `buddy_mine` | R | G0 | Suki | this person's own posts and who's in |
 
 ### 2.3 Conversation coach
 

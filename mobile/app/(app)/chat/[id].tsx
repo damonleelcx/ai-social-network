@@ -6,16 +6,17 @@ import { Alert } from '@/lib/dialogs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ApiError } from '@/api/client';
 import * as api from '@/api/endpoints';
-import type { Hint, Match, Message, ReportReason } from '@/api/types';
+import type { Hint, Match, Message } from '@/api/types';
 import { ChatInput } from '@/features/ChatInput';
-import { REPORT_REASONS, shortTime, uuid } from '@/lib/format';
+import { ReportSheet } from '@/features/ReportSheet';
+import { shortTime, uuid } from '@/lib/format';
 import { mergeBySeq, useForeground, useLive, useTopic } from '@/state/live';
 import { useSession } from '@/state/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
 import { Backdrop } from '@/ui/layout';
 import { PersonAvatar } from '@/ui/person';
-import { Button, ErrorText, Field, Glass, IconButton, IrisRule, Pill, T } from '@/ui/primitives';
+import { Button, ErrorText, Field, Glass, IconButton, IrisRule, T } from '@/ui/primitives';
 import { confirm, Sheet, SheetAction, showError } from '@/ui/sheet';
 import { FadeIn, SukiAvatar, SukiLoading, SukiSays, TypingDots } from '@/ui/suki';
 import { tr } from '@/i18n';
@@ -576,7 +577,7 @@ export default function ChatScreen() {
             <>
               <View style={{ flexDirection: 'row', gap: space.sm }}>
                 <Button label={tr('Ask Suki')} icon="sparkles" small kind="secondary" loading={asking} onPress={askSuki} />
-                <Button label={match?.open_date_id ? tr('Open our date') : tr('Plan a date')} icon="calendar-outline" small kind="secondary" onPress={openPlan} />
+                {match?.activity ? null : <Button label={match?.open_date_id ? tr('Open our date') : tr('Plan a date')} icon="calendar-outline" small kind="secondary" onPress={openPlan} />}
               </View>
               <ErrorText message={sendError} />
               <ChatInput ref={input} value={text} onChangeText={onChangeText} onSend={send} placeholder={tr('Message {name}', { name: person?.display_name ?? '' })} />
@@ -711,76 +712,6 @@ function PlanSheet({
           }
         }}
       />
-    </Sheet>
-  );
-}
-
-function ReportSheet({
-  visible,
-  name,
-  onClose,
-  onSend,
-}: {
-  visible: boolean;
-  name: string;
-  onClose: () => void;
-  onSend: (reason: ReportReason, details: string) => Promise<void>;
-}) {
-  const t = useTheme();
-  const [reason, setReason] = useState<ReportReason | null>(null);
-  const [details, setDetails] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  return (
-    <Sheet visible={visible} onClose={onClose} title={tr('Report {name}', { name: name })}>
-      <T soft>{tr("They won't know you reported them. What happened?")}</T>
-      <View style={{ gap: 2 }}>
-        {REPORT_REASONS.map((r) => (
-          <Pressable
-            key={r.value}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: reason === r.value }}
-            onPress={() => setReason(r.value)}
-            style={{ paddingVertical: space.sm, flexDirection: 'row', alignItems: 'center', gap: space.md }}
-          >
-            <View
-              style={{
-                width: 20,
-                height: 20,
-                borderRadius: 10,
-                borderWidth: reason === r.value ? 6 : 1.5,
-                borderColor: reason === r.value ? t.accent : t.inkFaint,
-              }}
-            />
-            <T>{tr(r.label)}</T>
-          </Pressable>
-        ))}
-      </View>
-      <Field label={tr('Anything else?')} value={details} onChangeText={setDetails} multiline maxLength={2000} hint={tr('Optional, and it helps.')} />
-      <ErrorText message={error} />
-      <Button
-        label={tr('Send report')}
-        kind="danger"
-        full
-        disabled={!reason}
-        loading={busy}
-        onPress={async () => {
-          if (!reason) return;
-          setBusy(true);
-          setError(null);
-          try {
-            await onSend(reason, details.trim());
-            setReason(null);
-            setDetails('');
-          } catch (e: any) {
-            setError(e.message);
-          } finally {
-            setBusy(false);
-          }
-        }}
-      />
-      {/* Kept visible so it's clear reporting and leaving are separate choices. */}
-      <Pill tone="plain" label={tr("Reporting doesn't end the match. Block or unmatch for that.")} />
     </Sheet>
   );
 }
