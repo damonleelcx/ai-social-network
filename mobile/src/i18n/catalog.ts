@@ -2,6 +2,7 @@
 // person, so these keep her voice: warm and casual. Placeholders have to survive translation.
 export const catalog: Record<string, readonly [string, string, string, string]> = {
   // Google sign-in
+  Contact: ['联系我们', '문의하기', 'お問い合わせ', 'Contacto'],
   // Inviting friends
   'Earn credits for each friend who joins': ['每邀请一位朋友加入，都能赚积分', '친구가 가입할 때마다 크레딧을 받아요', 'お友だちが参加するたびにクレジットがもらえます', 'Gana créditos por cada amigo que se una'],
   'Earn {n} credits for each friend': ['每邀请一位朋友得 {n} 积分', '친구 한 명당 {n}크레딧', 'お友だち 1 人につき {n} クレジット', 'Gana {n} créditos por cada amigo'],
@@ -374,7 +375,7 @@ export const catalog: Record<string, readonly [string, string, string, string]> 
   Playful: ['俏皮', '장난스럽게', 'おちゃめ', 'Juguetona'],
   Politics: ['政治立场', '정치 성향', '政治観', 'Política'],
   'Politics to rule out': ['排除的政治立场', '제외할 정치 성향', '避けたい政治観', 'Posturas políticas que descartar'],
-  'Privacy policy': ['隐私政策（英文）', '개인정보 처리방침(영문)', 'プライバシーポリシー（英語）', 'Política de privacidad (en inglés)'],
+  'Privacy policy': ['隐私政策', '개인정보 처리방침', 'プライバシーポリシー', 'Política de privacidad'],
   'Private hints in your chats. Only you see them.': ['聊天中的私密提示，只有你能看到。', '대화 속 비공개 힌트예요. 나만 볼 수 있어요.', 'チャット内の非公開ヒント。あなただけに見えます。', 'Sugerencias privadas en tus chats. Solo tú las ves.'],
   Prompts: ['问答', '질문', '質問', 'Preguntas'],
   Pronouns: ['代词', '호칭', '呼び方', 'Pronombres'],
@@ -465,7 +466,7 @@ export const catalog: Record<string, readonly [string, string, string, string]> 
   'Tell Suki': ['告诉 Suki', 'Suki에게 말하기', 'Suki に話す', 'Cuéntaselo a Suki'],
   'Tell Suki anything': ['跟 Suki 说什么都行', 'Suki에게 뭐든 말해 보세요', 'Suki に何でも話して', 'Cuéntale lo que sea a Suki'],
   'Tell a friend where you’ll be. The share button does it in one tap.': ['告诉朋友你会去哪里。分享按钮一点就好。', '친구에게 어디 있을지 알려 주세요. 공유 버튼 한 번이면 돼요.', '行き先を友達に伝えて。共有ボタンならワンタップです。', 'Cuéntale a una amistad dónde vas a estar. El botón de compartir lo hace con un toque.'],
-  Terms: ['条款（英文）', '약관(영문)', '規約（英語）', 'Términos (en inglés)'],
+  Terms: ['条款', '약관', '規約', 'Términos'],
   'Thank you for telling us': ['谢谢你告诉我们', '알려 주셔서 고마워요', '教えてくれてありがとう', 'Gracias por contárnoslo'],
   'That device gets signed out right away.': ['该设备会立即退出登录。', '그 기기는 바로 로그아웃돼요.', 'その端末はすぐにログアウトされます。', 'La sesión de ese dispositivo se cierra de inmediato.'],
   "That didn't work": ['没有成功', '잘 안 됐어요', 'うまくいきませんでした', 'Eso no funcionó'],
@@ -571,8 +572,8 @@ export const catalog: Record<string, readonly [string, string, string, string]> 
   'Your wingwoman. Openly an AI.': ['你的僚机。坦白说，是个 AI。', '당신의 윙우먼. 대놓고 AI예요.', 'あなたのウィングウーマン。堂々と AI です。', 'Tu cómplice. Una IA, y sin esconderlo.'],
   iPhone: ['iPhone', 'iPhone', 'iPhone', 'iPhone'],
   'interests (at least 3)': ['兴趣（至少 3 个）', '관심사(3개 이상)', '興味（3つ以上）', 'intereses (al menos 3)'],
-  'privacy policy': ['隐私政策（英文）', '개인정보 처리방침(영문)', 'プライバシーポリシー（英語）', 'política de privacidad (en inglés)'],
-  terms: ['条款（英文）', '약관(영문)', '規約（英語）', 'términos (en inglés)'],
+  'privacy policy': ['隐私政策', '개인정보 처리방침', 'プライバシーポリシー', 'política de privacidad'],
+  terms: ['条款', '약관', '規約', 'términos'],
   'your email': ['你的邮箱', '내 이메일', 'あなたのメール', 'tu correo'],
   'your spot': ['你们的地点', '그 장소', 'いつもの場所', 'el lugar de su cita'],
   '{day} at {value}': ['{day} {value}', '{day} {value}', '{day} {value}', '{day}, {value}'],

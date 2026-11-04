@@ -204,6 +204,7 @@ export default function AccountSettings() {
           <Group>
             <NavRow label={tr('Terms')} onPress={() => openLegal(legalUrl('terms'))} />
             <NavRow label={tr('Privacy policy')} onPress={() => openLegal(legalUrl('privacy'))} />
+            <NavRow label={tr('Contact')} onPress={() => openLegal(legalUrl('contact'))} />
             <NavRow label={tr('How account deletion works')} onPress={() => openLegal(legalUrl('delete-account'))} />
           </Group>
         </Section>

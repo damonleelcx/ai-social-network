@@ -303,10 +303,11 @@ func (s *Server) Handler() http.Handler {
 	m.Handle("GET /landing/", landing)
 	m.Handle("GET /app", webapp)
 	m.Handle("GET /app/", webapp)
-	m.HandleFunc("GET /legal/terms", legalPage("Terms of Use", termsHTML))
-	m.HandleFunc("GET /legal/privacy", legalPage("Privacy Policy", privacyHTML))
-	m.HandleFunc("GET /legal/delete-account", legalPage("Delete your SynAgent account", deleteHTML))
-	m.HandleFunc("GET /open", legalPage("SynAgent", openHTML))
+	m.HandleFunc("GET /legal/terms", legalPage("terms"))
+	m.HandleFunc("GET /legal/privacy", legalPage("privacy"))
+	m.HandleFunc("GET /legal/contact", legalPage("contact"))
+	m.HandleFunc("GET /legal/delete-account", legalPage("delete-account"))
+	m.HandleFunc("GET /open", legalPage("open"))
 
 	m.HandleFunc("GET /v1/public/user-map", lim("user-map", 60, time.Minute, s.userMap))
 

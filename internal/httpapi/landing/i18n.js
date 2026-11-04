@@ -136,9 +136,9 @@ const STRINGS = {
 
   "SynAgent is for adults 18 and over. Suki is an AI and can be wrong. Meet in public places and tell someone you trust where you're going.": ['SynAgent 仅限 18 岁及以上成年人使用。Suki 是 AI，可能会出错。请在公共场所见面，并告诉你信任的人你要去哪里。', 'SynAgent는 만 18세 이상 성인 전용입니다. Suki는 AI이므로 틀릴 수 있어요. 공공장소에서 만나고, 믿을 수 있는 사람에게 어디 가는지 알려 주세요.', 'SynAgent は18歳以上の成人向けです。Suki は AI のため、間違えることがあります。公共の場所で会い、信頼できる人に行き先を伝えてください。'],
   Legal: ['法律信息', '법적 고지', '法的情報'],
-  Terms: ['条款（英文）', '약관(영문)', '規約（英語）'],
-  Privacy: ['隐私（英文）', '개인정보(영문)', 'プライバシー（英語）'],
-  'Delete your account': ['删除账户（英文）', '계정 삭제(영문)', 'アカウント削除（英語）'],
+  Terms: ['条款', '약관', '規約'],
+  Privacy: ['隐私', '개인정보', 'プライバシー'],
+  'Delete your account': ['删除账户', '계정 삭제', 'アカウント削除'],
   Contact: ['联系我们', '연락처', '連絡先'],
 };
 
@@ -182,6 +182,9 @@ export function translatePage() {
       const value = el.getAttribute(attr);
       if (value && STRINGS[value]) el.setAttribute(attr, tr(value));
     }
+  }
+  for (const a of document.querySelectorAll('a[href^="/legal/"]')) {
+    a.href = a.getAttribute('href').split('?')[0] + '?lang=' + LANG;
   }
   document.documentElement.classList.remove('i18n-pending');
 }
