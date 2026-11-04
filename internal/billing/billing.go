@@ -25,7 +25,7 @@ import (
 
 const (
 	// FreeMatches is how many matches a person gets before messages cost anything.
-	FreeMatches = 5
+	FreeMatches = 1
 	// CostPerMessage is what one message to Suki costs.
 	CostPerMessage = 1
 
