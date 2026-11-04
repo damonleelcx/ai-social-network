@@ -26,7 +26,7 @@ const STATUS: Record<Photo['status'], { label: string; tone: 'good' | 'warn' | '
 
 export default function Photos() {
   const t = useTheme();
-  const { width } = useScreenSize();
+  const { width, height } = useScreenSize();
   const { refreshMe } = useSession();
   const { photos, loaded, refreshPhotos } = useLive();
   const [uploading, setUploading] = useState(false);
@@ -137,6 +137,7 @@ export default function Photos() {
       </Page>
 
       <Sheet visible={!!selected} onClose={() => setSelected(null)} title={tr('This photo')}>
+        {selected ? <MediaImage id={selected.id} fit="contain" radiusPx={radius.md} style={{ width: '100%', height: height * 0.5 }} /> : null}
         {selected?.status === 'approved' && !selected.is_primary ? (
           <SheetAction icon="ribbon-outline" label={tr('Make it my main photo')} onPress={() => setMain(selected)} />
         ) : null}
