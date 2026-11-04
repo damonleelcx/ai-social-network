@@ -43,7 +43,7 @@
     </view>
   </view>
   <view>{{item.pitch}}</view>
-  <block wx:if="{{item.status === 'pending' && !state}}">
+  <block wx:if="{{item.status === 'open' && !state}}">
     <button class="primary" data-decision="accept" bindtap="onDecide">想认识</button>
     <button class="plain" data-decision="pass" bindtap="onDecide">算了</button>
   </block>

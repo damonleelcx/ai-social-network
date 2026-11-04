@@ -26,7 +26,7 @@ Page({
       this.setData({
         loaded: true,
         matches,
-        proposals: proposals.filter((p) => p.status === 'pending' && !p.my_decision).map((p) => ({ kind: 'proposal', proposal_id: p.id })),
+        proposals: proposals.filter((p) => p.status === 'open' && !p.my_decision).map((p) => ({ kind: 'proposal', proposal_id: p.id })),
       });
       matches.forEach(async (m, i) => {
         const ids = m.person.photo_ids || [];

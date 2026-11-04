@@ -44,6 +44,10 @@ a place for the date, and gets a better sense of your type each time.
 - **She keeps things respectful.** Explicit photos, messages and profile text are filtered, and you can block or report anyone.
 - **You stay in control.** You can read and delete what Suki remembers about you, reset what she has learned, export your data, or delete your account in Settings.
 
+## WeChat mini program
+
+[`weixin/`](weixin/README.md) is a native mini program on the same server and accounts. It isn't released: that needs a registered mini program, an ICP-filed domain and WeChat's review.
+
 ## Availability
 
 SynAgent is for adults 18 and over. It isn't in the App Store or Google Play yet.
