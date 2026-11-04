@@ -1,24 +1,28 @@
 const api = require('../../lib/api');
 const live = require('../../lib/live');
+const i18n = require('../../lib/i18n');
 const { showError, confirm } = require('../../lib/format');
 
+const { t } = i18n;
+
+const COPY = { plan: 'Plan a date', more: 'More', ended: "This chat has ended. I'm sorry. There are more people to meet.", send: 'Send' };
 const REASONS = [
-  ['harassment', '骚扰'],
-  ['fake_profile', '虚假资料'],
-  ['inappropriate_content', '不当内容'],
-  ['scam', '诈骗'],
-  ['underage', '未满 18 岁'],
-  ['other', '其他'],
+  ['harassment', 'Harassment'],
+  ['fake_profile', 'Fake profile'],
+  ['inappropriate_content', 'Inappropriate content'],
+  ['scam', 'Scam'],
+  ['underage', 'Under 18'],
+  ['other', 'Something else'],
 ];
 const POLL_MS = 10000;
 
 Page({
-  data: { id: '', me: '', match: {}, messages: [], draft: '', bottom: '' },
+  data: { t: i18n.strings(COPY), id: '', me: '', match: {}, messages: [], draft: '', bottom: '', barText: '', placeholder: '' },
   onLoad(q) {
     this.setData({ id: q.id });
-    this.off = live.on((t) => {
-      if (t === 'chat:' + q.id || t === 'reconnect') this.load();
-      else if (t === 'matches') this.loadMatch();
+    this.off = live.on((topic) => {
+      if (topic === 'chat:' + q.id || topic === 'reconnect') this.load();
+      else if (topic === 'matches') this.loadMatch();
     });
     api.auth.me().then((r) => this.setData({ me: r.user.id }), showError);
     this.loadMatch();
@@ -28,6 +32,7 @@ Page({
     clearInterval(this.poll);
   },
   onShow() {
+    i18n.apply(this, COPY, 'Chats');
     this.load();
     clearInterval(this.poll);
     this.poll = setInterval(() => this.load(), POLL_MS);
@@ -38,7 +43,11 @@ Page({
   async loadMatch() {
     try {
       const match = await api.matches.get(this.data.id);
-      this.setData({ match });
+      this.setData({
+        match,
+        barText: match.activity ? t('Buddy: {activity}', { activity: match.activity }) : (match.person.city_name || match.person.display_name),
+        placeholder: t('Message {name}', { name: match.person.display_name }),
+      });
       wx.setNavigationBarTitle({ title: match.person.display_name });
     } catch (e) {
       showError(e);
@@ -81,19 +90,22 @@ Page({
       showError(e);
     }
   },
+  onPerson() {
+    wx.navigateTo({ url: '/pages/person/person?match=' + this.data.id });
+  },
   onMore() {
     wx.showActionSheet({
-      itemList: ['举报', '屏蔽', '解除匹配'],
-      success: (r) => [this.report, this.block, this.unmatch][r.tapIndex].call(this),
+      itemList: [t('View profile'), t('Report'), t('Block'), t('Unmatch')],
+      success: (r) => [this.onPerson, this.report, this.block, this.unmatch][r.tapIndex].call(this),
     });
   },
   report() {
     wx.showActionSheet({
-      itemList: REASONS.map((x) => x[1]),
+      itemList: REASONS.map((x) => t(x[1])),
       success: async (r) => {
         try {
           await api.safety.report({ user_id: this.data.match.person.user_id, match_id: this.data.id, reason: REASONS[r.tapIndex][0], details: '' });
-          wx.showToast({ title: '已收到举报', icon: 'none' });
+          wx.showToast({ title: t('Thank you for telling us'), icon: 'none' });
         } catch (e) {
           showError(e);
         }
@@ -101,7 +113,7 @@ Page({
     });
   },
   async block() {
-    if (!(await confirm('屏蔽这个人？', '你们将不再看到对方，匹配也会立刻结束。'))) return;
+    if (!(await confirm(t('Block this person?'), t("You'll stop seeing each other, and this match ends right away.")))) return;
     try {
       await api.safety.block(this.data.match.person.user_id);
       wx.navigateBack();
@@ -110,7 +122,7 @@ Page({
     }
   },
   async unmatch() {
-    if (!(await confirm('解除匹配？', '聊天会对双方结束，进行中的约会计划也会取消。'))) return;
+    if (!(await confirm(t('Unmatch?'), t('The chat ends for both of you, and any open date plan is cancelled.')))) return;
     try {
       await api.matches.unmatch(this.data.id);
       wx.navigateBack();

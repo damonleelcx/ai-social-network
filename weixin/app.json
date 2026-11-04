@@ -6,7 +6,14 @@
     "pages/me/me",
     "pages/login/login",
     "pages/chat/chat",
-    "pages/date/date"
+    "pages/date/date",
+    "pages/person/person",
+    "pages/notifications/notifications",
+    "pages/settings/app/app",
+    "pages/settings/account/account",
+    "pages/settings/blocked/blocked",
+    "pages/settings/suki/suki",
+    "pages/settings/memory/memory"
   ],
   "window": {
     "navigationBarTitleText": "SynAgent",
@@ -21,9 +28,9 @@
     "borderStyle": "black",
     "list": [
       { "pagePath": "pages/suki/suki", "text": "Suki" },
-      { "pagePath": "pages/matches/matches", "text": "匹配" },
+      { "pagePath": "pages/matches/matches", "text": "配对" },
       { "pagePath": "pages/dates/dates", "text": "约会" },
-      { "pagePath": "pages/me/me", "text": "我的" }
+      { "pagePath": "pages/me/me", "text": "我" }
     ]
   },
   "usingComponents": { "suki-card": "/components/suki-card/suki-card" },

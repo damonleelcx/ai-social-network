@@ -1,18 +1,30 @@
 const api = require('../../lib/api');
 const live = require('../../lib/live');
+const i18n = require('../../lib/i18n');
 const { showError } = require('../../lib/format');
 
+const { t } = i18n;
+
+const COPY = {
+  introductions: "Suki's introductions",
+  chats: 'Chats',
+  sayHi: 'Say hi. I know you want to.',
+  empty: "No matches yet. Tell Suki who you'd like to meet.",
+};
+
 Page({
-  data: { matches: [], proposals: [], loaded: false },
+  data: { t: i18n.strings(COPY), matches: [], proposals: [], loaded: false },
   onLoad() {
-    this.off = live.on((t) => {
-      if (t === 'matches' || t === 'proposals' || t === 'reconnect' || t.startsWith('chat:')) this.load();
+    this.off = live.on((topic) => {
+      if (topic === 'matches' || topic === 'proposals' || topic === 'reconnect' || topic.startsWith('chat:')) this.load();
     });
   },
   onUnload() {
     if (this.off) this.off();
   },
   onShow() {
+    i18n.apply(this, COPY, 'Matches');
+    i18n.tabs();
     this.load();
   },
   async onPullDownRefresh() {
@@ -22,7 +34,9 @@ Page({
   async load() {
     try {
       const [all, proposals] = await Promise.all([api.matches.list(), api.proposals.list()]);
-      const matches = all.filter((m) => m.status === 'active');
+      const matches = all.filter((m) => m.status === 'active').map((m) => Object.assign({}, m, {
+        activityText: m.activity ? t('Buddy: {activity}', { activity: m.activity }) : '',
+      }));
       this.setData({
         loaded: true,
         matches,
@@ -38,5 +52,9 @@ Page({
   },
   onOpen(e) {
     wx.navigateTo({ url: '/pages/chat/chat?id=' + e.currentTarget.dataset.id });
+  },
+  onPhoto(e) {
+    const m = this.data.matches[e.currentTarget.dataset.index];
+    if (m) api.previewPhotos(m.person.photo_ids);
   },
 });

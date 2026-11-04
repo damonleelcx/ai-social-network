@@ -1,6 +1,7 @@
 // Buying credits with WeChat Pay. WeChat doesn't allow selling virtual goods in a mini
 // program on iOS, so there it offers nothing, and doesn't point anywhere else to pay.
 const api = require('./api');
+const { t } = require('./i18n');
 
 const PACKS = [
   { id: 'small', credits: 100, fen: 3500 },
@@ -15,11 +16,11 @@ function platform() {
 
 function packs() {
   if (platform() === 'ios') return [];
-  return PACKS.map((p) => ({ id: p.id, label: `${p.credits} 积分，¥${p.fen / 100}` }));
+  return PACKS.map((p) => ({ id: p.id, label: t('{n} credits for {price}', { n: p.credits, price: `¥${p.fen / 100}` }) }));
 }
 
 const login = () => new Promise((resolve, reject) => {
-  wx.login({ success: (r) => resolve(r.code), fail: () => reject(new Error('微信登录失败，请再试一次。')) });
+  wx.login({ success: (r) => resolve(r.code), fail: () => reject(new Error(t("WeChat sign-in didn't work. Please try again."))) });
 });
 
 // False if they backed out. WeChat's cancel isn't an error.
@@ -28,7 +29,7 @@ const requestPayment = (p) => new Promise((resolve, reject) => {
     success: () => resolve(true),
     fail: (e) => {
       if (/cancel/.test((e && e.errMsg) || '')) resolve(false);
-      else reject(new Error('支付没有成功，没有扣款的话可以再试一次。'));
+      else reject(new Error(t("The payment didn't go through. If you weren't charged, you can try again.")));
     },
   }));
 });
@@ -40,7 +41,7 @@ async function buy(id) {
   const before = (await api.credits.status()).balance;
   const params = await api.credits.wechatPrepay(id, await login());
   if (!(await requestPayment(params))) return null;
-  wx.showToast({ title: '支付成功，积分马上到账', icon: 'none' });
+  wx.showToast({ title: t('Paid. Your credits will arrive in a moment.'), icon: 'none' });
   let status = null;
   for (let i = 0; i < 5; i++) {
     await sleep(1500);

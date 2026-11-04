@@ -1,22 +1,56 @@
 const api = require('../../lib/api');
 const live = require('../../lib/live');
+const i18n = require('../../lib/i18n');
 const { time, pad, showError, confirm } = require('../../lib/format');
 
+const { t } = i18n;
+
+const COPY = {
+  searching: "I'm looking for a place you'd both enjoy.",
+  pickPlace: 'Pick your favorite place.',
+  otherVoted: 'They already chose.',
+  yourPick: 'Your pick',
+  vote: 'Vote for this one',
+  youSuggested: 'You suggested',
+  thatWorks: 'That works',
+  differentTime: 'Suggest a different time',
+  suggestTime: 'Pick a date and time',
+  day: 'Date',
+  time: 'Time',
+  choose: 'Choose',
+  suggest: 'Suggest this time',
+  confirmed: "You're on!",
+  copyPlan: 'Copy the plan',
+  cancel: 'Cancel this date',
+  cancelled: 'This date was called off',
+};
+
 Page({
-  data: { id: '', date: null, day: '', clock: '', today: '', proposedText: '', scheduledText: '' },
+  data: { t: i18n.strings(COPY), id: '', date: null, day: '', clock: '', today: '', proposedText: '', scheduledText: '', heading: '', otherSuggested: '', waiting: '' },
   onLoad(q) {
     const n = new Date();
     this.setData({ id: q.id, today: `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}` });
-    this.off = live.on((t) => {
-      if (t === 'dates' || t === 'reconnect') this.load();
+    this.off = live.on((topic) => {
+      if (topic === 'dates' || topic === 'reconnect') this.load();
     });
     this.load();
   },
   onUnload() {
     if (this.off) this.off();
   },
+  onShow() {
+    i18n.apply(this, COPY, 'Date plan');
+  },
   show(date) {
-    this.setData({ date, proposedText: time(date.proposed_at), scheduledText: time(date.scheduled_at) });
+    const name = date.person.display_name;
+    this.setData({
+      date,
+      proposedText: time(date.proposed_at),
+      scheduledText: time(date.scheduled_at),
+      heading: t('A date with {name}', { name }),
+      otherSuggested: t('{name} suggested', { name }),
+      waiting: t('Waiting for {name} to say yes.', { name }),
+    });
   },
   async load() {
     try {
@@ -31,6 +65,9 @@ Page({
     } catch (e) {
       showError(e);
     }
+  },
+  onPerson() {
+    wx.navigateTo({ url: '/pages/person/person?match=' + this.data.date.match_id });
   },
   onVote(e) {
     this.act(() => api.dates.vote(this.data.id, e.currentTarget.dataset.id));
@@ -50,7 +87,7 @@ Page({
     this.act(() => api.dates.confirm(this.data.id));
   },
   async onCancel() {
-    if (await confirm('取消这次约会？', '对方会收到通知。')) this.act(() => api.dates.cancel(this.data.id));
+    if (await confirm(t('Cancel this date?'), t("They'll be told."))) this.act(() => api.dates.cancel(this.data.id));
   },
   async onShare() {
     try {

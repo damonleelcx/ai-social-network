@@ -1,0 +1,62 @@
+<view class="page">
+  <view class="section">{{t.signedInAs}}</view>
+  <view class="card" wx:if="{{user}}">{{user.has_password ? user.email : t.wechatAccount}}</view>
+
+  <block wx:if="{{user && user.has_password}}">
+    <view class="nav-row" bindtap="onPasswordOpen">
+      <view class="grow">{{t.changePassword}}</view>
+      <view class="arrow">{{passwordOpen ? '⌄' : '›'}}</view>
+    </view>
+    <view wx:if="{{passwordOpen}}" class="card">
+      <view wx:if="{{passwordDone}}" class="good">{{t.changed}}</view>
+      <block wx:else>
+        <input class="input" placeholder="{{t.currentPassword}}" password="{{true}}" value="{{current}}" data-f="current" bindinput="onInput" />
+        <input class="input" placeholder="{{t.newPassword}}" password="{{true}}" value="{{next}}" data-f="next" bindinput="onInput" />
+        <view class="hint">{{t.atLeast}}</view>
+        <view wx:if="{{passwordError}}" class="error">{{passwordError}}</view>
+        <button class="primary" loading="{{passwordBusy}}" disabled="{{!current || !next}}" bindtap="onPasswordSave">{{t.changePassword}}</button>
+      </block>
+    </view>
+  </block>
+
+  <view class="section">{{t.sessions}}</view>
+  <view wx:if="{{sessionError}}" class="error">{{sessionError}}</view>
+  <view wx:for="{{sessions}}" wx:key="id" class="card row">
+    <view class="grow">
+      <view>{{item.device}}<text wx:if="{{item.current}}" class="badge">{{t.thisPhone}}</text></view>
+      <view class="hint">{{item.seen}}</view>
+    </view>
+    <view class="chip revoke" data-id="{{item.id}}" data-current="{{item.current}}" bindtap="onRevoke">{{t.revoke}}</view>
+  </view>
+
+  <view class="section">{{t.yourData}}</view>
+  <view class="soft">{{t.dataHint}}</view>
+  <button class="plain" loading="{{exporting}}" bindtap="onExport">{{t.exportData}}</button>
+  <button wx:if="{{exportPath}}" class="primary" bindtap="onSendFile">{{t.sendFile}}</button>
+
+  <view class="section">{{t.legal}}</view>
+  <view class="soft">{{t.legalHint}}</view>
+  <button class="plain" data-page="terms" bindtap="onLegal">{{t.terms}}</button>
+  <button class="plain" data-page="privacy" bindtap="onLegal">{{t.privacy}}</button>
+  <button class="plain" data-page="contact" bindtap="onLegal">{{t.contact}}</button>
+  <button class="plain" data-page="delete-account" bindtap="onLegal">{{t.howDeletion}}</button>
+
+  <view class="section"></view>
+  <button class="plain" loading="{{signingOut}}" bindtap="onSignOut">{{t.signOut}}</button>
+  <button class="danger" bindtap="onDeleteOpen">{{t.deleteAccount}}</button>
+
+  <view wx:if="{{deleteOpen && user}}" class="card gap">
+    <view class="title">{{t.deleteTitle}}</view>
+    <block wx:if="{{user.has_password}}">
+      <view class="soft gap">{{t.deleteWithPassword}}</view>
+      <input class="input gap" placeholder="{{t.password}}" password="{{true}}" value="{{deletePassword}}" data-f="deletePassword" bindinput="onInput" />
+    </block>
+    <block wx:else>
+      <view class="soft gap">{{t.deleteWithWeChat}}</view>
+      <view class="soft gap">{{t.confirmWeChat}}</view>
+    </block>
+    <view wx:if="{{deleteError}}" class="error">{{deleteError}}</view>
+    <button class="danger" loading="{{deleteBusy}}" disabled="{{user.has_password && !deletePassword}}" bindtap="onDelete">{{t.deleteAccount}}</button>
+    <button class="plain" bindtap="onDeleteOpen">{{t.keep}}</button>
+  </view>
+</view>

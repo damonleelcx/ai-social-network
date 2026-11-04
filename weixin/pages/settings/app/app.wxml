@@ -1,0 +1,35 @@
+<view wx:if="{{!s}}" class="empty">{{t.loading}}</view>
+<view wx:else class="page">
+  <view class="section">{{t.language}}</view>
+  <view class="card">
+    <view class="soft">{{t.languageHint}}</view>
+    <view class="options">
+      <view wx:for="{{languages}}" wx:key="value" class="chip {{s.language === item.value ? 'on' : ''}}" data-f="language" data-v="{{item.value}}" bindtap="onPick">{{item.label}}</view>
+    </view>
+  </view>
+
+  <view class="section">{{t.notifyAbout}}</view>
+  <view class="card">
+    <view class="set-row"><view class="grow">{{t.matches}}</view><switch color="#ff5c8a" checked="{{s.notify_matches}}" data-f="notify_matches" bindchange="onToggle" /></view>
+    <view class="set-row"><view class="grow">{{t.messages}}</view><switch color="#ff5c8a" checked="{{s.notify_messages}}" data-f="notify_messages" bindchange="onToggle" /></view>
+    <view class="set-row"><view class="grow">{{t.dates}}</view><switch color="#ff5c8a" checked="{{s.notify_dates}}" data-f="notify_dates" bindchange="onToggle" /></view>
+    <view class="set-row"><view class="grow">{{t.suki}}</view><switch color="#ff5c8a" checked="{{s.notify_suki}}" data-f="notify_suki" bindchange="onToggle" /></view>
+    <view class="set-row"><view class="grow">{{t.email}}</view><switch color="#ff5c8a" checked="{{s.notify_email}}" data-f="notify_email" bindchange="onToggle" /></view>
+  </view>
+
+  <view class="section">{{t.chats}}</view>
+  <view class="card">
+    <view class="set-row">
+      <view class="grow"><view>{{t.receipts}}</view><view class="hint">{{t.receiptsHint}}</view></view>
+      <switch color="#ff5c8a" checked="{{s.read_receipts}}" data-f="read_receipts" bindchange="onToggle" />
+    </view>
+  </view>
+
+  <view class="section">{{t.perDay}}</view>
+  <view class="card">
+    <view class="soft">{{t.perDayHint}}</view>
+    <view class="options">
+      <view wx:for="{{daily}}" wx:key="*this" class="chip {{s.daily_matches === item ? 'on' : ''}}" data-f="daily_matches" data-v="{{item}}" bindtap="onPick">{{item}}</view>
+    </view>
+  </view>
+</view>

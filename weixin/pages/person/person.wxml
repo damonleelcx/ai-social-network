@@ -1,0 +1,59 @@
+<view wx:if="{{!person}}" class="empty">
+  <block wx:if="{{error}}">
+    <view class="title">{{t.cannotOpen}}</view>
+    <view class="soft gap">{{error}}</view>
+  </block>
+  <block wx:else>{{t.loading}}</block>
+</view>
+
+<block wx:else>
+  <swiper wx:if="{{photos.length}}" class="hero" indicator-dots="{{photos.length > 1}}" indicator-active-color="#ffffff" indicator-color="rgba(255,255,255,.45)">
+    <swiper-item wx:for="{{photos}}" wx:key="id">
+      <image class="hero-photo" src="{{item.path}}" mode="aspectFill" data-id="{{item.id}}" bindtap="onPhoto" />
+    </swiper-item>
+  </swiper>
+  <view wx:else class="hero"></view>
+
+  <view class="page {{open ? 'with-bar' : ''}}">
+    <view class="name">{{person.display_name}}</view>
+    <view class="soft">{{line}}</view>
+
+    <view wx:if="{{proposal && proposal.pitch}}" class="card gap">
+      <view>{{proposal.pitch}}</view>
+      <view wx:if="{{proposal.shared.length}}" class="chips-row">
+        <view wx:for="{{proposal.shared}}" wx:key="*this" class="chip">{{item}}</view>
+      </view>
+    </view>
+
+    <view wx:if="{{waiting}}" class="good">{{waiting}}</view>
+    <view wx:elif="{{proposal && proposal.my_decision === 'pass'}}" class="soft gap">{{t.passed}}</view>
+    <view wx:elif="{{proposal && !open && !chatId}}" class="soft gap">{{t.ended}}</view>
+    <button wx:if="{{chatId}}" class="primary" bindtap="onChat">{{chatLabel}}</button>
+
+    <view wx:if="{{person.bio}}" class="card gap">{{person.bio}}</view>
+
+    <view wx:for="{{person.prompts}}" wx:key="q" class="card">
+      <view class="soft">{{item.q}}</view>
+      <view class="title">{{item.a}}</view>
+    </view>
+
+    <block wx:if="{{person.interests.length}}">
+      <view class="section">{{t.into}}</view>
+      <view class="chips-row">
+        <view wx:for="{{person.interests}}" wx:key="*this" class="chip">{{item}}</view>
+      </view>
+    </block>
+
+    <view wx:if="{{details.length}}" class="card gap">
+      <view wx:for="{{details}}" wx:key="key" class="detail">
+        <view class="detail-key soft">{{item.key}}</view>
+        <view class="grow">{{item.value}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{open}}" class="bar">
+    <button class="plain half" loading="{{busy === 'pass'}}" disabled="{{!!busy}}" bindtap="onPass">{{t.pass}}</button>
+    <button class="primary half" loading="{{busy === 'accept'}}" disabled="{{!!busy}}" bindtap="onYes">{{t.yes}}</button>
+  </view>
+</block>

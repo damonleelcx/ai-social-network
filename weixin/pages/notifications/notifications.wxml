@@ -1,0 +1,14 @@
+<view class="page">
+  <view wx:if="{{!loaded}}" class="empty">{{t.checking}}</view>
+  <view wx:elif="{{!items.length}}" class="empty">
+    <view class="title">{{t.quiet}}</view>
+    <view class="gap">{{t.quietBody}}</view>
+  </view>
+  <view wx:for="{{items}}" wx:key="id" class="card {{item.fresh ? 'fresh' : ''}}" data-screen="{{item.data.screen}}" data-id="{{item.data.id}}" bindtap="onOpen">
+    <view class="row">
+      <view class="grow title-line">{{item.title}}</view>
+      <view class="soft when">{{item.when}}</view>
+    </view>
+    <view class="soft">{{item.body}}</view>
+  </view>
+</view>

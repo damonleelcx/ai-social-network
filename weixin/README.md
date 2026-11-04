@@ -2,9 +2,11 @@
 
 A native mini program that talks to the same server as the app. React Native can't run in WeChat, so these are separate pages. The account, Suki, matches, chats and credits are all shared with the app.
 
-**In it:** WeChat sign-in, plus email sign-in, sign-up and verification; Suki's conversation and cards; matches and chat, with report and block; date plans and your buddy posts; photos, credits balance and history; account deletion. Chinese only.
+**In it:** WeChat sign-in, plus email sign-in, sign-up, verification and forgot password; Suki's conversation and cards, with her voice (speaker buttons and reading new messages aloud); matches and chat, with report and block; a person's full profile, where tapping any photo shows all of it; date plans and your buddy posts; photos, credits balance and history; notifications; settings for the app, your account (password, sessions, data export, legal, sign-out, deletion), blocked people, Suki and what she remembers. Chinese by default, plus English, Korean, Japanese and Spanish, following the account's language setting. Words live in `lib/catalog.js`, keyed by their English like the app's catalog.
 
-**Not in it yet:** voice, notifications and settings. Credits can be bought with WeChat Pay, except on iOS (below).
+**Not in it yet:** editing your profile (telling Suki works), pausing introductions, push notifications, the coaching hints inside chats, Suki's avatar moods and a light theme. The settings for coaching apply here anyway because they control what Suki reads, and the app shows the hints. The theme and avatar moods settings are left out because they'd change nothing here. Credits can be bought with WeChat Pay, except on iOS (below).
+
+**Check first on a real phone:** saving settings uses `PATCH /v1/settings`, and PATCH isn't among the methods WeChat's `wx.request` documents. Reading settings works either way. If a phone refuses it, the switch goes back and the person is told it didn't save (see `patch` in `lib/api.js`); the fix would be a POST route on the server. Sending the data export uses `wx.shareFileMessage`, which also needs trying on a phone.
 
 ## Running it
 
