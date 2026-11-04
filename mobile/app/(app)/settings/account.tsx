@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { API_URL, legalUrl } from '@/api/client';
 import * as api from '@/api/endpoints';
+import { googleIdToken } from '@/lib/googleSignIn';
 import type { Session } from '@/api/types';
 import { shortTime } from '@/lib/format';
 import { openLegal } from '@/lib/links';
@@ -71,26 +72,37 @@ function PasswordSheet({ visible, onClose }: { visible: boolean; onClose: () => 
 }
 
 function DeleteSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
-  const { forget } = useSession();
+  const { forget, user } = useSession();
+  const passwordless = user?.has_password === false;
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   return (
     <Sheet visible={visible} onClose={onClose} title={tr('Delete your account')}>
       <T soft>{tr("This removes your profile, photos, matches and chats for good. It can't be undone. Type your password to confirm.")}</T>
-      <Field label={tr('Password')} value={password} onChangeText={setPassword} secure autoCapitalize="none" autoComplete="current-password" />
+      {passwordless ? <T soft>{tr('Confirm with your Google account to finish.')}</T> : null}
+      {passwordless ? null : <Field label={tr('Password')} value={password} onChangeText={setPassword} secure autoCapitalize="none" autoComplete="current-password" /> }
       <ErrorText message={error} />
       <Button
         label={tr('Delete my account')}
         kind="danger"
         full
         loading={busy}
-        disabled={!password}
+        disabled={!passwordless && !password}
         onPress={async () => {
           setBusy(true);
           setError(null);
           try {
-            await api.auth.deleteAccount(password);
+            if (passwordless) {
+              const token = await googleIdToken();
+              if (!token) {
+                setBusy(false);
+                return;
+              }
+              await api.auth.deleteWithGoogle(token);
+            } else {
+              await api.auth.deleteAccount(password);
+            }
             // Close first: a modal left open would sit on top of the welcome screen.
             onClose();
             await forget();
@@ -162,9 +174,11 @@ export default function AccountSettings() {
           </Glass>
         </Section>
 
-        <Group>
-          <NavRow icon="key-outline" label={tr('Change password')} onPress={() => setPasswordOpen(true)} />
-        </Group>
+        {user?.has_password === false ? null : (
+          <Group>
+            <NavRow icon="key-outline" label={tr('Change password')} onPress={() => setPasswordOpen(true)} />
+          </Group>
+        )}
 
         <Section title={tr('Active sessions')}>
           <ErrorText message={sessionError} />

@@ -74,6 +74,8 @@ type Config struct {
 	// WeChat Pay for the mini program. All of it, or none of it.
 	WeChat billing.WeChatConfig
 	// Google Play Billing: the Android package, and a service account's JSON key.
+	// GoogleClientID is the OAuth web client id for sign-in. Empty turns it off.
+	GoogleClientID           string
 	GooglePlayPackage        string
 	GooglePlayServiceAccount string
 	// ExpoPushURL is where push notifications go; empty disables push.
@@ -97,6 +99,7 @@ func Load() (Config, error) {
 		StripeSecretKey:          os.Getenv("SYN_STRIPE_SECRET_KEY"),
 		StripeWebhookSecret:      os.Getenv("SYN_STRIPE_WEBHOOK_SECRET"),
 		GooglePlayPackage:        env("SYN_GOOGLE_PLAY_PACKAGE", "space.herosagent.synagent"),
+		GoogleClientID:           os.Getenv("SYN_GOOGLE_CLIENT_ID"),
 		GooglePlayServiceAccount: os.Getenv("SYN_GOOGLE_PLAY_SERVICE_ACCOUNT"),
 		WeChat: billing.WeChatConfig{
 			AppID:         os.Getenv("SYN_WECHAT_APP_ID"),

@@ -130,6 +130,9 @@ func run(mode string) error {
 		hub := httpapi.NewHub()
 		a := &auth.Service{Pool: pool, Mailer: mailer, PublicOrigin: cfg.PublicOrigin, SessionTTL: cfg.SessionTTL, AdminEmails: cfg.AdminEmails}
 		srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill}
+		if cfg.GoogleClientID != "" {
+			srv.GoogleLogin = &externalauth.Google{ClientID: cfg.GoogleClientID}
+		}
 		if cfg.WeChat.AppID != "" && cfg.WeChat.AppSecret != "" {
 			srv.WeChatLogin = &externalauth.WeChat{AppID: cfg.WeChat.AppID, AppSecret: cfg.WeChat.AppSecret}
 		}

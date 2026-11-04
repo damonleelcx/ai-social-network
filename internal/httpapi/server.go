@@ -47,6 +47,8 @@ type Server struct {
 	Billing *billing.Service
 	// WeChatLogin is sign-in from the mini program. Nil means it's off.
 	WeChatLogin *externalauth.WeChat
+	// GoogleLogin is sign-in from the Android app. Nil means it's off.
+	GoogleLogin *externalauth.Google
 	// Speech is nil when no voice is configured.
 	Speech           *tts.Service
 	SpeechDailyChars int
@@ -314,6 +316,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /v1/auth/signout", s.signedIn(s.signout))
 	m.HandleFunc("POST /v1/auth/verify", s.signedIn(lim("verify", 20, 10*time.Minute, s.verifyEmail)))
 	m.HandleFunc("POST /v1/auth/resend", s.signedIn(lim("resend", 5, 10*time.Minute, s.resend)))
+	m.HandleFunc("POST /v1/auth/google", lim("signin", 120, time.Minute, s.googleSignIn))
+	m.HandleFunc("POST /v1/auth/google/delete", s.signedIn(lim("delete", 5, time.Hour, s.googleDelete)))
 	m.HandleFunc("POST /v1/auth/wechat", lim("signin", 120, time.Minute, s.wechatSignIn))
 	m.HandleFunc("POST /v1/auth/wechat/delete", s.signedIn(lim("delete", 5, time.Hour, s.wechatDelete)))
 	m.HandleFunc("POST /v1/auth/forgot", lim("forgot", 60, 10*time.Minute, s.forgot))
@@ -487,6 +491,75 @@ func (s *Server) wechatOpenID(w http.ResponseWriter, r *http.Request, code strin
 		return "", false
 	}
 	return id, true
+}
+
+// googleUser checks an ID token. It has answered if nil comes back.
+func (s *Server) googleUser(w http.ResponseWriter, r *http.Request, token string) *externalauth.GoogleUser {
+	if s.GoogleLogin == nil {
+		fail(w, 422, "Google sign-in isn't open yet.")
+		return nil
+	}
+	u, err := s.GoogleLogin.Verify(r.Context(), token, time.Now())
+	if errors.Is(err, externalauth.ErrRejected) {
+		fail(w, 422, "Google couldn't confirm who you are. Please try again.")
+		return nil
+	}
+	if err != nil {
+		handleErr(w, r, err)
+		return nil
+	}
+	return u
+}
+
+func (s *Server) googleSignIn(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		IDToken     string `json:"id_token"`
+		Language    string
+		AcceptTerms bool `json:"accept_terms"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	g := s.googleUser(w, r, b.IDToken)
+	if g == nil {
+		return
+	}
+	if b.Language == "" {
+		b.Language = "en"
+	}
+	u, created, err := s.Auth.SignInExternal(r.Context(), auth.External{Provider: "google", Subject: g.Subject, Email: g.Email, Name: g.Name, Lang: b.Language, AcceptTerms: b.AcceptTerms})
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	status := 200
+	if created {
+		status = 201
+		if g.Name != "" {
+			if _, err := profile.Save(r.Context(), s.Pool, u.ID, map[string]any{"display_name": g.Name}); err != nil {
+				slog.Warn("google signup name", "err", err)
+			}
+		}
+	}
+	s.issue(w, r, status, u)
+}
+
+func (s *Server) googleDelete(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		IDToken string `json:"id_token"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	g := s.googleUser(w, r, b.IDToken)
+	if g == nil {
+		return
+	}
+	if err := s.Auth.DeleteAccountExternal(r.Context(), userOf(r).ID, "google", g.Subject); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]bool{"ok": true})
 }
 
 func (s *Server) wechatSignIn(w http.ResponseWriter, r *http.Request) {

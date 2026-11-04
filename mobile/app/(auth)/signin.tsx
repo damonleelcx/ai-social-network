@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { auth } from '@/api/endpoints';
+import { GoogleSignInButton } from '@/features/GoogleSignInButton';
 import { useSession } from '@/state/session';
 import { space } from '@/theme/tokens';
 import { Backdrop, Page, ScreenHeader } from '@/ui/layout';
@@ -61,6 +62,7 @@ export default function SignIn() {
         />
         <ErrorText message={error} />
         <View style={{ gap: space.sm }}>
+          <GoogleSignInButton />
           <Button label={tr('Sign in')} full loading={busy} disabled={!email.trim() || !password} onPress={submit} />
           <Button label={tr('I forgot my password')} kind="ghost" full onPress={() => router.push('/forgot')} />
         </View>
