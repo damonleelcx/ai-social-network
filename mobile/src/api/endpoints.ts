@@ -1,6 +1,7 @@
 import type {
   AppNotification,
   Blocked,
+  BuddyRequest,
   DatePlan,
   Hint,
   Match,
@@ -106,6 +107,22 @@ export const dates = {
   cancel: async (id: string, reason?: string) =>
     (await api<DateResult>(`/v1/dates/${id}/cancel`, { method: 'POST', body: { reason: reason ?? '' } })).date,
   share: async (id: string) => (await api<{ text: string }>(`/v1/dates/${id}/share`)).text,
+};
+
+export const buddies = {
+  board: async () => {
+    const r = await api<{ requests: BuddyRequest[] | null; missing: string[] | null }>('/v1/buddies');
+    return { requests: r.requests ?? [], missing: r.missing ?? [] };
+  },
+  mine: async () => (await api<{ requests: BuddyRequest[] | null }>('/v1/buddies/mine')).requests ?? [],
+  get: async (id: string) => (await api<{ request: BuddyRequest }>(`/v1/buddies/${id}`)).request,
+  post: async (b: { kind: string; when: string; note: string; expires_in_hours: number; same_gender: boolean }) =>
+    (await api<{ request: BuddyRequest }>('/v1/buddies', { method: 'POST', body: b })).request,
+  offer: (id: string) => api<Ok>(`/v1/buddies/${id}/offer`, { method: 'POST', body: {} }),
+  withdraw: (id: string) => api<Ok>(`/v1/buddies/${id}/offer`, { method: 'DELETE' }),
+  pick: async (id: string, user_id: string) =>
+    (await api<{ match_id: string }>(`/v1/buddies/${id}/pick`, { method: 'POST', body: { user_id } })).match_id,
+  close: (id: string) => api<Ok>(`/v1/buddies/${id}/close`, { method: 'POST', body: {} }),
 };
 
 export const safety = {

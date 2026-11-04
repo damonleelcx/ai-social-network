@@ -27,11 +27,11 @@ func T(lang, english string, vars ...string) string {
 // code. Suki speaks in the first person, so these keep her voice: warm and casual.
 var catalog = map[string][4]string{
 	// Suki, in her own conversation.
-	"Hi, I'm Suki! I'm an AI matchmaker, and I'm going to help you meet someone you actually click with. No endless swiping, just good introductions. Let's get to know each other. What should I call you?": {
-		"嗨，我是 Suki！我是一位 AI 红娘，会帮你遇见真正合拍的人。不用没完没了地滑卡片，只有用心的介绍。我们先认识一下吧，我该怎么称呼你？",
-		"안녕하세요, 저는 Suki예요! AI 매치메이커로서 정말 잘 맞는 사람을 만나도록 도와드릴게요. 끝없는 스와이프 없이, 좋은 소개만요. 우리 먼저 서로 알아가요. 뭐라고 불러 드릴까요?",
-		"こんにちは、Suki です！AI の仲人として、本当に気の合う人との出会いをお手伝いします。延々とスワイプしなくても大丈夫、いい紹介だけ。まずはお互いを知りましょう。なんて呼べばいいですか？",
-		"¡Hola, soy Suki! Soy una casamentera con IA y voy a ayudarte a conocer a alguien con quien de verdad conectes. Nada de deslizar sin fin, solo buenas presentaciones. Vamos a conocernos. ¿Cómo te llamo?"},
+	"Hi, I'm Suki! I'm an AI matchmaker, and I'm going to help you meet people you actually click with: someone to date, or just company for a movie or a trip. No endless swiping, just good introductions. Let's get to know each other. What should I call you?": {
+		"嗨，我是 Suki！我是一位 AI 红娘，会帮你遇见真正合拍的人：可以是约会对象，也可以只是一起看电影、一起旅行的搭子。不用没完没了地滑卡片，只有用心的介绍。我们先认识一下吧，我该怎么称呼你？",
+		"안녕하세요, 저는 Suki예요! AI 매치메이커로서 정말 잘 맞는 사람을 만나도록 도와드릴게요. 데이트 상대든, 영화나 여행을 함께할 사람이든요. 끝없는 스와이프 없이, 좋은 소개만요. 우리 먼저 서로 알아가요. 뭐라고 불러 드릴까요?",
+		"こんにちは、Suki です！AI の仲人として、本当に気の合う人との出会いをお手伝いします。恋人でも、映画や旅行を一緒に楽しむ仲間でも。延々とスワイプしなくても大丈夫、いい紹介だけ。まずはお互いを知りましょう。なんて呼べばいいですか？",
+		"¡Hola, soy Suki! Soy una casamentera con IA y voy a ayudarte a conocer a gente con la que de verdad conectes: alguien con quien salir, o compañía para ir al cine o de viaje. Nada de deslizar sin fin, solo buenas presentaciones. Vamos a conocernos. ¿Cómo te llamo?"},
 	"Hi, I'm Suki! I'm so glad you're here. Let's find you someone wonderful.": {
 		"嗨，我是 Suki！很高兴你来了。我们一起去找那个很棒的人吧。",
 		"안녕하세요, 저는 Suki예요! 와 주셔서 정말 기뻐요. 멋진 사람을 함께 찾아봐요.",
@@ -149,6 +149,24 @@ var catalog = map[string][4]string{
 	"Please use a photo without contact details in it.":                          {"请使用不含联系方式的照片。", "연락처가 없는 사진을 사용해 주세요.", "連絡先が写っていない写真を使ってください。", "Usa una foto que no incluya datos de contacto."},
 	"I need a photo that clearly shows your face.":                               {"我需要一张能看清你脸的照片。", "얼굴이 잘 보이는 사진이 필요해요.", "顔がはっきり写った写真が必要です。", "Necesito una foto en la que se vea bien tu cara."},
 	"For your main photos, please use one where it's clear which person is you.": {"主照片请选一张能看出哪位是你的。", "대표 사진은 누가 본인인지 분명한 것으로 해 주세요.", "メイン写真には、どの人があなたかわかるものを使ってください。", "Para tus fotos principales, usa una en la que quede claro quién eres."},
+
+	// Buddy posts.
+	"a movie": {"看电影", "영화", "映画", "una película"},
+	"a meal": {"吃饭", "식사", "ごはん", "una comida"},
+	"a show": {"看演出", "공연", "ライブ", "un espectáculo"},
+	"a trip": {"旅行", "여행", "旅行", "un viaje"},
+	"sports": {"运动", "운동", "スポーツ", "deporte"},
+	"games": {"打游戏", "게임", "ゲーム", "juegos"},
+	"business": {"商务合作", "비즈니스", "ビジネス", "negocios"},
+	"studying": {"一起学习", "공부", "勉強", "estudiar"},
+	"a plan": {"一起玩", "함께할 일", "おでかけ", "un plan"},
+	"Someone nearby wants company": {"附近有人在找搭子", "근처에서 함께할 사람을 찾고 있어요", "近くで仲間を探している人がいます", "Alguien cerca busca compañía"},
+	"{name} is looking for company for {plan}: {when}.": {"{name} 想找人一起{plan}：{when}。", "{name}님이 {plan} 함께할 사람을 찾아요: {when}.", "{name}さんが{plan}の仲間を探しています：{when}。", "{name} busca compañía para {plan}: {when}."},
+	"Someone's in": {"有人想加入", "함께하고 싶대요", "参加したい人がいます", "Alguien se apunta"},
+	"{name} wants to join you for {plan}.": {"{name} 想和你一起{plan}。", "{name}님이 {plan} 함께하고 싶대요.", "{name}さんが{plan}に参加したいそうです。", "{name} quiere unirse a ti para {plan}."},
+	"You've got company": {"找到搭子了", "함께할 사람을 찾았어요", "仲間が見つかりました", "Ya tienes compañía"},
+	"You and {name} are on for {plan}!": {"你和 {name} 约好一起{plan}了！", "{name}님과 {plan} 함께하기로 했어요!", "{name}さんと{plan}の約束ができました！", "¡{name} y tú vais a por {plan}!"},
+	"You and {name} are on for {plan}! Say hi and sort out the details. For a first meet-up, pick somewhere public and tell a friend.": {"你和 {name} 约好一起{plan}了！打个招呼，商量一下细节吧。第一次见面请选公共场所，并告诉朋友一声。", "{name}님과 {plan} 함께하기로 했어요! 인사하고 자세한 건 얘기해 보세요. 처음 만날 땐 공공장소를 고르고 친구에게 알려 주세요.", "{name}さんと{plan}の約束ができました！挨拶して詳細を決めましょう。初めて会うときは人の多い場所を選び、友だちに伝えておいてください。", "¡{name} y tú vais a por {plan}! Saludad y concretad los detalles. Para quedar la primera vez, elige un sitio público y avisa a alguien."},
 
 	// Date notes. One message, read by two people, so these are rendered for whoever is reading.
 	"Suki is looking for a place you'd both enjoy.": {"Suki 正在找你们都会喜欢的地方。", "Suki가 두 분 모두 좋아할 장소를 찾고 있어요.", "Suki がおふたりとも楽しめる場所を探しています。", "Suki está buscando un sitio que os guste a los dos."},

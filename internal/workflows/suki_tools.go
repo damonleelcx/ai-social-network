@@ -452,6 +452,137 @@ func registerSukiTools() {
 			return card("open_screen", "screen", objStr(a, "screen"), "label", objStr(a, "label")), nil
 		})
 
+	add("buddy_prepare_post", "Show a card with a buddy post for this person to check. Only their tap posts it. Nothing goes out until then.",
+		`{"type":"object","required":["kind","when","expires_in_hours"],"additionalProperties":false,"properties":{"kind":{"type":"string","enum":["movie","meal","show","travel","sports","games","business","study","other"]},"when":{"type":"string","minLength":1,"maxLength":60,"description":"When, in their own words"},"note":{"type":"string","maxLength":200,"description":"What they want to do, in their voice"},"expires_in_hours":{"type":"integer","minimum":1,"maximum":336,"description":"How long until the plan has passed"},"same_gender":{"type":"boolean"}}}`, tools.Read,
+		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
+			missing, err := d.Dating.BuddyMissing(ctx, env.UserID)
+			if err != nil {
+				return nil, err
+			}
+			if len(missing) > 0 {
+				return map[string]any{"missing": missing}, nil
+			}
+			same, _ := a["same_gender"].(bool)
+			hours, _ := a["expires_in_hours"].(float64)
+			return card("buddy_post", "activity", objStr(a, "kind"), "when", objStr(a, "when"), "note", objStr(a, "note"), "expires_in_hours", int(hours), "same_gender", same), nil
+		})
+
+	add("buddy_board", "Buddy posts in this person's city that they could join.", noArgs, tools.Read,
+		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
+			list, missing, err := d.Dating.BuddyBoard(ctx, env.UserID)
+			if err != nil {
+				return nil, err
+			}
+			out := []map[string]any{}
+			for _, b := range list {
+				out = append(out, map[string]any{"request_id": b.ID, "kind": b.Kind, "when": b.When, "note": b.Note, "name": b.Person.DisplayName, "already_in": b.Offered})
+			}
+			return map[string]any{"posts": out, "missing": missing}, nil
+		})
+
+	add("buddy_mine", "This person's own buddy posts, and who has said they're in.", noArgs, tools.Read,
+		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
+			list, err := d.Dating.MyBuddyRequests(ctx, env.UserID)
+			if err != nil {
+				return nil, err
+			}
+			out := []map[string]any{}
+			for _, b := range list {
+				in := []map[string]any{}
+				for _, o := range b.Offers {
+					in = append(in, map[string]any{"user_id": o.Person.UserID, "name": o.Person.DisplayName})
+				}
+				out = append(out, map[string]any{"request_id": b.ID, "kind": b.Kind, "when": b.When, "status": b.Status, "in": in})
+			}
+			return map[string]any{"posts": out}, nil
+		})
+
+	const buddyInput = `{"type":"object","required":["request_id"],"additionalProperties":false,"properties":{"request_id":{"type":"string"}}}`
+	add("buddy_show_post", "Show someone else's post as a card with an I'm in button. Only their tap joins.", buddyInput, tools.Read,
+		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
+			if _, err := d.Dating.BuddyView(ctx, objStr(a, "request_id"), env.UserID); err != nil {
+				return nil, userError(err)
+			}
+			return card("buddy_request", "request_id", objStr(a, "request_id")), nil
+		})
+
+	add("buddy_show_offer", "Show someone who said they're in on this person's post, with a button to pick them. Only their tap picks.",
+		`{"type":"object","required":["request_id","user_id"],"additionalProperties":false,"properties":{"request_id":{"type":"string"},"user_id":{"type":"string"}}}`, tools.Read,
+		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
+			b, err := d.Dating.BuddyView(ctx, objStr(a, "request_id"), env.UserID)
+			if err != nil {
+				return nil, userError(err)
+			}
+			for _, o := range b.Offers {
+				if o.Person.UserID == objStr(a, "user_id") {
+					return card("buddy_offer", "request_id", b.ID, "user_id", o.Person.UserID), nil
+				}
+			}
+			return map[string]any{"error": "that person isn't in on this post"}, nil
+		})
+
+	// By name, because that's what the person said and what a model gets right. Code finds
+	// the post, so nothing here can reach a post this person can't see or doesn't own.
+	const buddyNameInput = `{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","minLength":1,"maxLength":60}}}`
+	sameName := func(a, b string) bool { return strings.EqualFold(strings.TrimSpace(a), strings.TrimSpace(b)) }
+
+	add("buddy_join", "Say this person is in on someone else's post, because their own message asked to join it. Give the name of the person who posted it. The poster is told and chooses who to go with.", buddyNameInput, tools.Write,
+		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
+			list, missing, err := d.Dating.BuddyBoard(ctx, env.UserID)
+			if err != nil {
+				return nil, err
+			}
+			if len(missing) > 0 {
+				return map[string]any{"joined": false, "missing": missing}, nil
+			}
+			// The board is newest first, so someone's latest post is the one they mean.
+			for _, b := range list {
+				if sameName(b.Person.DisplayName, objStr(a, "name")) {
+					if err := d.Dating.OfferBuddy(ctx, b.ID, env.UserID); err != nil {
+						return nil, userError(err)
+					}
+					return map[string]any{"joined": true, "kind": b.Kind, "when": b.When, "note": "They've said they're in. The poster picks, so it isn't a sure thing yet."}, nil
+				}
+			}
+			return map[string]any{"joined": false, "note": "No open post from anyone with that name."}, nil
+		})
+
+	add("buddy_pick", "Choose someone who is in on this person's own post, because their own message chose them. Give that person's name. This makes a match and tells them both.", buddyNameInput, tools.Write,
+		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
+			list, err := d.Dating.MyBuddyRequests(ctx, env.UserID)
+			if err != nil {
+				return nil, err
+			}
+			type found struct{ request, user, when string }
+			var hits []found
+			for _, b := range list {
+				for _, o := range b.Offers {
+					if sameName(o.Person.DisplayName, objStr(a, "name")) {
+						hits = append(hits, found{b.ID, o.Person.UserID, b.When})
+					}
+				}
+			}
+			switch len(hits) {
+			case 0:
+				return map[string]any{"picked": false, "note": "Nobody with that name is in on their posts."}, nil
+			case 1:
+				if _, err := d.Dating.PickBuddy(ctx, hits[0].request, env.UserID, hits[0].user); err != nil {
+					return nil, userError(err)
+				}
+				return map[string]any{"picked": true, "note": "Done, and both of them have been told. The chat is in Matches."}, nil
+			}
+			whens := []string{}
+			for _, h := range hits {
+				whens = append(whens, h.when)
+			}
+			return map[string]any{"picked": false, "note": "That person is in on more than one post. Ask which, or show the cards with buddy_show_offer.", "posts": whens}, nil
+		})
+
+	add("buddy_prepare_close", "Show a confirm button to take this person's own post down.", buddyInput, tools.Read,
+		func(_ context.Context, _ *tools.Env, a map[string]any) (map[string]any, error) {
+			return card("confirm", "action", "buddy_close", "label", "Take it down", "request_id", objStr(a, "request_id")), nil
+		})
+
 	add("app_explain", "A truthful general explanation of how matching works, to put in your own words.", noArgs, tools.Read,
 		func(context.Context, *tools.Env, map[string]any) (map[string]any, error) {
 			return map[string]any{"explanation": "Suki introduces people in the same city whose stated preferences fit each other. She weighs interests, goals and lifestyle, what you say yes and no to over time, and what you tell her after dates. Feedback from dates also influences who is introduced to whom. Those evaluations are never shown to anyone. Race, religion and looks are not used to judge anyone; a person can state religion or politics as their own dealbreaker. Both people must say yes before anyone can message."}, nil

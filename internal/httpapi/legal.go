@@ -18,7 +18,7 @@ func legalPage(title, body string) http.HandlerFunc {
 const openHTML = `<h1>SynAgent</h1><p>Open the SynAgent app on your phone to continue.</p>`
 
 const termsHTML = `<h1>Terms of Use</h1>
-<p class="meta">Last updated November 2, 2026</p>
+<p class="meta">Last updated November 4, 2026</p>
 <p>These terms are an agreement between you and Heros Agents ("we", "us"), which operates SynAgent. They cover the SynAgent app and this website (the "Service"). By creating an account or using the Service, you agree to these terms and acknowledge our <a href="/legal/privacy">Privacy Policy</a>. If you don't agree, please don't use the Service.</p>
 
 <h2>1. Eligibility</h2>
@@ -30,6 +30,8 @@ const termsHTML = `<h1>Terms of Use</h1>
 <h2>3. Suki and automated features</h2>
 <p>Suki is an artificial intelligence, not a person. Her replies, introductions, coaching, date suggestions and place information are generated automatically and can be wrong, incomplete or out of date. Check details such as a venue's address and opening hours yourself. Nothing she says is medical, legal, financial or mental health advice. If you are in danger, contact your local emergency services.</p>
 <p>Introductions are chosen automatically, as described in the <a href="/legal/privacy#matching">Privacy Policy</a>. We don't promise that you will be introduced to anyone, that you will find a match, or that anyone you meet will be compatible with you.</p>
+
+<p>Buddy posts let you ask for company for a plan, such as a movie, a trip or a business contact. A post, your name, age, photos and the other parts of your public profile are shown to members in your city, and you choose who to meet from those who respond. We don't organize, attend or check these plans, and we don't promise that anyone will respond or turn up. Don't use a post to advertise, sell anything, offer paid company or ask for money.</p>
 
 <h2>4. Your safety when meeting people</h2>
 <p><strong>You are solely responsible for your interactions with other users.</strong> We don't run criminal background checks or verify users' identities, and we can't confirm that what people say about themselves is true. Meet in a public place, tell someone you trust where you're going, arrange your own transport, and leave whenever you want. Never send money or financial information to someone you met here. Report anything concerning in the app, and contact the police if you believe a crime has been committed.</p>
@@ -96,6 +98,7 @@ const privacyHTML = `<h1>Privacy Policy</h1>
 <tr><td>Conversations</td><td>Your conversations with Suki and your messages with matches.</td></tr>
 <tr><td>What Suki learns</td><td>Notes she keeps about you, your accepted and declined introductions, and what you tell her after dates. We also derive a model of your preferences from these.</td></tr>
 <tr><td>Date plans</td><td>Places you consider and the times and plans you confirm.</td></tr>
+<tr><td>Buddy posts</td><td>What you post, when it's for, your city, whether you limited it by gender, and who responded. Members in your city can see a post with your public profile while it's open.</td></tr>
 <tr><td>Safety records</td><td>Reports you make or that others make about you, blocks, and the results of automated content checks.</td></tr>
 <tr><td>Device and technical</td><td>IP address and device or browser description for each signed-in session, and your push notification token and device platform. We also log failed sign-in attempts, including the email address used.</td></tr>
 </table>
