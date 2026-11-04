@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Alert, Share } from '@/lib/dialogs';
 import * as api from '@/api/endpoints';
-import type { Card, Proposal } from '@/api/types';
+import type { Card, CreditStatus, Proposal } from '@/api/types';
 import { BuddyOfferCard, BuddyPostCard, BuddyRequestCard } from './BuddyCards';
-import { openNamedScreen } from '@/lib/links';
+import { openNamedScreen, openPayment } from '@/lib/links';
 import { pickAndUploadPhoto } from '@/lib/photos';
 import { useLive, useTopic } from '@/state/live';
 import { useSession } from '@/state/session';
@@ -255,12 +255,60 @@ function ConfirmCard({ card }: { card: Extract<Card, { kind: 'confirm' }> }) {
   );
 }
 
+function BuyCreditsCard() {
+  const [status, setStatus] = useState<CreditStatus | null>(null);
+  const load = () => {
+    api.credits.status().then(setStatus, () => {});
+  };
+  useEffect(load, []);
+  useTopic('credits', load);
+  return status ? <BuyCredits status={status} /> : null;
+}
+
+/** Their balance and the packs. Paying happens on the provider's page. */
+export function BuyCredits({ status }: { status: CreditStatus }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  return (
+    <Glass style={{ gap: space.sm }}>
+      <T v="small" style={{ fontWeight: '700' }}>
+        {tr('{n} credits left', { n: String(status.balance) })}
+      </T>
+      {!status.payments_enabled ? (
+        <T v="small" soft>{tr("Buying credits isn't open yet.")}</T>
+      ) : (
+        status.packages.map((p) => (
+          <Button
+            key={p.id}
+            small
+            kind="secondary"
+            icon="card-outline"
+            label={tr('{n} credits for {price}', { n: String(p.credits), price: `$${(p.amount_cents / 100).toFixed(2)}` })}
+            loading={busy === p.id}
+            onPress={async () => {
+              setBusy(p.id);
+              try {
+                await openPayment(await api.credits.checkout(p.id));
+              } catch (e) {
+                showError(e);
+              } finally {
+                setBusy(null);
+              }
+            }}
+          />
+        ))
+      )}
+    </Glass>
+  );
+}
+
 export function SukiCard({ card }: { card: Card }) {
   const { matches } = useLive();
   const { user } = useSession();
   switch (card.kind) {
     case 'photo_upload':
       return <PhotoUploadCard />;
+    case 'buy_credits':
+      return <BuyCreditsCard />;
     case 'buddy_post':
       return <BuddyPostCard card={card} />;
     case 'buddy_request':

@@ -12,6 +12,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/damonleelcx/ai-social-network/internal/billing"
 	"github.com/damonleelcx/ai-social-network/internal/chatstore"
 	"github.com/damonleelcx/ai-social-network/internal/dating"
 	"github.com/damonleelcx/ai-social-network/internal/engine"
@@ -27,6 +28,7 @@ import (
 
 // Deps are the handles workers need. Set once at startup by Init.
 type Deps struct {
+	Billing *billing.Service
 	Pool             *pgxpool.Pool
 	Store            *engine.Store
 	Model            *engine.Model

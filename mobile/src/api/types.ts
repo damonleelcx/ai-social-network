@@ -70,6 +70,7 @@ export type Card =
   | { kind: 'open_screen'; screen: string; label: string }
   | { kind: 'buddy_post'; activity: string; when: string; note?: string; expires_in_hours: number; same_gender?: boolean }
   | { kind: 'buddy_request'; request_id: string }
+  | { kind: 'buy_credits' }
   | { kind: 'buddy_offer'; request_id: string; user_id: string }
   | {
       kind: 'confirm';
@@ -148,6 +149,19 @@ export type Match = {
   /** The kind of plan this match came from. Absent for an introduction. */
   activity?: string;
 };
+
+export type CreditPackage = { id: string; credits: number; amount_cents: number; currency: string };
+export type CreditStatus = {
+  balance: number;
+  matches_used: number;
+  free_matches: number;
+  free: boolean;
+  cost_per_message: number;
+  payments_enabled: boolean;
+  packages: CreditPackage[];
+};
+
+export type CreditUsage = { delta: number; reason: string; created_at: string };
 
 export type BuddyRequest = {
   id: string;

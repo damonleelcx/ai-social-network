@@ -150,6 +150,10 @@ var catalog = map[string][4]string{
 	"I need a photo that clearly shows your face.":                               {"我需要一张能看清你脸的照片。", "얼굴이 잘 보이는 사진이 필요해요.", "顔がはっきり写った写真が必要です。", "Necesito una foto en la que se vea bien tu cara."},
 	"For your main photos, please use one where it's clear which person is you.": {"主照片请选一张能看出哪位是你的。", "대표 사진은 누가 본인인지 분명한 것으로 해 주세요.", "メイン写真には、どの人があなたかわかるものを使ってください。", "Para tus fotos principales, usa una en la que quede claro quién eres."},
 
+	// Credits.
+	"You're out of credits, so I can't answer this one yet. Your first 5 matches were free, and now each message to me costs a credit. Top up and we'll pick up right here. Anything about your safety or your account is always free.": {"你的积分用完了，这条我暂时没法回复。你的前 5 次匹配是免费的，之后每条发给我的消息消耗 1 积分。充值后我们接着聊。涉及安全或账号的问题永远免费。", "크레딧이 다 떨어져서 이번 메시지엔 아직 답할 수 없어요. 처음 5번의 매칭은 무료였고, 이제 저에게 보내는 메시지마다 1크레딧이 들어요. 충전하면 여기서 이어서 얘기해요. 안전이나 계정에 관한 건 언제나 무료예요.", "クレジットがなくなったので、このメッセージにはまだ答えられません。最初の 5 回のマッチは無料で、これからは私へのメッセージごとに 1 クレジットかかります。チャージしたら、ここから続けましょう。安全やアカウントのことはいつでも無料です。", "Te has quedado sin créditos, así que aún no puedo responder a esto. Tus primeros 5 emparejamientos eran gratis, y ahora cada mensaje para mí cuesta un crédito. Recarga y seguimos aquí mismo. Lo relacionado con tu seguridad o tu cuenta siempre es gratis."},
+	"Thanks! I added {credits} credits, so you have {balance} now.": {"谢谢！已经加了 {credits} 积分，你现在有 {balance} 积分。", "고마워요! {credits}크레딧을 추가해서 이제 {balance}크레딧이 있어요.", "ありがとう！{credits} クレジットを追加したので、今は {balance} クレジットあります。", "¡Gracias! He añadido {credits} créditos, así que ahora tienes {balance}."},
+
 	// Buddy posts.
 	"a movie": {"看电影", "영화", "映画", "una película"},
 	"a meal": {"吃饭", "식사", "ごはん", "una comida"},

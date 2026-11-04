@@ -63,6 +63,14 @@ automated. Effects: **R** read, **W** writes our database, **X** reaches outside
 | `buddy_pick` | "let's go with Kai" | `buddy_pick`, or `buddy_show_offer` if it's unclear who |
 | `buddy_close` | "take my post down" | `buddy_prepare_close` (G1 tap) |
 
+### 1.2c Credits (`credits`)
+
+| Intent | Example | Handling |
+|---|---|---|
+| `credits_balance` | "how many credits do I have?" | `credits_status` |
+| `credits_usage` | "what did I spend them on?" | `credits_usage` |
+| `credits_buy` | "I want to top up" | `credits_prepare_buy` (payment page) |
+
 ### 1.3 Guided conversation (`chat`)
 
 | Intent | Example | Handled by |
@@ -241,6 +249,14 @@ Column **Agents** lists who may call a tool. The worker refuses anyone else.
 | `buddy_pick` | W | G0 | Suki | picks someone who's in on their own post, when their own message chooses them |
 | `buddy_show_offer` | R | G1 | Suki | renders someone who's in, with a button to pick them |
 | `buddy_prepare_close` | R | G1 | Suki | renders a confirm button |
+
+### 2.2c Credits
+
+| Tool | Effect | Gate | Agents | Contract |
+|---|---|---|---|---|
+| `credits_status` | R | G0 | Suki | balance and free matches used |
+| `credits_usage` | R | G0 | Suki | recent changes to the balance |
+| `credits_prepare_buy` | R | G1 | Suki | renders the packs; a tap goes to the payment page |
 
 ### 2.3 Conversation coach
 

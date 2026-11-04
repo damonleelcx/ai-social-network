@@ -23,8 +23,10 @@ import (
 
 	"github.com/damonleelcx/ai-social-network/internal/agent"
 	"github.com/damonleelcx/ai-social-network/internal/auth"
+	"github.com/damonleelcx/ai-social-network/internal/billing"
 	"github.com/damonleelcx/ai-social-network/internal/chatstore"
 	"github.com/damonleelcx/ai-social-network/internal/dating"
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"github.com/damonleelcx/ai-social-network/internal/photostore"
 	"github.com/damonleelcx/ai-social-network/internal/places"
 	"github.com/damonleelcx/ai-social-network/internal/profile"
@@ -40,6 +42,8 @@ type Server struct {
 	Places *places.Client
 	Dating *dating.Service
 	Hub    *Hub
+	// Billing is credits. Checkout and the webhook refuse when no provider is configured.
+	Billing *billing.Service
 	// Speech is nil when no voice is configured.
 	Speech           *tts.Service
 	SpeechDailyChars int
@@ -334,6 +338,13 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /v1/agent/speech", v(s.speechStatus))
 	m.HandleFunc("POST /v1/agent/speech", v(lim("speech", 20, time.Minute, s.speak)))
 
+	// Credits. The webhook signs itself, and the page is only somewhere to land after paying.
+	m.HandleFunc("GET /v1/credits", v(s.creditStatus))
+	m.HandleFunc("GET /v1/credits/usage", v(s.creditUsage))
+	m.HandleFunc("POST /v1/credits/checkout", v(lim("checkout", 20, time.Hour, s.creditCheckout)))
+	m.HandleFunc("POST /v1/billing/stripe", s.stripeWebhook)
+	m.HandleFunc("GET /credits/done", s.creditsDone)
+
 	// Buddies
 	m.HandleFunc("GET /v1/buddies", v(s.buddyBoard))
 	m.HandleFunc("GET /v1/buddies/mine", v(s.buddyMine))
@@ -394,6 +405,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /v1/admin/photos", s.moderator(s.adminPhotos))
 	m.HandleFunc("POST /v1/admin/photos/{id}/decide", s.moderator(s.adminPhotoDecide))
 	m.HandleFunc("GET /v1/admin/metrics", s.moderator(s.adminMetrics))
+	m.HandleFunc("POST /v1/admin/users/{id}/credits", s.moderator(s.adminGrantCredits))
 	m.HandleFunc("GET /v1/admin/goals/{id}/timeline", s.moderator(s.adminTimeline))
 
 	return logRequests(m)
@@ -922,6 +934,108 @@ func (s *Server) agentSend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 202, map[string]any{"message": m})
+}
+
+// ── Credits ──
+
+func (s *Server) creditStatus(w http.ResponseWriter, r *http.Request) {
+	st, err := s.Billing.Status(r.Context(), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, st)
+}
+
+func (s *Server) creditUsage(w http.ResponseWriter, r *http.Request) {
+	rows, err := s.Billing.Usage(r.Context(), userOf(r).ID, 50)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"usage": rows})
+}
+
+func (s *Server) creditCheckout(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		Package string `json:"package"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	url, err := s.Billing.Checkout(r.Context(), userOf(r).ID, b.Package)
+	var ue *billing.UserError
+	if errors.As(err, &ue) {
+		fail(w, 422, ue.Msg)
+		return
+	}
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"url": url})
+}
+
+// stripeWebhook answers 400 to what isn't really from Stripe, and 500 to what it should send
+// again. Delivering an event twice adds credits once.
+func (s *Server) stripeWebhook(w http.ResponseWriter, r *http.Request) {
+	payload, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 1<<20))
+	if err != nil {
+		fail(w, 400, "too large")
+		return
+	}
+	paid, err := s.Billing.HandleWebhook(r.Context(), payload, r.Header.Get("Stripe-Signature"), time.Now())
+	if errors.Is(err, billing.ErrBadSignature) {
+		fail(w, 400, "bad signature")
+		return
+	}
+	if err != nil {
+		slog.Error("stripe webhook", "err", err)
+		fail(w, 500, "try again")
+		return
+	}
+	if paid != nil {
+		ctx := r.Context()
+		lang := s.Dating.Lang(ctx, paid.UserID)
+		body := i18n.T(lang, "Thanks! I added {credits} credits, so you have {balance} now.", "credits", strconv.Itoa(paid.Credits), "balance", strconv.Itoa(paid.Balance))
+		if err := s.Dating.PostFromSuki(ctx, paid.UserID, body, "happy", nil, "credits:"+strconv.Itoa(paid.Balance)+":"+strconv.Itoa(paid.Credits)); err != nil {
+			slog.Error("credits announce", "err", err)
+		}
+		s.Dating.Touch(ctx, paid.UserID, "credits")
+	}
+	writeJSON(w, 200, map[string]any{"received": true})
+}
+
+// adminGrantCredits is for support. The key makes a repeated request harmless.
+func (s *Server) adminGrantCredits(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		Credits int    `json:"credits"`
+		Key     string `json:"key"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	if b.Credits <= 0 || b.Credits > 10000 || b.Key == "" {
+		fail(w, 422, "credits must be 1 to 10000, with a key")
+		return
+	}
+	if err := s.Billing.Grant(r.Context(), r.PathValue("id"), b.Credits, b.Key); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	s.Dating.Touch(r.Context(), r.PathValue("id"), "credits")
+	writeJSON(w, 200, map[string]any{"ok": true})
+}
+
+func (s *Server) creditsDone(w http.ResponseWriter, r *http.Request) {
+	line := "Thanks! Your credits will show up in a moment. You can go back to SynAgent now."
+	if r.URL.Query().Get("cancelled") != "" {
+		line = "Nothing was charged. You can go back to SynAgent now."
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+	_, _ = io.WriteString(w, `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SynAgent</title></head>`+
+		`<body style="font:18px/1.5 system-ui;max-width:32em;margin:20vh auto;padding:0 16px;text-align:center"><p>`+line+`</p><p><a href="/app/suki">Open SynAgent</a></p></body></html>`)
 }
 
 // ── Buddies ──
@@ -1669,11 +1783,16 @@ func (s *Server) export(w http.ResponseWriter, r *http.Request) {
 		handleErr(w, r, err)
 		return
 	}
+	credits, err := s.Billing.Usage(r.Context(), u.ID, 10000)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
 	notes, err := ids(r.Context(), s.Pool, `SELECT content FROM memories WHERE user_id=$1`, u.ID)
 	if err != nil {
 		handleErr(w, r, err)
 		return
 	}
 	writeJSON(w, 200, map[string]any{"account": map[string]any{"email": u.Email, "created_at": u.CreatedAt}, "profile": p, "photos": photos,
-		"settings": dating.GetSettings(r.Context(), s.Pool, u.ID), "buddy_posts": buddies, "suki_conversation": agentMsgs, "messages_you_sent": chats, "suki_notes": notes})
+		"settings": dating.GetSettings(r.Context(), s.Pool, u.ID), "buddy_posts": buddies, "credit_history": credits, "suki_conversation": agentMsgs, "messages_you_sent": chats, "suki_notes": notes})
 }

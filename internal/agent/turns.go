@@ -37,6 +37,8 @@ const (
 )
 
 type Runner struct {
+	// Billing is nil when messages cost nothing.
+	Billing Billing
 	ID        string
 	Pool      *pgxpool.Pool
 	Chats     *chatstore.Store
@@ -56,6 +58,15 @@ type Turn struct {
 	Attempts                                         int
 	Epoch                                            int64
 }
+
+// Billing charges for messages to Suki.
+type Billing interface {
+	ChargeTurn(ctx context.Context, userID, turnID string) (bool, error)
+	RefundTurn(ctx context.Context, userID, turnID string) error
+}
+
+// OutOfCredits is what Suki says when a message can't be paid for.
+const OutOfCredits = "You're out of credits, so I can't answer this one yet. Your first 5 matches were free, and now each message to me costs a credit. Top up and we'll pick up right here. Anything about your safety or your account is always free."
 
 // Enqueue stores a person's message and queues the answer. A retried POST with
 // the same client id lands on the same message and the same turn.
@@ -183,6 +194,7 @@ func (r *Runner) Execute(parent context.Context, t *Turn) {
 	}()
 	// A turn that keeps killing its worker must not do so forever.
 	if t.Attempts > maxAttempts+2 {
+		r.refund(ctx, t)
 		_ = r.say(ctx, t, "Sorry, my head's a bit foggy right now. I saved what you said. Could you try me again in a little while?", "pouty", nil, nil)
 		r.finish(ctx, t, "failed", t.Intent, "too many attempts")
 		r.signal(ctx, t.UserID, "agent")
@@ -202,6 +214,7 @@ func (r *Runner) Execute(parent context.Context, t *Turn) {
 	}
 	var budget *engine.ErrBudget
 	if errors.As(err, &budget) {
+		r.refund(ctx, t)
 		r.say(ctx, t, "I've done a lot of thinking today and need a little rest. I'll be fully back tomorrow. Everything you've told me is saved.", "pouty", nil, nil)
 		r.finish(ctx, t, "done", intent, err.Error())
 		r.signal(ctx, t.UserID, "agent")
@@ -214,9 +227,20 @@ func (r *Runner) Execute(parent context.Context, t *Turn) {
 			t.ID, t.Epoch, truncate(err.Error(), 400), fmt.Sprintf("%d seconds", int(delay.Seconds())))
 		return
 	}
+	r.refund(ctx, t)
 	r.say(ctx, t, "Sorry, my head's a bit foggy right now. I saved what you said. Could you try me again in a little while?", "pouty", nil, nil)
 	r.finish(ctx, t, "failed", intent, truncate(err.Error(), 400))
 	r.signal(ctx, t.UserID, "agent")
+}
+
+// refund gives a message's credit back when Suki couldn't answer it.
+func (r *Runner) refund(ctx context.Context, t *Turn) {
+	if r.Billing == nil || t.Kind != "message" {
+		return
+	}
+	if err := r.Billing.RefundTurn(context.WithoutCancel(ctx), t.UserID, t.ID); err != nil {
+		slog.Error("refund", "turn", t.ID, "err", err)
+	}
 }
 
 func truncate(s string, n int) string {
@@ -291,6 +315,17 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 	}
 	if dom == nil {
 		dom = domainNamed("meta")
+	}
+	// What someone says to Suki is paid for, once their free matches are used. Safety,
+	// the account and the credits themselves never are, and neither is what Suki starts.
+	if t.Kind == "message" && r.Billing != nil && dom.Name != "safety" && dom.Name != "account" && dom.Name != "credits" {
+		ok, err := r.Billing.ChargeTurn(ctx, t.UserID, t.ID)
+		if err != nil {
+			return intent, err
+		}
+		if !ok {
+			return "credits_out", r.say(ctx, t, OutOfCredits, "pouty", []map[string]any{{"kind": "buy_credits"}}, nil)
+		}
 	}
 	// Onboarding owns the conversation until it's done, so an aside doesn't lose
 	// their place and Suki can always save what they say.

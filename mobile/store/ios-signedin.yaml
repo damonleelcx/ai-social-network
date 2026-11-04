@@ -67,6 +67,8 @@ appId: space.herosagent.synagent
     point: "87%,94%"
 - assertVisible: "Edit profile"
 - takeScreenshot: ios-shots/10-me
+# Settings sits under the tab bar until the page is scrolled, and still counts as visible there.
+- scroll
 - tapOn: "Settings"
 - takeScreenshot: ios-shots/11-settings
 # iOS reports each row by its label alone, without the hint under it.

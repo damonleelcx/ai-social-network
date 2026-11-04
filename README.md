@@ -55,6 +55,10 @@ Nobody to see a movie with tonight? Dates aren't the only reason to meet someone
 - **She keeps things respectful.** Explicit photos, messages and profile text are filtered, and you can block or report anyone.
 - **You stay in control.** You can read and delete what Suki remembers about you, reset what she has learned, export your data, or delete your account in Settings.
 
+## Pricing
+
+Your first 5 matches are free. After that, each message to Suki uses a credit, and you can buy more by asking her. Chatting with your matches is always free, and so is anything about your safety or your account.
+
 ## Also in the app
 
 - **The same account everywhere.** Use it in your browser with nothing to install, or on your phone.
