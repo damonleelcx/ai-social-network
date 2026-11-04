@@ -119,6 +119,7 @@ const STRINGS = {
   'Open SynAgent': ['打开 SynAgent', 'SynAgent 열기', 'SynAgent を開く'],
   'Not only dates': ['不只是约会', '데이트만이 아니에요', 'デートだけじゃない'],
   "Nobody to see a movie with tonight? Post a plan, for a meal, a trip or a business contact too. People in your city say they're in, and you pick who to go with.": ['今晚想看电影却没人陪？发一个搭子请求吧，吃饭、旅行、商务合作都可以。同城的人说“我想去”，你来选和谁一起。', '오늘 밤 함께 영화 볼 사람이 없나요? 계획을 올려 보세요. 식사, 여행, 비즈니스 인맥도 좋아요. 같은 도시 사람들이 함께하겠다고 하면 당신이 고르면 돼요.', '今夜一緒に映画を観る人がいない？予定を投稿しましょう。ごはん、旅行、ビジネスのつながりも OK。同じ街の人が手を挙げたら、一緒に行く人を選ぶだけ。'],
+  'Log in': ['登录', '로그인', 'ログイン'],
   'Download for Android': ['下载 Android 版', 'Android용 다운로드', 'Android 版をダウンロード'],
   "This file is not signed, so an iPhone won't install it as it is.": ['此文件未经签名，iPhone 无法直接安装。', '이 파일은 서명되지 않아 iPhone에 그대로 설치할 수 없어요.', 'このファイルは署名されていないため、そのままでは iPhone にインストールできません。'],
   'You need a sideloading tool such as AltStore or Sideloadly, which signs it with your own Apple ID.': ['你需要 AltStore 或 Sideloadly 等侧载工具，用你自己的 Apple ID 为它签名。', 'AltStore나 Sideloadly 같은 사이드로딩 도구로 본인의 Apple ID로 서명해야 해요.', 'AltStore や Sideloadly などのサイドロードツールで、ご自身の Apple ID を使って署名する必要があります。'],
