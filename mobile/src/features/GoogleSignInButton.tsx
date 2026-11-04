@@ -8,7 +8,7 @@ import { confirm } from '@/ui/sheet';
 import { tr } from '@/i18n';
 
 /** Signs in, or signs up for someone new once they've accepted the terms. */
-export function GoogleSignInButton() {
+export function GoogleSignInButton({ referral }: { referral?: string }) {
   const { adoptToken } = useSession();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +22,7 @@ export function GoogleSignInButton() {
       if (!token) return;
       let r;
       try {
-        r = await api.auth.google(token, false);
+        r = await api.auth.google(token, false, referral);
       } catch (e) {
         if (!(e instanceof ApiError) || e.message !== tr('please accept the terms to continue')) throw e;
         const yes = await confirm(
@@ -31,7 +31,7 @@ export function GoogleSignInButton() {
           tr('Continue'),
         );
         if (!yes) return;
-        r = await api.auth.google(token, true);
+        r = await api.auth.google(token, true, referral);
       }
       await adoptToken(r.token);
     } catch (e: any) {

@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useRef } from 'react';
 import { Platform, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppUpdate } from '@/features/AppUpdate';
+import '@/lib/referral';
 import { SessionProvider, useSession } from '@/state/session';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';

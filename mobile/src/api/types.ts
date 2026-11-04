@@ -165,6 +165,15 @@ export type CreditStatus = {
   google_account: string;
 };
 
+export interface ReferralStatus {
+  code: string;
+  link: string;
+  credits_per_friend: number;
+  joined: number;
+  rewarded: number;
+  credits_earned: number;
+}
+
 export type CreditUsage = { delta: number; reason: string; created_at: string };
 
 export type BuddyRequest = {

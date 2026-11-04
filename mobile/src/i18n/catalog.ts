@@ -2,6 +2,17 @@
 // person, so these keep her voice: warm and casual. Placeholders have to survive translation.
 export const catalog: Record<string, readonly [string, string, string, string]> = {
   // Google sign-in
+  // Inviting friends
+  'Earn credits for each friend who joins': ['每邀请一位朋友加入，都能赚积分', '친구가 가입할 때마다 크레딧을 받아요', 'お友だちが参加するたびにクレジットがもらえます', 'Gana créditos por cada amigo que se una'],
+  'Earn {n} credits for each friend': ['每邀请一位朋友得 {n} 积分', '친구 한 명당 {n}크레딧', 'お友だち 1 人につき {n} クレジット', 'Gana {n} créditos por cada amigo'],
+  'You get them when your friend signs up with your link or code and finishes their profile.': ['朋友用你的链接或邀请码注册并完成资料后，积分就会到账。', '친구가 내 링크나 코드로 가입하고 프로필을 완성하면 받을 수 있어요.', 'お友だちがあなたのリンクやコードで登録し、プロフィールを完成させると受け取れます。', 'Los recibes cuando tu amigo se registra con tu enlace o código y completa su perfil.'],
+  'Your invite code': ['你的邀请码', '내 초대 코드', 'あなたの招待コード', 'Tu código de invitación'],
+  'Share my invite': ['分享我的邀请', '초대 공유하기', '招待をシェア', 'Compartir mi invitación'],
+  'Friends who signed up': ['已注册的朋友', '가입한 친구', '登録したお友だち', 'Amigos registrados'],
+  'Credits earned': ['已赚积分', '받은 크레딧', '獲得クレジット', 'Créditos ganados'],
+  'A friend joined': ['朋友加入奖励', '친구 가입 보상', 'お友だちの参加', 'Un amigo se unió'],
+  'Invite code (optional)': ['邀请码（选填）', '초대 코드(선택)', '招待コード（任意）', 'Código de invitación (opcional)'],
+  'Come try SynAgent with me. Suki, an AI wingwoman, introduces you to people worth meeting. Start here: {url} (invite code: {code})': ['来和我一起试试 SynAgent。AI 红娘 Suki 会帮你认识值得见的人。从这里开始：{url}（邀请码：{code}）', '나랑 같이 SynAgent 써 봐요. AI 윙우먼 Suki가 만날 만한 사람을 소개해 줘요. 여기서 시작하세요: {url} (초대 코드: {code})', '一緒に SynAgent を使ってみませんか。AI ウィングウーマンの Suki が、会う価値のある人を紹介してくれます。こちらから：{url}（招待コード：{code}）', 'Prueba SynAgent conmigo. Suki, una celestina con IA, te presenta a gente que vale la pena conocer. Empieza aquí: {url} (código de invitación: {code})'],
   'Continue with Google': ['使用 Google 继续', 'Google로 계속하기', 'Google で続ける', 'Continuar con Google'],
   'Welcome to SynAgent': ['欢迎来到 SynAgent', 'SynAgent에 오신 걸 환영해요', 'SynAgent へようこそ', 'Te damos la bienvenida a SynAgent'],
   'By continuing, you confirm you are 18 or over and accept the Terms of Use and Privacy Policy.': ['继续即表示你已年满 18 岁，并同意用户协议和隐私政策。', '계속하면 만 18세 이상이며 이용약관과 개인정보처리방침에 동의하는 것으로 간주돼요.', '続行すると、18 歳以上であることを確認し、利用規約とプライバシーポリシーに同意したことになります。', 'Al continuar, confirmas que tienes 18 años o más y aceptas las Condiciones de uso y la Política de privacidad.'],

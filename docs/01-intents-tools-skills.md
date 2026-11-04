@@ -70,6 +70,7 @@ automated. Effects: **R** read, **W** writes our database, **X** reaches outside
 | `credits_balance` | "how many credits do I have?" | `credits_status` |
 | `credits_usage` | "what did I spend them on?" | `credits_usage` |
 | `credits_buy` | "I want to top up" | `credits_prepare_buy` (payment page) |
+| `credits_invite` | "how do I invite a friend?" | `invite_friends` (their link and code) |
 
 ### 1.3 Guided conversation (`chat`)
 
@@ -257,6 +258,7 @@ Column **Agents** lists who may call a tool. The worker refuses anyone else.
 | `credits_status` | R | G0 | Suki | balance and free matches used |
 | `credits_usage` | R | G0 | Suki | recent changes to the balance |
 | `credits_prepare_buy` | R | G1 | Suki | renders the packs; a tap goes to the payment page |
+| `invite_friends` | R | G0 | Suki | their invite link and code, and what they've earned |
 
 ### 2.3 Conversation coach
 

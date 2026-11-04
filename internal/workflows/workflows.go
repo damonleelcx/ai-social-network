@@ -8,6 +8,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -17,6 +18,7 @@ import (
 	"github.com/damonleelcx/ai-social-network/internal/dating"
 	"github.com/damonleelcx/ai-social-network/internal/engine"
 	"github.com/damonleelcx/ai-social-network/internal/hidden"
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"github.com/damonleelcx/ai-social-network/internal/moderation"
 	"github.com/damonleelcx/ai-social-network/internal/persona"
 	"github.com/damonleelcx/ai-social-network/internal/photostore"
@@ -140,11 +142,30 @@ func StartDebriefAnalysis(ctx context.Context, userID, dateID string) error {
 	return start(ctx, userID, "date-debrief", "debrief", "Understand how the date went", "Extract what this person said about their date.", dateID)
 }
 
+// RewardReferrer pays whoever invited this person, and tells them.
+func RewardReferrer(ctx context.Context, userID string) error {
+	paid, err := d.Billing.RewardReferral(ctx, userID)
+	if err != nil || paid == nil {
+		return err
+	}
+	lang := d.Dating.Lang(ctx, paid.UserID)
+	body := i18n.T(lang, "A friend you invited just joined. I added {credits} credits, so you have {balance} now.", "credits", strconv.Itoa(paid.Credits), "balance", strconv.Itoa(paid.Balance))
+	if err := d.Dating.PostFromSuki(ctx, paid.UserID, body, "happy", nil, "referral:"+userID); err != nil {
+		slog.Error("referral announce", "err", err)
+	}
+	d.Dating.Touch(ctx, paid.UserID, "credits")
+	return nil
+}
+
 // AfterProfileChange starts matching the moment onboarding completes.
 func AfterProfileChange(ctx context.Context, userID string) error {
 	done, err := profile.ActivateIfComplete(ctx, d.Pool, userID)
 	if err != nil || !done {
 		return err
+	}
+	// First, and not fatal: this moment doesn't come round again.
+	if err := RewardReferrer(ctx, userID); err != nil {
+		slog.Error("referral reward", "err", err)
 	}
 	if err := d.Dating.PostFromSuki(ctx, userID, "Your profile is ready, and it looks great. I'm off to find people I think you'd really like. I'll be back soon!", "happy", nil, "profile-ready"); err != nil {
 		return err

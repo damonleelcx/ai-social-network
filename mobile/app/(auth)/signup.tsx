@@ -6,6 +6,7 @@ import { legalUrl } from '@/api/client';
 import { auth } from '@/api/endpoints';
 import { openLegal } from '@/lib/links';
 import { GoogleSignInButton } from '@/features/GoogleSignInButton';
+import { clearReferral, pendingReferral } from '@/lib/referral';
 import { useSession } from '@/state/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
@@ -19,6 +20,7 @@ export default function SignUp() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [referral, setReferral] = useState(pendingReferral);
   const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +35,9 @@ export default function SignUp() {
         password,
         accept_terms: accepted,
         language: currentLanguage(),
+        ref: referral.trim() || undefined,
       });
+      clearReferral();
       await adoptToken(r.token);
     } catch (e: any) {
       setError(e.message);
@@ -78,6 +82,14 @@ export default function SignUp() {
           autoCapitalize="none"
           hint={tr('At least 10 characters.')}
         />
+        <Field
+          label={tr('Invite code (optional)')}
+          value={referral}
+          onChangeText={setReferral}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          maxLength={16}
+        />
         <Pressable
           accessibilityRole="checkbox"
           accessibilityState={{ checked: accepted }}
@@ -113,7 +125,7 @@ export default function SignUp() {
             disabled={!name.trim() || !email.trim() || !password || !accepted}
             onPress={submit}
           />
-          <GoogleSignInButton />
+          <GoogleSignInButton referral={referral.trim() || undefined} />
           <Button label={tr('I already have an account')} kind="ghost" full onPress={() => router.replace('/signin')} />
         </View>
       </Page>

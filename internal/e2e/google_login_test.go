@@ -63,6 +63,14 @@ func TestGoogleSignUpAndSignIn(t *testing.T) {
 	in(tok(claims("g1", "ada@example.com")), true, 422)
 	e.srv.GoogleLogin = &externalauth.Google{ClientID: "web-client", CertsURL: certs.URL}
 
+	// An invite code counts.
+	inviter, code := e.inviterCode(t, "inviter@example.com")
+	var invited authReply
+	anon.do("POST", "/v1/auth/google", map[string]any{"id_token": tok(claims("g-invited", "invited@example.com")), "accept_terms": true, "ref": code}, 201, &invited)
+	if got := e.referrerOf(t, invited.User.ID); got != inviter {
+		t.Fatalf("invited by %s, want %s", got, inviter)
+	}
+
 	// Tokens that mustn't get in.
 	in("not.a.token", true, 422)
 	in(signWith(stranger, "RS256", claims("g1", "ada@example.com")), true, 422)

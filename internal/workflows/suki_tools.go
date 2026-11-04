@@ -610,6 +610,15 @@ func registerSukiTools() {
 			return card("buy_credits"), nil
 		})
 
+	add("invite_friends", "This person's invite link and code, what they earn for each friend, and how many friends have joined.", noArgs, tools.Read,
+		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
+			st, err := d.Billing.ReferralStatus(ctx, env.UserID)
+			if err != nil {
+				return nil, err
+			}
+			return map[string]any{"link": st.Link, "code": st.Code, "credits_per_friend": st.CreditsPerFriend, "earned_when": "the friend signs up with the link or code and finishes their profile", "friends_joined": st.Joined, "credits_earned": st.CreditsEarned}, nil
+		})
+
 	add("app_explain", "A truthful general explanation of how matching works, to put in your own words.", noArgs, tools.Read,
 		func(context.Context, *tools.Env, map[string]any) (map[string]any, error) {
 			return map[string]any{"explanation": "Suki introduces people in the same city whose stated preferences fit each other. She weighs interests, goals and lifestyle, what you say yes and no to over time, and what you tell her after dates. Feedback from dates also influences who is introduced to whom. Those evaluations are never shown to anyone. Race, religion and looks are not used to judge anyone; a person can state religion or politics as their own dealbreaker. Both people must say yes before anyone can message."}, nil
