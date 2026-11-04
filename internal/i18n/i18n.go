@@ -62,11 +62,16 @@ var catalog = map[string][4]string{
 		"프로필이 준비됐어요. 정말 멋져요. 마음에 들 만한 사람들을 찾으러 갈게요. 금방 돌아올게요!",
 		"プロフィールが完成しました。とても素敵です。気に入りそうな人を探してきますね。すぐ戻ります！",
 		"Tu perfil está listo y queda genial. Voy a buscar personas que creo que te encantarán. ¡Vuelvo pronto!"},
-	"No one I'd honestly recommend yet. I'm not going to waste your time on a weak intro. I'll keep looking and tell you as soon as someone good turns up.": {
-		"目前还没有我能真心推荐的人。我不想用勉强的介绍浪费你的时间，会继续找，一有合适的人就告诉你。",
-		"아직 진심으로 추천할 만한 사람이 없어요. 어설픈 소개로 시간을 뺏고 싶지 않아요. 계속 찾아보고 좋은 사람이 나타나면 바로 알려 드릴게요.",
-		"まだ心からおすすめできる人がいません。いまひとつの紹介で時間を無駄にしたくないので、探し続けて、いい人が見つかったらすぐ知らせますね。",
-		"Todavía no hay nadie a quien recomendaría de verdad. No voy a hacerte perder el tiempo con una presentación floja. Seguiré buscando y te avisaré en cuanto aparezca alguien bueno."},
+	"Nobody new near you just yet, so keep me company for a bit. What's the best date you've ever been on? The more I know about you, the better I'll choose when someone new turns up.": {
+		"你附近暂时还没有新的人，先陪我聊聊吧。你经历过最棒的一次约会是什么样的？我越了解你，等有新的人出现时就越能选对。",
+		"아직 근처에 새로운 분이 없어요. 그동안 저랑 얘기해요. 지금까지 가장 좋았던 데이트는 어땠어요? 당신을 더 잘 알수록 새로운 분이 나타났을 때 더 잘 고를 수 있어요.",
+		"近くにはまだ新しい人がいません。それまで少しお話ししましょう。今までで最高のデートはどんなものでしたか？あなたのことを知るほど、新しい人が現れたときによりよく選べます。",
+		"Todavía no hay nadie nuevo cerca de ti, así que hazme compañía un rato. ¿Cuál ha sido la mejor cita de tu vida? Cuanto más sepa de ti, mejor elegiré cuando aparezca alguien nuevo."},
+	"You're both in {city}. Not my most obvious match, but I think you might enjoy meeting.": {
+		"你们都在{city}。这不是我最先想到的搭配，但我觉得你们见面可能会聊得来。",
+		"두 분 다 {city}에 있어요. 가장 뻔한 조합은 아니지만, 만나면 즐거울 것 같아요.",
+		"おふたりとも{city}にいます。いちばん分かりやすい組み合わせではありませんが、会ってみると楽しいかもしれません。",
+		"Los dos estáis en {city}. No es la pareja más obvia, pero creo que podríais pasarlo bien conociéndoos."},
 	"You've had your introductions for today. Let's see how those go, and I'll be back with more tomorrow.": {
 		"今天的介绍已经都给你了。先看看进展如何，明天我再带新的人来。",
 		"오늘 소개는 여기까지예요. 어떻게 되는지 지켜보고, 내일 또 소개해 드릴게요.",
