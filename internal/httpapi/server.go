@@ -307,6 +307,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /legal/privacy", legalPage("privacy"))
 	m.HandleFunc("GET /legal/contact", legalPage("contact"))
 	m.HandleFunc("GET /legal/delete-account", legalPage("delete-account"))
+	m.HandleFunc("GET /legal/child-safety", legalPage("child-safety"))
 	m.HandleFunc("GET /open", legalPage("open"))
 
 	m.HandleFunc("GET /v1/public/user-map", lim("user-map", 60, time.Minute, s.userMap))
@@ -1071,6 +1072,7 @@ func (s *Server) agentSend(w http.ResponseWriter, r *http.Request) {
 	if !read(w, r, &b) {
 		return
 	}
+	s.noteStore(r)
 	b.Text = strings.TrimSpace(b.Text)
 	if b.Text == "" || len(b.Text) > 4000 {
 		fail(w, 422, "write something, up to about 4000 characters")
@@ -1086,7 +1088,19 @@ func (s *Server) agentSend(w http.ResponseWriter, r *http.Request) {
 
 // ── Credits ──
 
+// noteStore remembers which store's app this request came from. Missing it only means no charge.
+func (s *Server) noteStore(r *http.Request) {
+	store := r.Header.Get("X-Synagent-Store")
+	if store == "" || s.Billing == nil {
+		return
+	}
+	if err := s.Billing.NoteStore(r.Context(), userOf(r).ID, store); err != nil {
+		slog.Warn("note store", "err", err)
+	}
+}
+
 func (s *Server) creditStatus(w http.ResponseWriter, r *http.Request) {
+	s.noteStore(r)
 	st, err := s.Billing.Status(r.Context(), userOf(r).ID)
 	if err != nil {
 		handleErr(w, r, err)

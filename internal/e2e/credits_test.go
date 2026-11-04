@@ -103,7 +103,7 @@ func TestCreditsAfterFiveMatches(t *testing.T) {
 		URL string `json:"url"`
 	}
 	a.do("POST", "/v1/credits/checkout", map[string]any{"package": "small"}, 200, &co)
-	if co.URL != "https://checkout.example/cs_test_1" || !strings.Contains(form, "unit_amount%5D=499") {
+	if co.URL != "https://checkout.example/cs_test_1" || !strings.Contains(form, "unit_amount%5D=999") {
 		t.Fatalf("checkout: %q form %q", co.URL, form)
 	}
 	if status().Balance != 0 {
@@ -121,12 +121,12 @@ func TestCreditsAfterFiveMatches(t *testing.T) {
 	}
 	// Someone else's payment on the same Stripe account: acknowledged, and nothing added.
 	other, _ := json.Marshal(map[string]any{"type": "checkout.session.completed", "data": map[string]any{"object": map[string]any{
-		"id": "cs_other", "payment_status": "paid", "amount_total": 499, "currency": "usd", "client_reference_id": "not-ours"}}})
+		"id": "cs_other", "payment_status": "paid", "amount_total": 999, "currency": "usd", "client_reference_id": "not-ours"}}})
 	if c := e.stripeEvent(t, other, testWebhookSecret); c != 200 {
 		t.Fatalf("another payment: %d", c)
 	}
 	// Forged, or the wrong amount: nothing.
-	if c := e.stripeEvent(t, event(499), "whsec_wrong"); c != 400 {
+	if c := e.stripeEvent(t, event(999), "whsec_wrong"); c != 400 {
 		t.Fatalf("forged webhook: %d", c)
 	}
 	if c := e.stripeEvent(t, event(1), testWebhookSecret); c == 200 {
@@ -137,7 +137,7 @@ func TestCreditsAfterFiveMatches(t *testing.T) {
 	}
 	// Paid, and delivered twice: credited once.
 	for i := 0; i < 2; i++ {
-		if c := e.stripeEvent(t, event(499), testWebhookSecret); c != 200 {
+		if c := e.stripeEvent(t, event(999), testWebhookSecret); c != 200 {
 			t.Fatalf("webhook: %d", c)
 		}
 	}
@@ -197,6 +197,58 @@ func TestNoChargeWithoutPayments(t *testing.T) {
 	a.do("POST", "/v1/credits/checkout", map[string]any{"package": "small"}, 422, nil)
 	if c := e.stripeEvent(t, []byte(`{}`), "anything"); c != 400 {
 		t.Fatalf("webhook with payments off: %d", c)
+	}
+}
+
+// A store only sells inside its own app, so only people using that app can be charged.
+func TestChargesOnlyPeopleWhoCanBuy(t *testing.T) {
+	e := setup(t)
+	e.billing.Google = &billing.GooglePlay{PackageName: "space.herosagent.synagent"}
+	a := e.signup(t, "Ada", "ada@example.com")
+	a.verify()
+	ctx := context.Background()
+	for i := 0; i < 5; i++ {
+		o := e.signup(t, fmt.Sprintf("P%d", i), fmt.Sprintf("p%d@example.com", i))
+		var pid string
+		if err := e.pool.QueryRow(ctx, `INSERT INTO proposals (user_a,user_b,status) VALUES (least($1::uuid,$2::uuid),greatest($1::uuid,$2::uuid),'matched') RETURNING id`, a.id, o.id).Scan(&pid); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := e.pool.Exec(ctx, `INSERT INTO matches (proposal_id,user_a,user_b) VALUES ($1,least($2::uuid,$3::uuid),greatest($2::uuid,$3::uuid))`, pid, a.id, o.id); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var st billing.Status
+	if a.do("GET", "/v1/credits", nil, 200, &st); !st.Free {
+		t.Fatalf("charged on the web with no way to buy: %+v", st)
+	}
+	if body, _ := a.askSuki("hello"); strings.Contains(body, "out of credits") {
+		t.Fatalf("stopped with no way to buy: %q", body)
+	}
+
+	// A made-up store changes nothing.
+	a.store = "elsewhere"
+	if a.do("GET", "/v1/credits", nil, 200, &st); !st.Free {
+		t.Fatalf("a made-up store: %+v", st)
+	}
+
+	a.store = "play"
+	if a.do("GET", "/v1/credits", nil, 200, &st); st.Free {
+		t.Fatalf("free on the Play build: %+v", st)
+	}
+	if body, _ := a.askSuki("hello again"); !strings.Contains(body, "out of credits") {
+		t.Fatalf("Play build with no credits: %q", body)
+	}
+
+	// They can buy on their phone, so moving to the web doesn't make it free.
+	a.store = ""
+	if a.do("GET", "/v1/credits", nil, 200, &st); st.Free {
+		t.Fatalf("free again on the web: %+v", st)
+	}
+
+	// A store that isn't selling can't be the way to buy.
+	e.billing.Google = nil
+	if a.do("GET", "/v1/credits", nil, 200, &st); !st.Free {
+		t.Fatalf("charged with the store closed: %+v", st)
 	}
 }
 
