@@ -307,6 +307,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /legal/privacy", legalPage("privacy"))
 	m.HandleFunc("GET /legal/contact", legalPage("contact"))
 	m.HandleFunc("GET /legal/delete-account", legalPage("delete-account"))
+	m.HandleFunc("GET /legal/child-safety", legalPage("child-safety"))
 	m.HandleFunc("GET /open", legalPage("open"))
 
 	m.HandleFunc("GET /v1/public/user-map", lim("user-map", 60, time.Minute, s.userMap))
