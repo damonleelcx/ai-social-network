@@ -45,7 +45,7 @@ function failure(status, message) {
 }
 
 function headers(extra) {
-  return Object.assign({ Accept: 'application/json' }, token ? { Authorization: 'Bearer ' + token } : {}, extra);
+  return Object.assign({ Accept: 'application/json', 'X-Synagent-Store': 'wechat' }, token ? { Authorization: 'Bearer ' + token } : {}, extra);
 }
 
 function request(path, method, body) {
