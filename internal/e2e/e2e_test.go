@@ -27,6 +27,7 @@ import (
 
 	"github.com/damonleelcx/ai-social-network/internal/agent"
 	"github.com/damonleelcx/ai-social-network/internal/auth"
+	"github.com/damonleelcx/ai-social-network/internal/billing"
 	"github.com/damonleelcx/ai-social-network/internal/chatstore"
 	"github.com/damonleelcx/ai-social-network/internal/dating"
 	"github.com/damonleelcx/ai-social-network/internal/db"
@@ -82,6 +83,7 @@ type env struct {
 	store    *engine.Store
 	model    *engine.Model
 	svc      *dating.Service
+	billing  *billing.Service
 	fake     *fakeLLM
 	cancel   context.CancelFunc
 	wg       sync.WaitGroup
@@ -136,13 +138,14 @@ func setup(t *testing.T) *env {
 	photos := &photostore.Disk{Dir: t.TempDir()}
 	plc := &places.Client{Pool: pool, NominatimURL: geo.URL, OverpassURL: geo.URL + "/overpass"}
 	svc := &dating.Service{Pool: pool, Chats: chats, DateMinLead: time.Millisecond}
-	workflows.Init(&workflows.Deps{Pool: pool, Store: store, Model: model, Chats: chats, Photos: photos, Places: plc, Dating: svc, FastModel: "fast", DebriefDelay: time.Millisecond})
+	bill := &billing.Service{Pool: pool, PublicOrigin: "http://test"}
+	workflows.Init(&workflows.Deps{Billing: bill, Pool: pool, Store: store, Model: model, Chats: chats, Photos: photos, Places: plc, Dating: svc, FastModel: "fast", DebriefDelay: time.Millisecond})
 	m := &capturedMail{}
 	a := &auth.Service{Pool: pool, Mailer: m, PublicOrigin: "http://test", SessionTTL: time.Hour}
 	hub := httpapi.NewHub()
-	srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub}
+	srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill}
 	a.BeforeDelete = srv.BeforeDelete
-	e := &env{pool: pool, chats: chats, mail: m, bodies: &bytes.Buffer{}, store: store, model: model, svc: svc, fake: fake, cancel: cancel, photos: photos}
+	e := &env{billing: bill, pool: pool, chats: chats, mail: m, bodies: &bytes.Buffer{}, store: store, model: model, svc: svc, fake: fake, cancel: cancel, photos: photos}
 	// Every response body is kept, so the test can search all of them for scores.
 	handler := srv.Handler()
 	e.api = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -156,7 +159,7 @@ func setup(t *testing.T) *env {
 		go func() { defer e.wg.Done(); w.Run(ctx) }()
 	}
 	for i := 0; i < 2; i++ {
-		r := &agent.Runner{ID: fmt.Sprintf("t%d", i), Pool: pool, Chats: chats, Model: model, Dating: svc, LLM: "main", FastLLM: "fast", Lease: 20 * time.Second, Wake: make(chan struct{})}
+		r := &agent.Runner{ID: fmt.Sprintf("t%d", i), Pool: pool, Chats: chats, Model: model, Dating: svc, Billing: bill, LLM: "main", FastLLM: "fast", Lease: 20 * time.Second, Wake: make(chan struct{})}
 		e.wg.Add(1)
 		go func() { defer e.wg.Done(); r.Run(ctx) }()
 	}

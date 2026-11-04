@@ -583,6 +583,33 @@ func registerSukiTools() {
 			return card("confirm", "action", "buddy_close", "label", "Take it down", "request_id", objStr(a, "request_id")), nil
 		})
 
+	add("credits_status", "This person's credits: their balance, how many of their free matches are used, and whether messages are free right now.", noArgs, tools.Read,
+		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
+			st, err := d.Billing.Status(ctx, env.UserID)
+			if err != nil {
+				return nil, err
+			}
+			return map[string]any{"balance": st.Balance, "matches_so_far": st.MatchesUsed, "free_matches": st.FreeMatches, "messages_are_free_now": st.Free, "cost_per_message": st.CostPerMessage, "can_buy": st.PaymentsEnabled}, nil
+		})
+
+	add("credits_usage", "This person's recent credit history, newest first.", noArgs, tools.Read,
+		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
+			rows, err := d.Billing.Usage(ctx, env.UserID, 20)
+			if err != nil {
+				return nil, err
+			}
+			out := []map[string]any{}
+			for _, u := range rows {
+				out = append(out, map[string]any{"change": u.Delta, "why": u.Reason, "at": u.CreatedAt})
+			}
+			return map[string]any{"history": out}, nil
+		})
+
+	add("credits_prepare_buy", "Show the credit packs with their prices. A tap goes to the payment page.", noArgs, tools.Read,
+		func(context.Context, *tools.Env, map[string]any) (map[string]any, error) {
+			return card("buy_credits"), nil
+		})
+
 	add("app_explain", "A truthful general explanation of how matching works, to put in your own words.", noArgs, tools.Read,
 		func(context.Context, *tools.Env, map[string]any) (map[string]any, error) {
 			return map[string]any{"explanation": "Suki introduces people in the same city whose stated preferences fit each other. She weighs interests, goals and lifestyle, what you say yes and no to over time, and what you tell her after dates. Feedback from dates also influences who is introduced to whom. Those evaluations are never shown to anyone. Race, religion and looks are not used to judge anyone; a person can state religion or politics as their own dealbreaker. Both people must say yes before anyone can message."}, nil

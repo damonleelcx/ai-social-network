@@ -1,6 +1,18 @@
 // [Simplified Chinese, Korean, Japanese, Spanish], keyed by the English in the code. Suki speaks in the first
 // person, so these keep her voice: warm and casual. Placeholders have to survive translation.
 export const catalog: Record<string, readonly [string, string, string, string]> = {
+  // Credits
+  Credits: ['积分', '크레딧', 'クレジット', 'Créditos'],
+  'Bought credits': ['购买积分', '크레딧 구매', 'クレジットを購入', 'Créditos comprados'],
+  'Message to Suki': ['发给 Suki 的消息', 'Suki에게 보낸 메시지', 'Suki へのメッセージ', 'Mensaje a Suki'],
+  "Refund: Suki couldn't answer": ['退回：Suki 没能回复', '환불: Suki가 답하지 못했어요', '返却：Suki が答えられませんでした', 'Reembolso: Suki no pudo responder'],
+  'Added by SynAgent': ['SynAgent 赠送', 'SynAgent에서 추가', 'SynAgent が追加', 'Añadidos por SynAgent'],
+  'Messages to Suki are free right now. You have used {used} of your {free} free matches.': ['现在和 Suki 对话免费。你的 {free} 次免费匹配已用 {used} 次。', '지금은 Suki와의 대화가 무료예요. 무료 매칭 {free}번 중 {used}번을 사용했어요.', '今は Suki へのメッセージは無料です。無料マッチ {free} 回のうち {used} 回を使いました。', 'Ahora los mensajes a Suki son gratis. Has usado {used} de tus {free} emparejamientos gratis.'],
+  'Each message to Suki uses {n} credit. Chatting with your matches is free, and so is anything about your safety or your account.': ['每条发给 Suki 的消息消耗 {n} 积分。和匹配对象聊天免费，涉及安全或账号的问题也免费。', 'Suki에게 보내는 메시지마다 {n}크레딧이 들어요. 매칭 상대와의 채팅은 무료이고, 안전이나 계정에 관한 것도 무료예요.', 'Suki へのメッセージごとに {n} クレジットかかります。マッチ相手とのチャットは無料で、安全やアカウントのことも無料です。', 'Cada mensaje a Suki usa {n} crédito. Chatear con tus emparejamientos es gratis, y también lo relacionado con tu seguridad o tu cuenta.'],
+  '{n} credits left': ['还剩 {n} 积分', '{n}크레딧 남음', '残り {n} クレジット', 'Te quedan {n} créditos'],
+  '{n} credits for {price}': ['{n} 积分，{price}', '{n}크레딧, {price}', '{n} クレジット、{price}', '{n} créditos por {price}'],
+  "Buying credits isn't open yet.": ['暂时还不能购买积分。', '아직 크레딧을 구매할 수 없어요.', 'クレジットの購入はまだ始まっていません。', 'Aún no se pueden comprar créditos.'],
+  'Pick one of the credit packs.': ['请选择一个积分包。', '크레딧 팩을 하나 골라 주세요.', 'クレジットパックを選んでください。', 'Elige uno de los paquetes de créditos.'],
   // Buddies
   'Your buddy posts': ['我发布的搭子', '내가 올린 버디 글', '自分の仲間募集', 'Tus planes publicados'],
   "Nobody's in yet. I'll let you know when someone is.": ['还没有人加入。有人想去时我会告诉你。', '아직 아무도 없어요. 누가 오면 알려 드릴게요.', 'まだ誰もいません。参加者が出たらお知らせします。', 'Aún no hay nadie. Te aviso cuando alguien se apunte.'],

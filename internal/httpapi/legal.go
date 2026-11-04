@@ -33,6 +33,8 @@ const termsHTML = `<h1>Terms of Use</h1>
 
 <p>Buddy posts let you ask for company for a plan, such as a movie, a trip or a business contact. A post, your name, age, photos and the other parts of your public profile are shown to members in your city, and you choose who to meet from those who respond. We don't organize, attend or check these plans, and we don't promise that anyone will respond or turn up. Don't use a post to advertise, sell anything, offer paid company or ask for money.</p>
 
+<p>Credits pay for messages to Suki. Your first five matches are free. After your fifth match, each message you send her uses one credit, except messages about your safety or your account and questions about credits. Messages between you and your matches don't use credits. You buy credits through our payment provider at the price shown when you buy. Credits have no cash value, can't be transferred, and end when your account ends. We refund a credit when Suki can't answer. Other refunds are given where the law requires them, or at our discretion; ask at the address below.</p>
+
 <h2>4. Your safety when meeting people</h2>
 <p><strong>You are solely responsible for your interactions with other users.</strong> We don't run criminal background checks or verify users' identities, and we can't confirm that what people say about themselves is true. Meet in a public place, tell someone you trust where you're going, arrange your own transport, and leave whenever you want. Never send money or financial information to someone you met here. Report anything concerning in the app, and contact the police if you believe a crime has been committed.</p>
 
@@ -98,6 +100,7 @@ const privacyHTML = `<h1>Privacy Policy</h1>
 <tr><td>Conversations</td><td>Your conversations with Suki and your messages with matches.</td></tr>
 <tr><td>What Suki learns</td><td>Notes she keeps about you, your accepted and declined introductions, and what you tell her after dates. We also derive a model of your preferences from these.</td></tr>
 <tr><td>Date plans</td><td>Places you consider and the times and plans you confirm.</td></tr>
+<tr><td>Credits</td><td>Your balance, what you bought and when, and each change to your balance. We don't receive or store your card details.</td></tr>
 <tr><td>Buddy posts</td><td>What you post, when it's for, your city, whether you limited it by gender, and who responded. Members in your city can see a post with your public profile while it's open.</td></tr>
 <tr><td>Safety records</td><td>Reports you make or that others make about you, blocks, and the results of automated content checks.</td></tr>
 <tr><td>Device and technical</td><td>IP address and device or browser description for each signed-in session, and your push notification token and device platform. We also log failed sign-in attempts, including the email address used.</td></tr>
@@ -141,6 +144,7 @@ const privacyHTML = `<h1>Privacy Policy</h1>
 <tr><th>Provider</th><th>Purpose</th><th>Data</th></tr>
 <tr><td>Alibaba Cloud (Beijing, China)</td><td>AI model that powers Suki, matching, coaching and moderation</td><td>Messages to Suki, messages between matches, profile details and photos</td></tr>
 <tr><td>Amazon Web Services (United States)</td><td>Hosting, photo storage and backups</td><td>All the data described in this policy</td></tr>
+<tr><td>Stripe</td><td>Taking payment when you buy credits</td><td>The payment details you enter on Stripe's page, and the pack you're buying</td></tr>
 <tr><td>Fish Audio</td><td>Suki's voice, only when you play it or turn on auto-play</td><td>The text of Suki's reply. On the plan we use, Fish Audio may use it to improve its models, so you can leave the voice off in Settings.</td></tr>
 <tr><td>Expo, Apple and Google</td><td>Push notifications</td><td>Device token, notification title and text, and the screen to open. Notifications don't contain message text, though a match notification can include the other person's name.</td></tr>
 <tr><td>OpenStreetMap services, including Nominatim, Komoot Photon and public Overpass servers</td><td>Finding your city and places for dates</td><td>City name or coordinates and the type of place. These requests come from our server and don't include your name.</td></tr>

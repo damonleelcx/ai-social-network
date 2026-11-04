@@ -67,6 +67,9 @@ type Config struct {
 	TTSVoiceID    string
 	TTSModel      string
 	TTSDailyChars int
+	// Stripe. No keys means credits can't be bought, so messages to Suki stay free.
+	StripeSecretKey     string
+	StripeWebhookSecret string
 	// ExpoPushURL is where push notifications go; empty disables push.
 	ExpoPushURL string
 
@@ -85,6 +88,8 @@ func Load() (Config, error) {
 		CookieSecure:          envBool("SYN_COOKIE_SECURE", true),
 		LLMBaseURL:            env("SYN_LLM_BASE_URL", "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"),
 		LLMAPIKey:             os.Getenv("SYN_LLM_API_KEY"),
+		StripeSecretKey:       os.Getenv("SYN_STRIPE_SECRET_KEY"),
+		StripeWebhookSecret:   os.Getenv("SYN_STRIPE_WEBHOOK_SECRET"),
 		LLMModel:              env("SYN_LLM_MODEL", "qwen3.8-max"),
 		LLMFastModel:          env("SYN_LLM_FAST_MODEL", "qwen3.8-flash"),
 		SMTPHost:              os.Getenv("SYN_SMTP_HOST"),

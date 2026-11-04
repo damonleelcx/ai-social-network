@@ -2,6 +2,8 @@ import type {
   AppNotification,
   Blocked,
   BuddyRequest,
+  CreditStatus,
+  CreditUsage,
   DatePlan,
   Hint,
   Match,
@@ -107,6 +109,12 @@ export const dates = {
   cancel: async (id: string, reason?: string) =>
     (await api<DateResult>(`/v1/dates/${id}/cancel`, { method: 'POST', body: { reason: reason ?? '' } })).date,
   share: async (id: string) => (await api<{ text: string }>(`/v1/dates/${id}/share`)).text,
+};
+
+export const credits = {
+  status: () => api<CreditStatus>('/v1/credits'),
+  usage: async () => (await api<{ usage: CreditUsage[] }>('/v1/credits/usage')).usage,
+  checkout: async (pack: string) => (await api<{ url: string }>('/v1/credits/checkout', { method: 'POST', body: { package: pack } })).url,
 };
 
 export const buddies = {

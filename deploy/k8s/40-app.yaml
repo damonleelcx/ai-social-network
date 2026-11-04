@@ -35,6 +35,7 @@ spec:
             - secretRef: { name: synagent }
             - secretRef: { name: synagent-mail, optional: true }
             - secretRef: { name: synagent-voice, optional: true }
+            - secretRef: { name: synagent-billing, optional: true }
           startupProbe:
             httpGet: { path: /readyz, port: http }
             failureThreshold: 45
@@ -87,6 +88,7 @@ spec:
             - secretRef: { name: synagent }
             - secretRef: { name: synagent-mail, optional: true }
             - secretRef: { name: synagent-voice, optional: true }
+            - secretRef: { name: synagent-billing, optional: true }
           resources:
             requests: { cpu: 50m, memory: 96Mi }
             limits: { cpu: "1", memory: 384Mi }

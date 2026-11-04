@@ -1,11 +1,11 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Share } from '@/lib/dialogs';
 import * as api from '@/api/endpoints';
 import { missingLabel } from '@/lib/format';
-import { useLive } from '@/state/live';
+import { useLive, useTopic } from '@/state/live';
 import { useSession } from '@/state/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
@@ -82,6 +82,12 @@ export default function Me() {
   const live = useLive();
   const [refreshing, setRefreshing] = useState(false);
   const [pausing, setPausing] = useState(false);
+  const [balance, setBalance] = useState<number | null>(null);
+  const loadBalance = useCallback(() => {
+    api.credits.status().then((s) => setBalance(s.balance), () => {});
+  }, []);
+  useEffect(loadBalance, [loadBalance]);
+  useTopic('credits', loadBalance);
 
   const main = live.photos.find((p) => p.is_primary) ?? live.photos[0];
   const status = STATUS[profile?.status ?? ''];
@@ -134,6 +140,12 @@ export default function Me() {
           />
           <NavRow icon="notifications-outline" label={tr('Notifications')} badge={live.badges.me} onPress={() => router.push('/notifications')} />
           <NavRow icon="person-add-outline" label={tr('Invite friends')} hint={tr('Send them the download link')} onPress={inviteFriends} />
+          <NavRow
+            icon="card-outline"
+            label={tr('Credits')}
+            hint={balance === null ? undefined : tr('{n} credits left', { n: String(balance) })}
+            onPress={() => router.push('/settings/credits')}
+          />
           <NavRow icon="settings-outline" label={tr('Settings')} onPress={() => router.push('/settings')} />
         </Group>
 
