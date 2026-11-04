@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import * as api from '@/api/endpoints';
 import { missingLabel } from '@/lib/format';
@@ -75,7 +75,8 @@ export default function Me() {
   const loadBalance = useCallback(() => {
     api.credits.status().then((s) => setBalance(s.balance), () => {});
   }, []);
-  useEffect(loadBalance, [loadBalance]);
+  // This tab stays mounted behind other screens, and a store's checkout can drop the socket.
+  useFocusEffect(loadBalance);
   useTopic('credits', loadBalance);
 
   const main = live.photos.find((p) => p.is_primary) ?? live.photos[0];
