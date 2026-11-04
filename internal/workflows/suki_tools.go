@@ -70,7 +70,7 @@ func registerSukiTools() {
 			return map[string]any{"profile": p, "missing": m}, nil
 		})
 
-	add("profile_save", "Save fields of this person's profile, as they told you. Only save what they actually said. Birthdate is yyyy-mm-dd, can be set once, and must be 18 or over.",
+	add("profile_save", "Save fields of this person's profile, as they told you. Only save what they actually said. Use it to correct anything they say is wrong, too. Birthdate is yyyy-mm-dd and must be 18 or over.",
 		`{"type":"object","additionalProperties":false,"properties":{
 			"display_name":{"type":"string"},"birthdate":{"type":"string"},"gender":{"type":"string","enum":["woman","man","nonbinary","other"]},"pronouns":{"type":"string"},
 			"seeking":{"type":"array","items":{"type":"string","enum":["woman","man","nonbinary","other"]}},"age_min":{"type":"integer"},"age_max":{"type":"integer"},
@@ -81,9 +81,13 @@ func registerSukiTools() {
 			"prompts":{"type":"array","items":{"type":"object","required":["q","a"],"properties":{"q":{"type":"string"},"a":{"type":"string"}}}}}}`,
 		tools.Write, func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
 			if b, _ := a["birthdate"].(string); b != "" && env.UserText != "" && !profile.StatesBirthYear(env.UserText, b) {
-				return map[string]any{"saved": false, "stop": "birthdate: nothing was saved, because a birthdate can't be changed later. Ask for their full date of birth with the four-digit year, like March 2, 1996."}, nil
+				return map[string]any{"saved": false, "stop": "birthdate: nothing was saved, because the year has to be in their own message. Ask for their full date of birth with the four-digit year, like March 2, 1996."}, nil
 			}
-			p, err := profile.Save(ctx, d.Pool, env.UserID, a)
+			save := profile.Save
+			if env.UserText != "" {
+				save = profile.SaveCorrecting
+			}
+			p, err := save(ctx, d.Pool, env.UserID, a)
 			if errors.Is(err, profile.ErrUnderage) {
 				if _, e := d.Dating.FileReport(ctx, dating.Report{SubjectID: env.UserID, Source: "onboarding", Reason: "underage_birthdate", Severity: "critical", Key: "underage:" + env.UserID}); e != nil {
 					return nil, e

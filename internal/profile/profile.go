@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -231,6 +232,16 @@ func patchText(patch map[string]any) string {
 // so a mistake by a client or the model is visible. city_* fields are set only by
 // SetCity, from a resolved place.
 func Save(ctx context.Context, pool *pgxpool.Pool, userID string, patch map[string]any) (*Profile, error) {
+	return save(ctx, pool, userID, patch, false)
+}
+
+// SaveCorrecting is Save for someone telling Suki about themselves, who can also correct a
+// birthdate that's already set. The age rules still apply, and a held account stays held.
+func SaveCorrecting(ctx context.Context, pool *pgxpool.Pool, userID string, patch map[string]any) (*Profile, error) {
+	return save(ctx, pool, userID, patch, true)
+}
+
+func save(ctx context.Context, pool *pgxpool.Pool, userID string, patch map[string]any, correcting bool) (*Profile, error) {
 	cur, err := Get(ctx, pool, userID)
 	if err != nil {
 		return nil, err
@@ -273,7 +284,10 @@ func Save(ctx context.Context, pool *pgxpool.Pool, userID string, patch map[stri
 		case "birthdate":
 			s, _ := v.(string)
 			if cur.Birthdate != "" && cur.Birthdate != s {
-				return nil, invalid("a birthdate can only be set once; contact support if it is wrong")
+				if !correcting {
+					return nil, invalid("a birthdate can only be set once; ask Suki if it is wrong")
+				}
+				slog.Info("birthdate corrected", "user", userID)
 			}
 			b, err := time.Parse("2006-01-02", s)
 			if err != nil {
