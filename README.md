@@ -65,7 +65,7 @@ Your first 5 matches are free. After that, each message to Suki uses a credit, a
 
 - **The same account everywhere.** Use it in your browser with nothing to install, or on your phone.
 - **One-tap updates.** The Android app tells you when a new version is out and installs it from inside the app.
-- **Invite friends.** Share a link to download SynAgent.
+- **Invite friends.** Share your link or code, from the app, the web or WeChat, and earn credits when a friend joins.
 - **Your language and theme.** English, Chinese, Korean, Japanese and Spanish, in light or dark.
 ## WeChat mini program
 
