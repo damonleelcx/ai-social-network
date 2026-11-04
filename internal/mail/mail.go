@@ -14,6 +14,8 @@ import (
 	"net"
 	"net/smtp"
 	"strings"
+
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"time"
 )
 
@@ -42,6 +44,10 @@ type SMTP struct {
 func (s *SMTP) Enabled() bool { return true }
 
 func (s *SMTP) Send(ctx context.Context, m Message) (string, error) {
+	// Someone who signed in through a service that gives no address has a placeholder.
+	if strings.HasSuffix(m.To, ".invalid") {
+		return "", nil
+	}
 	if m.MessageID == "" {
 		b := make([]byte, 12)
 		_, _ = rand.Read(b)
@@ -228,7 +234,7 @@ func CodePage(lang, title, lead, code, foot string) string {
 <h1 style="font-size:20px;margin:0 0 12px">%s</h1>
 <p style="line-height:1.5">%s</p>
 <p style="font-size:34px;letter-spacing:8px;font-weight:700;text-align:center;margin:24px 0">%s</p>
-<p style="color:#6b6480;font-size:13px">It works for 15 minutes. %s</p>
+<p style="color:#6b6480;font-size:13px">%s %s</p>
 <p style="color:#6b6480;font-size:13px">Suki</p>
-</div></body></html>`, htmlLang(lang), html.EscapeString(title), html.EscapeString(lead), html.EscapeString(code), html.EscapeString(foot))
+</div></body></html>`, htmlLang(lang), html.EscapeString(title), html.EscapeString(lead), html.EscapeString(code), html.EscapeString(i18n.T(lang, "It works for 15 minutes.")), html.EscapeString(foot))
 }

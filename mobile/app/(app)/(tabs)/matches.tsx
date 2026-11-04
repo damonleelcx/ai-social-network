@@ -100,11 +100,11 @@ export default function Matches() {
 
   const rows: Row[] = [];
   if (live.proposals.length) {
-    rows.push({ type: 'heading', key: 'h-intro', title: 'Waiting for you', hint: "People I think you should meet. They only find out if you both say yes." });
+    rows.push({ type: 'heading', key: 'h-intro', title: tr('Waiting for you'), hint: tr('People I think you should meet. They only find out if you both say yes.') });
     for (const p of live.proposals) rows.push({ type: 'proposal', key: p.id, proposal: p });
   }
   if (live.matches.length) {
-    rows.push({ type: 'heading', key: 'h-match', title: 'Your matches' });
+    rows.push({ type: 'heading', key: 'h-match', title: tr('Your matches') });
     for (const m of live.matches) rows.push({ type: 'match', key: m.id, match: m });
   }
 

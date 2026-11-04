@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
+import { Alert } from '@/lib/dialogs';
 import { proposals as api } from '@/api/endpoints';
 import type { Proposal } from '@/api/types';
 import { useLive } from '@/state/live';

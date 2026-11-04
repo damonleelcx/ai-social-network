@@ -1,10 +1,10 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Share, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { View } from 'react-native';
 import * as api from '@/api/endpoints';
 import { missingLabel } from '@/lib/format';
-import { useLive } from '@/state/live';
+import { useLive, useTopic } from '@/state/live';
 import { useSession } from '@/state/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
@@ -15,19 +15,6 @@ import { Button, Glass, Pill, T } from '@/ui/primitives';
 import { showError } from '@/ui/sheet';
 import { SukiAvatar } from '@/ui/suki';
 import { tr } from '@/i18n';
-
-const DOWNLOAD_PAGE =
-  process.env.EXPO_PUBLIC_STORE === 'play'
-    ? 'https://play.google.com/store/apps/details?id=space.herosagent.synagent'
-    : 'https://match.heros-agent.space/#download';
-
-async function inviteFriends() {
-  try {
-    await Share.share({ message: tr('Come try SynAgent with me. Suki, an AI wingwoman, introduces you to people worth meeting. Download it here: {url}', { url: DOWNLOAD_PAGE }) });
-  } catch (e) {
-    showError(e);
-  }
-}
 
 /** Nine things make a profile whole on the server (see profile.Missing). */
 const PROFILE_STEPS = 9;
@@ -84,6 +71,12 @@ export default function Me() {
   const live = useLive();
   const [refreshing, setRefreshing] = useState(false);
   const [pausing, setPausing] = useState(false);
+  const [balance, setBalance] = useState<number | null>(null);
+  const loadBalance = useCallback(() => {
+    api.credits.status().then((s) => setBalance(s.balance), () => {});
+  }, []);
+  useEffect(loadBalance, [loadBalance]);
+  useTopic('credits', loadBalance);
 
   const main = live.photos.find((p) => p.is_primary) ?? live.photos[0];
   const status = STATUS[profile?.status ?? ''];
@@ -135,7 +128,13 @@ export default function Me() {
             onPress={() => router.push('/profile/photos')}
           />
           <NavRow icon="notifications-outline" label={tr('Notifications')} badge={live.badges.me} onPress={() => router.push('/notifications')} />
-          <NavRow icon="person-add-outline" label={tr('Invite friends')} hint={tr('Send them the download link')} onPress={inviteFriends} />
+          <NavRow icon="person-add-outline" label={tr('Invite friends')} hint={tr('Earn credits for each friend who joins')} onPress={() => router.push('/settings/invite')} />
+          <NavRow
+            icon="card-outline"
+            label={tr('Credits')}
+            hint={balance === null ? undefined : tr('{n} credits left', { n: String(balance) })}
+            onPress={() => router.push('/settings/credits')}
+          />
           <NavRow icon="settings-outline" label={tr('Settings')} onPress={() => router.push('/settings')} />
         </Group>
 

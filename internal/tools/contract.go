@@ -57,6 +57,8 @@ type Env struct {
 	// Scope distinguishes side effects that happen outside any task (a tool
 	// invoked from a chat turn): it is the message id there.
 	Scope string
+	// UserText is the message a chat turn is answering, and empty outside chat turns.
+	UserText string
 }
 
 type Tool struct {

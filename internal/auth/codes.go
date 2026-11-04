@@ -10,6 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	mailer "github.com/damonleelcx/ai-social-network/internal/mail"
 )
 
@@ -167,10 +168,11 @@ func (s *Service) ResetPassword(ctx context.Context, email, code, password strin
 }
 
 func codeMail(subject, lead, name, code, foot, lang string) mailer.Message {
-	greet := "Hi"
+	subject, lead, foot = i18n.T(lang, subject), i18n.T(lang, lead), i18n.T(lang, foot)
+	greet := i18n.T(lang, "Hi")
 	if name != "" {
-		greet = "Hi " + name
+		greet = i18n.T(lang, "Hi {name}", "name", name)
 	}
-	text := fmt.Sprintf("%s,\n\n%s\n\n    %s\n\nIt works for 15 minutes.\n\n%s\n\nSuki", greet, lead, code, foot)
+	text := fmt.Sprintf("%s,\n\n%s\n\n    %s\n\n%s\n\n%s\n\nSuki", greet, lead, code, i18n.T(lang, "It works for 15 minutes."), foot)
 	return mailer.Message{Subject: subject, Text: text, HTML: mailer.CodePage(lang, subject, greet+". "+lead, code, foot)}
 }

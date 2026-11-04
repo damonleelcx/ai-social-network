@@ -272,6 +272,7 @@ h1 .lit { color: var(--accent); }
 .save-list b { font: 700 17px/1 var(--label); text-transform: uppercase; }
 
 .downloads { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 38px; }
+.download-web { grid-column: 1 / -1; }
 .download { --frame: var(--line-soft); display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin: var(--px); padding: 24px; background: var(--panel); }
 .download h3 { font: 400 18px/1.2 var(--display); text-transform: uppercase; }
 .download p { font-size: 23px; line-height: 1.12; color: var(--soft); }
@@ -319,6 +320,7 @@ h1 .lit { color: var(--accent); }
 @media (max-width: 560px) {
   body { font-size: 21px; }
   .brand span { display: none; }
+  .nav-end .btn-heart { display: none; }
   .hero { width: calc(100% - 32px); }
   .btn { padding: 13px 14px; }
   .fan-card { width: min(100%, 300px); }

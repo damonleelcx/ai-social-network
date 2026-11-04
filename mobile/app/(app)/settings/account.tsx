@@ -1,9 +1,9 @@
-import { File, Paths } from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
+import { saveJson } from '@/lib/saveJson';
 import { useCallback, useEffect, useState } from 'react';
-import { Share, View } from 'react-native';
+import { View } from 'react-native';
 import { API_URL, legalUrl } from '@/api/client';
 import * as api from '@/api/endpoints';
+import { googleIdToken } from '@/lib/googleSignIn';
 import type { Session } from '@/api/types';
 import { shortTime } from '@/lib/format';
 import { openLegal } from '@/lib/links';
@@ -72,26 +72,37 @@ function PasswordSheet({ visible, onClose }: { visible: boolean; onClose: () => 
 }
 
 function DeleteSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
-  const { forget } = useSession();
+  const { forget, user } = useSession();
+  const passwordless = user?.has_password === false;
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   return (
     <Sheet visible={visible} onClose={onClose} title={tr('Delete your account')}>
       <T soft>{tr("This removes your profile, photos, matches and chats for good. It can't be undone. Type your password to confirm.")}</T>
-      <Field label={tr('Password')} value={password} onChangeText={setPassword} secure autoCapitalize="none" autoComplete="current-password" />
+      {passwordless ? <T soft>{tr('Confirm with your Google account to finish.')}</T> : null}
+      {passwordless ? null : <Field label={tr('Password')} value={password} onChangeText={setPassword} secure autoCapitalize="none" autoComplete="current-password" /> }
       <ErrorText message={error} />
       <Button
         label={tr('Delete my account')}
         kind="danger"
         full
         loading={busy}
-        disabled={!password}
+        disabled={!passwordless && !password}
         onPress={async () => {
           setBusy(true);
           setError(null);
           try {
-            await api.auth.deleteAccount(password);
+            if (passwordless) {
+              const token = await googleIdToken();
+              if (!token) {
+                setBusy(false);
+                return;
+              }
+              await api.auth.deleteWithGoogle(token);
+            } else {
+              await api.auth.deleteAccount(password);
+            }
             // Close first: a modal left open would sit on top of the welcome screen.
             onClose();
             await forget();
@@ -145,15 +156,7 @@ export default function AccountSettings() {
     try {
       const data = await api.auth.exportData();
       const json = JSON.stringify(data, null, 2);
-      const file = new File(Paths.cache, 'synagent-data.json');
-      if (file.exists) file.delete();
-      file.create();
-      file.write(json);
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(file.uri, { mimeType: 'application/json', dialogTitle: tr('Your SynAgent data') });
-      } else {
-        await Share.share({ message: json });
-      }
+      await saveJson('synagent-data.json', json, tr('Your SynAgent data'));
     } catch (e) {
       showError(e);
     } finally {
@@ -171,9 +174,11 @@ export default function AccountSettings() {
           </Glass>
         </Section>
 
-        <Group>
-          <NavRow icon="key-outline" label={tr('Change password')} onPress={() => setPasswordOpen(true)} />
-        </Group>
+        {user?.has_password === false ? null : (
+          <Group>
+            <NavRow icon="key-outline" label={tr('Change password')} onPress={() => setPasswordOpen(true)} />
+          </Group>
+        )}
 
         <Section title={tr('Active sessions')}>
           <ErrorText message={sessionError} />
@@ -199,6 +204,7 @@ export default function AccountSettings() {
           <Group>
             <NavRow label={tr('Terms')} onPress={() => openLegal(legalUrl('terms'))} />
             <NavRow label={tr('Privacy policy')} onPress={() => openLegal(legalUrl('privacy'))} />
+            <NavRow label={tr('Contact')} onPress={() => openLegal(legalUrl('contact'))} />
             <NavRow label={tr('How account deletion works')} onPress={() => openLegal(legalUrl('delete-account'))} />
           </Group>
         </Section>

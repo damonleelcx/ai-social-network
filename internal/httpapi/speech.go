@@ -22,6 +22,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/damonleelcx/ai-social-network/internal/dating"
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"github.com/damonleelcx/ai-social-network/internal/tts"
 )
 
@@ -58,7 +59,7 @@ func (s *Server) speak(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u := userOf(r)
-	text := speechSample
+	text := i18n.T(s.lang(r, u.ID), speechSample)
 	if !b.Sample {
 		conv, err := dating.ConversationID(r.Context(), s.Pool, u.ID)
 		if err != nil {

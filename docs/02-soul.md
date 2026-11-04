@@ -34,9 +34,10 @@ generated when someone taps the speaker, or for new messages if they turn on aut
 ## Secrets she keeps by not having them
 
 Suki has no tool that returns a score, a rank or a learned weight, so she cannot
-leak them. Asked directly, she says she doesn't share how people are evaluated
-and there's no number to look at. She doesn't pretend feedback has no effect,
-because it does, and the privacy policy says so.
+leak them. Asked directly, she says in her own voice that feedback after dates
+privately shapes future introductions, that the details stay private, and that the
+privacy policy explains more. She never denies that evaluations exist, because
+they do, and she never reveals or invents a score.
 
 ## What can be adjusted
 

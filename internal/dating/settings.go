@@ -8,6 +8,10 @@ import (
 	"unicode/utf8"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.mongodb.org/mongo-driver/v2/bson"
+
+	"github.com/damonleelcx/ai-social-network/internal/chatstore"
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 )
 
 type setting struct {
@@ -46,6 +50,49 @@ var Settings = map[string]setting{
 }
 
 // GetSettings returns every setting, with defaults filled in.
+// Lang is the language someone reads the app in.
+func (s *Service) Lang(ctx context.Context, userID string) string {
+	l, _ := GetSettings(ctx, s.Pool, userID)["language"].(string)
+	return l
+}
+
+// localizeNotes renders date notes for whoever is reading. Older notes have no template and
+// keep the English they were written in.
+func localizeNotes(ms []chatstore.Message, lang string) {
+	for i := range ms {
+		note, ok := ms[i].Meta["note"].(string)
+		if !ok {
+			continue
+		}
+		vars := map[string]string{}
+		switch v := ms[i].Meta["note_vars"].(type) {
+		case map[string]any:
+			for k, x := range v {
+				vars[k], _ = x.(string)
+			}
+		case map[string]string:
+			vars = v
+		case bson.M:
+			for k, x := range v {
+				vars[k], _ = x.(string)
+			}
+		case bson.D:
+			for _, e := range v {
+				vars[e.Key], _ = e.Value.(string)
+			}
+		}
+		ms[i].Body = renderNote(lang, note, vars)
+	}
+}
+
+func renderNote(lang, note string, vars map[string]string) string {
+	kv := make([]string, 0, len(vars)*2)
+	for k, v := range vars {
+		kv = append(kv, k, i18n.T(lang, v))
+	}
+	return i18n.T(lang, note, kv...)
+}
+
 func GetSettings(ctx context.Context, pool *pgxpool.Pool, userID string) map[string]any {
 	stored := Prefs(ctx, pool, userID)
 	out := map[string]any{}

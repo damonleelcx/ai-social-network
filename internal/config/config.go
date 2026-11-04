@@ -4,6 +4,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/damonleelcx/ai-social-network/internal/billing"
 	"os"
 	"strconv"
 	"strings"
@@ -50,10 +51,10 @@ type Config struct {
 	MongoDB  string
 
 	// S3 holds photo bytes. Empty bucket with PhotoDir set stores on disk (development only).
-	S3Bucket string
-	S3Region string
+	S3Bucket   string
+	S3Region   string
 	S3Endpoint string // MinIO or similar in development
-	PhotoDir string
+	PhotoDir   string
 
 	// Places (city lookup, venue search). OpenStreetMap by default.
 	NominatimURL string
@@ -67,6 +68,16 @@ type Config struct {
 	TTSVoiceID    string
 	TTSModel      string
 	TTSDailyChars int
+	// Stripe. No keys means credits can't be bought, so messages to Suki stay free.
+	StripeSecretKey     string
+	StripeWebhookSecret string
+	// WeChat Pay for the mini program. All of it, or none of it.
+	WeChat billing.WeChatConfig
+	// Google Play Billing: the Android package, and a service account's JSON key.
+	// GoogleClientID is the OAuth web client id for sign-in. Empty turns it off.
+	GoogleClientID           string
+	GooglePlayPackage        string
+	GooglePlayServiceAccount string
 	// ExpoPushURL is where push notifications go; empty disables push.
 	ExpoPushURL string
 
@@ -78,13 +89,28 @@ type Config struct {
 
 func Load() (Config, error) {
 	c := Config{
-		Addr:                  env("SYN_ADDR", ":8080"),
-		DatabaseURL:           os.Getenv("SYN_DATABASE_URL"),
-		PublicOrigin:          strings.TrimRight(os.Getenv("SYN_PUBLIC_ORIGIN"), "/"),
-		SessionTTL:            envDur("SYN_SESSION_TTL", 30*24*time.Hour),
-		CookieSecure:          envBool("SYN_COOKIE_SECURE", true),
-		LLMBaseURL:            env("SYN_LLM_BASE_URL", "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"),
-		LLMAPIKey:             os.Getenv("SYN_LLM_API_KEY"),
+		Addr:                     env("SYN_ADDR", ":8080"),
+		DatabaseURL:              os.Getenv("SYN_DATABASE_URL"),
+		PublicOrigin:             strings.TrimRight(os.Getenv("SYN_PUBLIC_ORIGIN"), "/"),
+		SessionTTL:               envDur("SYN_SESSION_TTL", 30*24*time.Hour),
+		CookieSecure:             envBool("SYN_COOKIE_SECURE", true),
+		LLMBaseURL:               env("SYN_LLM_BASE_URL", "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"),
+		LLMAPIKey:                os.Getenv("SYN_LLM_API_KEY"),
+		StripeSecretKey:          os.Getenv("SYN_STRIPE_SECRET_KEY"),
+		StripeWebhookSecret:      os.Getenv("SYN_STRIPE_WEBHOOK_SECRET"),
+		GooglePlayPackage:        env("SYN_GOOGLE_PLAY_PACKAGE", "space.herosagent.synagent"),
+		GoogleClientID:           os.Getenv("SYN_GOOGLE_CLIENT_ID"),
+		GooglePlayServiceAccount: os.Getenv("SYN_GOOGLE_PLAY_SERVICE_ACCOUNT"),
+		WeChat: billing.WeChatConfig{
+			AppID:         os.Getenv("SYN_WECHAT_APP_ID"),
+			AppSecret:     os.Getenv("SYN_WECHAT_APP_SECRET"),
+			MchID:         os.Getenv("SYN_WECHAT_MCH_ID"),
+			MchSerial:     os.Getenv("SYN_WECHAT_MCH_SERIAL"),
+			APIv3Key:      os.Getenv("SYN_WECHAT_API_V3_KEY"),
+			PrivateKeyPEM: os.Getenv("SYN_WECHAT_MCH_PRIVATE_KEY"),
+			PublicKeyID:   os.Getenv("SYN_WECHAT_PAY_PUBLIC_KEY_ID"),
+			PublicKeyPEM:  os.Getenv("SYN_WECHAT_PAY_PUBLIC_KEY"),
+		},
 		LLMModel:              env("SYN_LLM_MODEL", "qwen3.8-max"),
 		LLMFastModel:          env("SYN_LLM_FAST_MODEL", "qwen3.8-flash"),
 		SMTPHost:              os.Getenv("SYN_SMTP_HOST"),

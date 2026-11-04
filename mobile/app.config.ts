@@ -2,7 +2,7 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 const DEFAULT_API = 'https://match.heros-agent.space';
 // Google Play doesn't allow an app to install itself, so its build has no updater.
-const PLAY = process.env.EXPO_PUBLIC_STORE === 'play';
+const PLAY = process.env.EXPO_PUBLIC_PLAY_STORE === '1';
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   // Set by hand once an EAS project exists. Without it the app simply doesn't
@@ -14,12 +14,15 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: 'SynAgent',
     slug: 'synagent',
     scheme: 'synagent',
-    version: '1.2.0',
+    version: '1.3.1',
     orientation: 'portrait',
     icon: './assets/brand/icon.png',
     userInterfaceStyle: 'automatic',
     backgroundColor: '#EDE5FF',
-    platforms: ['ios', 'android'],
+    platforms: ['ios', 'android', 'web'],
+    // Served by the API server at /app (internal/httpapi/webapp.go).
+    web: { bundler: 'metro', output: 'single', favicon: './assets/brand/favicon.png' },
+    experiments: { ...config.experiments, baseUrl: '/app' },
     ios: {
       bundleIdentifier: 'space.herosagent.synagent',
       supportsTablet: false,
@@ -69,6 +72,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // Playback only: never ask for the microphone, and stop when the app leaves the foreground.
       ['expo-audio', { microphonePermission: false, recordAudioAndroid: false, enableBackgroundPlayback: false }],
       './plugins/withDebugNetworking',
+      'expo-iap',
     ],
     extra: {
       apiUrl: process.env.EXPO_PUBLIC_API_URL || DEFAULT_API,

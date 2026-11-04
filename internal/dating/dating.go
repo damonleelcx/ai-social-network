@@ -17,6 +17,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/damonleelcx/ai-social-network/internal/chatstore"
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"github.com/damonleelcx/ai-social-network/internal/moderation"
 	"github.com/damonleelcx/ai-social-network/internal/notify"
 	"github.com/damonleelcx/ai-social-network/internal/profile"
@@ -79,6 +80,7 @@ func (s *Service) PostFromSuki(ctx context.Context, userID, body, mood string, c
 	if err != nil {
 		return err
 	}
+	body = i18n.T(s.Lang(ctx, userID), body)
 	meta := map[string]any{"mood": mood}
 	if len(cards) > 0 {
 		meta["cards"] = cards
@@ -151,7 +153,7 @@ func (s *Service) Announce(ctx context.Context, proposalID string) error {
 		if err != nil {
 			return err
 		}
-		body := fmt.Sprintf("I found someone! Meet %s. %s", name, x.pitch)
+		body := i18n.T(s.Lang(ctx, x.user), "I found someone! Meet {name}.", "name", name) + " " + x.pitch
 		cards := []map[string]any{{"kind": "proposal", "proposal_id": proposalID}}
 		if err := s.PostFromSuki(ctx, x.user, body, "happy", cards, "proposal:"+proposalID); err != nil {
 			return err
@@ -345,11 +347,12 @@ func (s *Service) onMatch(ctx context.Context, matchID, a, b string) {
 			slog.Error("match announce", "err", err)
 			continue
 		}
-		body := fmt.Sprintf("It's a match with %s! You both said yes. I'm thinking of an opener for you right now.", name)
+		lang := s.Lang(ctx, x[0])
+		body := i18n.T(lang, "It's a match with {name}! You both said yes. I'm thinking of an opener for you right now.", "name", name)
 		if err := s.PostFromSuki(ctx, x[0], body, "surprised", []map[string]any{{"kind": "match", "match_id": matchID}}, "match:"+matchID); err != nil {
 			slog.Error("match announce", "err", err)
 		}
-		if err := notify.Send(ctx, s.Pool, x[0], "match", "It's a match!", "You and "+name+" both said yes.",
+		if err := notify.Send(ctx, s.Pool, x[0], "match", "It's a match!", i18n.T(lang, "You and {name} both said yes.", "name", name),
 			map[string]any{"screen": "chat", "id": matchID}, "match:"+matchID+":"+x[0]); err != nil {
 			slog.Error("match notify", "err", err)
 		}
@@ -379,6 +382,8 @@ type Match struct {
 	LastPreview   string         `json:"last_preview"`
 	Unread        int64          `json:"unread"`
 	OpenDateID    string         `json:"open_date_id,omitempty"`
+	// Activity is the kind of plan this match came from. Empty for an introduction.
+	Activity string `json:"activity,omitempty"`
 }
 
 // Participants returns the pair, for authorisation everywhere else.
@@ -408,9 +413,10 @@ func (s *Service) matchFor(ctx context.Context, id, userID string) (*Match, erro
 	var m Match
 	var a, b string
 	err := s.Pool.QueryRow(ctx, `SELECT m.id, m.stage, m.status, m.user_a, m.user_b, m.created_at, m.last_message_at, m.last_preview,
-		coalesce((SELECT d.id::text FROM date_plans d WHERE d.match_id=m.id AND d.status IN ('searching','voting','scheduling','confirmed') LIMIT 1),'')
+		coalesce((SELECT d.id::text FROM date_plans d WHERE d.match_id=m.id AND d.status IN ('searching','voting','scheduling','confirmed') LIMIT 1),''),
+		coalesce(m.buddy_kind,'')
 		FROM matches m WHERE m.id=$1 AND (m.user_a=$2 OR m.user_b=$2)`, id, userID).
-		Scan(&m.ID, &m.Stage, &m.Status, &a, &b, &m.CreatedAt, &m.LastMessageAt, &m.LastPreview, &m.OpenDateID)
+		Scan(&m.ID, &m.Stage, &m.Status, &a, &b, &m.CreatedAt, &m.LastMessageAt, &m.LastPreview, &m.OpenDateID, &m.Activity)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -570,16 +576,17 @@ func (s *Service) SendMessage(ctx context.Context, matchID, userID, body, client
 		s.flag(ctx, matchID, userID, other, m.Seq, f, body)
 	}
 	var count, coachedAt int
+	var buddy bool
 	preview := truncateRunes(body, 80)
 	err = s.Pool.QueryRow(ctx, `UPDATE matches SET last_message_at=now(), last_preview=$2, message_count=message_count+1, stall_nudged_at=NULL, last_seq=$3 WHERE id=$1 AND last_seq<$3
-		RETURNING message_count, coached_at_count`, matchID, preview, m.Seq).Scan(&count, &coachedAt)
+		RETURNING message_count, coached_at_count, buddy_kind IS NOT NULL`, matchID, preview, m.Seq).Scan(&count, &coachedAt, &buddy)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return m, nil // already counted: this is a retry of a finished send
 	}
 	if err != nil {
 		return nil, err
 	}
-	if count >= 2 {
+	if count >= 2 && !buddy {
 		// The first exchange in each direction says the conversation is alive.
 		s.learn(ctx, userID, other, "replied", "replied:"+matchID+":"+userID)
 	}
@@ -592,6 +599,9 @@ func (s *Service) SendMessage(ctx context.Context, matchID, userID, body, client
 		_, _ = s.Pool.Exec(ctx, `UPDATE matches SET stage='getting_to_know' WHERE id=$1 AND stage='icebreaker'`, matchID)
 	}
 	for _, t := range CoachThresholds {
+		if buddy {
+			break // A plan with a stranger isn't a romance to coach.
+		}
 		if coachedAt < t && count >= t && s.Hooks.Coach != nil {
 			tag, err := s.Pool.Exec(ctx, `UPDATE matches SET coached_at_count=$2 WHERE id=$1 AND coached_at_count<$2`, matchID, t)
 			if err == nil && tag.RowsAffected() == 1 {
@@ -655,6 +665,7 @@ func (s *Service) Messages(ctx context.Context, matchID, userID string, after in
 	if err != nil {
 		return nil, err
 	}
+	localizeNotes(ms, s.Lang(ctx, userID))
 	if Prefs(ctx, s.Pool, other)["read_receipts"] == false {
 		for i := range ms {
 			if ms[i].SenderID == userID {
@@ -980,6 +991,9 @@ func (s *Service) requireNotHeld(ctx context.Context, userID string) error {
 // them or planning to meet them.
 func (s *Service) CloseEverything(ctx context.Context, userID string) error {
 	return pgx.BeginFunc(ctx, s.Pool, func(tx pgx.Tx) error {
+		if _, err := tx.Exec(ctx, `UPDATE buddy_requests SET status='closed' WHERE user_id=$1 AND status='open'`, userID); err != nil {
+			return err
+		}
 		if _, err := tx.Exec(ctx, `UPDATE date_plans SET status='cancelled', updated_at=now() WHERE status IN ('searching','voting','scheduling','confirmed')
 			AND match_id IN (SELECT id FROM matches WHERE user_a=$1 OR user_b=$1)`, userID); err != nil {
 			return err
@@ -1016,7 +1030,8 @@ func (s *Service) AnnounceForGoal(ctx context.Context, goalID string) error {
 }
 
 // CanSeePhoto is the one gate on another person's photo: your own, someone Suki has
-// introduced you to and is still waiting on, or a current match. After an unmatch or a
+// introduced you to and is still waiting on, a current match, someone whose buddy post
+// you can see, or someone who said they're in on yours. After an unmatch or a
 // block the answer is the same 404, so a person can't tell which happened.
 func (s *Service) CanSeePhoto(ctx context.Context, viewerID, ownerID string) (bool, error) {
 	if viewerID == ownerID {
@@ -1025,7 +1040,10 @@ func (s *Service) CanSeePhoto(ctx context.Context, viewerID, ownerID string) (bo
 	a, b := pairKey(viewerID, ownerID)
 	var ok bool
 	err := s.Pool.QueryRow(ctx, `SELECT (EXISTS(SELECT 1 FROM proposals WHERE user_a=$1 AND user_b=$2 AND status IN ('open','declined') AND expires_at>now())
-			OR EXISTS(SELECT 1 FROM matches WHERE user_a=$1 AND user_b=$2 AND status='active'))
-		AND NOT EXISTS(SELECT 1 FROM blocks WHERE (blocker_id=$1 AND blocked_id=$2) OR (blocker_id=$2 AND blocked_id=$1))`, a, b).Scan(&ok)
+			OR EXISTS(SELECT 1 FROM matches WHERE user_a=$1 AND user_b=$2 AND status='active')
+			OR EXISTS(SELECT 1 FROM buddy_requests r JOIN profiles me ON me.user_id=$3 WHERE r.user_id=$4 AND r.status='open' AND r.expires_at>now()
+				AND r.city_key=me.city_key AND (NOT r.same_gender OR r.gender=me.gender))
+			OR EXISTS(SELECT 1 FROM buddy_requests r JOIN buddy_offers o ON o.request_id=r.id WHERE r.user_id=$3 AND o.user_id=$4 AND r.status='open' AND r.expires_at>now()))
+		AND NOT EXISTS(SELECT 1 FROM blocks WHERE (blocker_id=$1 AND blocked_id=$2) OR (blocker_id=$2 AND blocked_id=$1))`, a, b, viewerID, ownerID).Scan(&ok)
 	return ok, err
 }

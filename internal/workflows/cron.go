@@ -243,7 +243,7 @@ func staleDebriefs(ctx context.Context) error {
 // person who set Suki's proactivity to low isn't nudged.
 func stalledChats(ctx context.Context) error {
 	rows, err := d.Pool.Query(ctx, `UPDATE matches SET stall_nudged_at=now() WHERE id IN (
-		SELECT id FROM matches WHERE status='active' AND stage IN ('icebreaker','getting_to_know','date_ready')
+		SELECT id FROM matches WHERE status='active' AND buddy_kind IS NULL AND stage IN ('icebreaker','getting_to_know','date_ready')
 		AND coalesce(last_message_at, created_at) < now()-interval '48 hours' AND stall_nudged_at IS NULL LIMIT 20)
 		RETURNING id, user_a, user_b`)
 	if err != nil {

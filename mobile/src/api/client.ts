@@ -1,11 +1,13 @@
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
-import { tr } from '@/i18n';
+import { currentLanguage, tr } from '@/i18n';
 
 const DEFAULT_API = 'https://match.heros-agent.space';
 
 export const API_URL: string = (
   process.env.EXPO_PUBLIC_API_URL ||
+  (Platform.OS === 'web' ? window.location.origin : '') ||
   (Constants.expoConfig?.extra as { apiUrl?: string } | undefined)?.apiUrl ||
   DEFAULT_API
 ).replace(/\/+$/, '');
@@ -109,6 +111,6 @@ export function socketUrl() {
   return API_URL.replace(/^http/, 'ws') + '/v1/ws';
 }
 
-export function legalUrl(page: 'terms' | 'privacy' | 'delete-account') {
-  return `${API_URL}/legal/${page}`;
+export function legalUrl(page: 'terms' | 'privacy' | 'delete-account' | 'contact') {
+  return `${API_URL}/legal/${page}?lang=${currentLanguage()}`;
 }

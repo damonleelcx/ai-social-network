@@ -21,7 +21,7 @@ export function AppUpdate() {
 
   useEffect(() => {
     // Play updates its own builds, and doesn't allow an app to install itself.
-    if (process.env.EXPO_PUBLIC_STORE !== 'play') findUpdate().then(setRelease);
+    if (process.env.EXPO_PUBLIC_PLAY_STORE !== '1') findUpdate().then(setRelease);
   }, []);
 
   if (!release) return null;

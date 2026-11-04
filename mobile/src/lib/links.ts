@@ -44,6 +44,15 @@ export function openNamedScreen(screen: string) {
   return true;
 }
 
+/** Payment happens on the provider's own page. On the web that replaces this one. */
+export function openPayment(url: string) {
+  if (Platform.OS === 'web') {
+    window.location.assign(url);
+    return Promise.resolve();
+  }
+  return WebBrowser.openBrowserAsync(url);
+}
+
 export function openLegal(url: string) {
   return WebBrowser.openBrowserAsync(url);
 }

@@ -23,8 +23,11 @@ import (
 
 	"github.com/damonleelcx/ai-social-network/internal/agent"
 	"github.com/damonleelcx/ai-social-network/internal/auth"
+	"github.com/damonleelcx/ai-social-network/internal/billing"
 	"github.com/damonleelcx/ai-social-network/internal/chatstore"
 	"github.com/damonleelcx/ai-social-network/internal/dating"
+	"github.com/damonleelcx/ai-social-network/internal/externalauth"
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"github.com/damonleelcx/ai-social-network/internal/photostore"
 	"github.com/damonleelcx/ai-social-network/internal/places"
 	"github.com/damonleelcx/ai-social-network/internal/profile"
@@ -40,6 +43,12 @@ type Server struct {
 	Places *places.Client
 	Dating *dating.Service
 	Hub    *Hub
+	// Billing is credits. Checkout and the webhook refuse when no provider is configured.
+	Billing *billing.Service
+	// WeChatLogin is sign-in from the mini program. Nil means it's off.
+	WeChatLogin *externalauth.WeChat
+	// GoogleLogin is sign-in from the Android app. Nil means it's off.
+	GoogleLogin *externalauth.Google
 	// Speech is nil when no voice is configured.
 	Speech           *tts.Service
 	SpeechDailyChars int
@@ -220,6 +229,25 @@ func bearer(r *http.Request) string {
 	return ""
 }
 
+// socketProtocol is what the server answers to a browser's WebSocket, which has to name
+// a subprotocol it can get back before it will open.
+const socketProtocol = "synagent"
+
+// browserSocketAuth lets a browser, which can't set headers on a WebSocket, send its token as
+// a "bearer.<token>" subprotocol. Not a query parameter: those end up in access logs.
+func browserSocketAuth(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") == "" {
+			for _, p := range strings.Split(r.Header.Get("Sec-WebSocket-Protocol"), ",") {
+				if t, ok := strings.CutPrefix(strings.TrimSpace(p), "bearer."); ok {
+					r.Header.Set("Authorization", "Bearer "+t)
+				}
+			}
+		}
+		next(w, r)
+	}
+}
+
 // signedIn requires a session. Being signed in is not enough for most things:
 // see verified.
 func (s *Server) signedIn(next http.HandlerFunc) http.HandlerFunc {
@@ -273,10 +301,13 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /readyz", s.ready)
 	m.Handle("GET /{$}", landing)
 	m.Handle("GET /landing/", landing)
-	m.HandleFunc("GET /legal/terms", legalPage("Terms of Use", termsHTML))
-	m.HandleFunc("GET /legal/privacy", legalPage("Privacy Policy", privacyHTML))
-	m.HandleFunc("GET /legal/delete-account", legalPage("Delete your SynAgent account", deleteHTML))
-	m.HandleFunc("GET /open", legalPage("SynAgent", openHTML))
+	m.Handle("GET /app", webapp)
+	m.Handle("GET /app/", webapp)
+	m.HandleFunc("GET /legal/terms", legalPage("terms"))
+	m.HandleFunc("GET /legal/privacy", legalPage("privacy"))
+	m.HandleFunc("GET /legal/contact", legalPage("contact"))
+	m.HandleFunc("GET /legal/delete-account", legalPage("delete-account"))
+	m.HandleFunc("GET /open", legalPage("open"))
 
 	m.HandleFunc("GET /v1/public/user-map", lim("user-map", 60, time.Minute, s.userMap))
 
@@ -286,6 +317,10 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /v1/auth/signout", s.signedIn(s.signout))
 	m.HandleFunc("POST /v1/auth/verify", s.signedIn(lim("verify", 20, 10*time.Minute, s.verifyEmail)))
 	m.HandleFunc("POST /v1/auth/resend", s.signedIn(lim("resend", 5, 10*time.Minute, s.resend)))
+	m.HandleFunc("POST /v1/auth/google", lim("signin", 120, time.Minute, s.googleSignIn))
+	m.HandleFunc("POST /v1/auth/google/delete", s.signedIn(lim("delete", 5, time.Hour, s.googleDelete)))
+	m.HandleFunc("POST /v1/auth/wechat", lim("signin", 120, time.Minute, s.wechatSignIn))
+	m.HandleFunc("POST /v1/auth/wechat/delete", s.signedIn(lim("delete", 5, time.Hour, s.wechatDelete)))
 	m.HandleFunc("POST /v1/auth/forgot", lim("forgot", 60, 10*time.Minute, s.forgot))
 	m.HandleFunc("POST /v1/auth/reset", lim("reset", 60, 10*time.Minute, s.reset))
 	m.HandleFunc("POST /v1/auth/change-password", s.signedIn(lim("change", 10, time.Hour, s.changePassword)))
@@ -312,6 +347,27 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /v1/agent/messages", v(lim("agent", 30, time.Minute, s.agentSend)))
 	m.HandleFunc("GET /v1/agent/speech", v(s.speechStatus))
 	m.HandleFunc("POST /v1/agent/speech", v(lim("speech", 20, time.Minute, s.speak)))
+
+	// Credits. The webhook signs itself, and the page is only somewhere to land after paying.
+	m.HandleFunc("GET /v1/credits", v(s.creditStatus))
+	m.HandleFunc("GET /v1/credits/usage", v(s.creditUsage))
+	m.HandleFunc("GET /v1/referral", v(s.referralStatus))
+	m.HandleFunc("POST /v1/credits/checkout", v(lim("checkout", 20, time.Hour, s.creditCheckout)))
+	m.HandleFunc("POST /v1/billing/stripe", s.stripeWebhook)
+	m.HandleFunc("POST /v1/credits/wechat/prepay", v(lim("checkout", 20, time.Hour, s.wechatPrepay)))
+	m.HandleFunc("POST /v1/billing/wechat", s.wechatNotify)
+	m.HandleFunc("POST /v1/credits/google/verify", v(lim("google-verify", 60, time.Hour, s.googleVerify)))
+	m.HandleFunc("GET /credits/done", s.creditsDone)
+
+	// Buddies
+	m.HandleFunc("GET /v1/buddies", v(s.buddyBoard))
+	m.HandleFunc("GET /v1/buddies/mine", v(s.buddyMine))
+	m.HandleFunc("GET /v1/buddies/{id}", v(s.buddyGet))
+	m.HandleFunc("POST /v1/buddies", v(lim("buddy_post", 10, time.Hour, s.buddyPost)))
+	m.HandleFunc("POST /v1/buddies/{id}/offer", v(lim("buddy_offer", 30, time.Hour, s.buddyOffer)))
+	m.HandleFunc("DELETE /v1/buddies/{id}/offer", v(s.buddyWithdraw))
+	m.HandleFunc("POST /v1/buddies/{id}/pick", v(lim("buddy_pick", 30, time.Hour, s.buddyPick)))
+	m.HandleFunc("POST /v1/buddies/{id}/close", v(s.buddyClose))
 
 	// Introductions and matches
 	m.HandleFunc("GET /v1/proposals", v(s.proposals))
@@ -355,7 +411,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /v1/notifications", v(s.notifications))
 	m.HandleFunc("POST /v1/notifications/read", v(s.readNotifications))
 	m.HandleFunc("POST /v1/push-tokens", v(s.pushToken))
-	m.HandleFunc("GET /v1/ws", s.verified(s.socket))
+	m.HandleFunc("GET /v1/ws", browserSocketAuth(s.verified(s.socket)))
 
 	// Moderators: where the humans in the loop act. Agents have no route here.
 	m.HandleFunc("GET /v1/admin/reports", s.moderator(s.adminReports))
@@ -363,6 +419,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /v1/admin/photos", s.moderator(s.adminPhotos))
 	m.HandleFunc("POST /v1/admin/photos/{id}/decide", s.moderator(s.adminPhotoDecide))
 	m.HandleFunc("GET /v1/admin/metrics", s.moderator(s.adminMetrics))
+	m.HandleFunc("POST /v1/admin/users/{id}/credits", s.moderator(s.adminGrantCredits))
 	m.HandleFunc("GET /v1/admin/goals/{id}/timeline", s.moderator(s.adminTimeline))
 
 	return logRequests(m)
@@ -420,10 +477,143 @@ func (s *Server) issue(w http.ResponseWriter, r *http.Request, status int, u *au
 	writeJSON(w, status, authResp{tok, exp, u})
 }
 
+// wechatOpenID says who a wx.login code belongs to. It has answered if false comes back.
+func (s *Server) wechatOpenID(w http.ResponseWriter, r *http.Request, code string) (string, bool) {
+	if s.WeChatLogin == nil {
+		fail(w, 422, "WeChat sign-in isn't open yet.")
+		return "", false
+	}
+	id, err := s.WeChatLogin.OpenID(r.Context(), code)
+	if errors.Is(err, externalauth.ErrRejected) {
+		fail(w, 422, "WeChat couldn't confirm who you are. Please try again.")
+		return "", false
+	}
+	if err != nil {
+		handleErr(w, r, err)
+		return "", false
+	}
+	return id, true
+}
+
+// googleUser checks an ID token. It has answered if nil comes back.
+func (s *Server) googleUser(w http.ResponseWriter, r *http.Request, token string) *externalauth.GoogleUser {
+	if s.GoogleLogin == nil {
+		fail(w, 422, "Google sign-in isn't open yet.")
+		return nil
+	}
+	u, err := s.GoogleLogin.Verify(r.Context(), token, time.Now())
+	if errors.Is(err, externalauth.ErrRejected) {
+		fail(w, 422, "Google couldn't confirm who you are. Please try again.")
+		return nil
+	}
+	if err != nil {
+		handleErr(w, r, err)
+		return nil
+	}
+	return u
+}
+
+func (s *Server) googleSignIn(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		IDToken     string `json:"id_token"`
+		Language    string
+		Ref         string
+		AcceptTerms bool `json:"accept_terms"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	g := s.googleUser(w, r, b.IDToken)
+	if g == nil {
+		return
+	}
+	if b.Language == "" {
+		b.Language = "en"
+	}
+	u, created, err := s.Auth.SignInExternal(r.Context(), auth.External{Provider: "google", Subject: g.Subject, Email: g.Email, Name: g.Name, Lang: b.Language, AcceptTerms: b.AcceptTerms})
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	status := 200
+	if created {
+		status = 201
+		s.attributeReferral(r, u.ID, b.Ref)
+		if g.Name != "" {
+			if _, err := profile.Save(r.Context(), s.Pool, u.ID, map[string]any{"display_name": g.Name}); err != nil {
+				slog.Warn("google signup name", "err", err)
+			}
+		}
+	}
+	s.issue(w, r, status, u)
+}
+
+func (s *Server) googleDelete(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		IDToken string `json:"id_token"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	g := s.googleUser(w, r, b.IDToken)
+	if g == nil {
+		return
+	}
+	if err := s.Auth.DeleteAccountExternal(r.Context(), userOf(r).ID, "google", g.Subject); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]bool{"ok": true})
+}
+
+func (s *Server) wechatSignIn(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		Code, Language, Ref string
+		AcceptTerms         bool `json:"accept_terms"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	openid, ok := s.wechatOpenID(w, r, b.Code)
+	if !ok {
+		return
+	}
+	if b.Language == "" {
+		b.Language = "zh"
+	}
+	u, created, err := s.Auth.SignInExternal(r.Context(), auth.External{Provider: "wechat", Subject: openid, Lang: b.Language, AcceptTerms: b.AcceptTerms})
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	status := 200
+	if created {
+		status = 201
+		s.attributeReferral(r, u.ID, b.Ref)
+	}
+	s.issue(w, r, status, u)
+}
+
+func (s *Server) wechatDelete(w http.ResponseWriter, r *http.Request) {
+	var b struct{ Code string }
+	if !read(w, r, &b) {
+		return
+	}
+	openid, ok := s.wechatOpenID(w, r, b.Code)
+	if !ok {
+		return
+	}
+	if err := s.Auth.DeleteAccountExternal(r.Context(), userOf(r).ID, "wechat", openid); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]bool{"ok": true})
+}
+
 func (s *Server) signup(w http.ResponseWriter, r *http.Request) {
 	var b struct {
-		Email, Password, Name, Language string
-		AcceptTerms                     bool `json:"accept_terms"`
+		Email, Password, Name, Language, Ref string
+		AcceptTerms                          bool `json:"accept_terms"`
 	}
 	if !read(w, r, &b) {
 		return
@@ -441,6 +631,7 @@ func (s *Server) signup(w http.ResponseWriter, r *http.Request) {
 			slog.Warn("signup name", "err", err)
 		}
 	}
+	s.attributeReferral(r, u.ID, b.Ref)
 	s.issue(w, r, 201, u)
 }
 
@@ -477,7 +668,7 @@ func (s *Server) verifyEmail(w http.ResponseWriter, r *http.Request) {
 		handleErr(w, r, err)
 		return
 	}
-	if err := s.Dating.PostFromSuki(r.Context(), u.ID, "Hi, I'm Suki! I'm an AI matchmaker, and I'm going to help you meet someone you actually click with. No endless swiping, just good introductions. Let's get to know each other. What should I call you?", "playful", nil, "welcome"); err != nil {
+	if err := s.Dating.PostFromSuki(r.Context(), u.ID, "Hi, I'm Suki! I'm an AI matchmaker, and I'm going to help you meet people you actually click with: someone to date, or just company for a movie or a trip. No endless swiping, just good introductions. Let's get to know each other. What should I call you?", "playful", nil, "welcome"); err != nil {
 		slog.Warn("welcome", "err", err)
 	}
 	writeJSON(w, 200, map[string]any{"user": u})
@@ -893,6 +1084,274 @@ func (s *Server) agentSend(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 202, map[string]any{"message": m})
 }
 
+// ── Credits ──
+
+func (s *Server) creditStatus(w http.ResponseWriter, r *http.Request) {
+	st, err := s.Billing.Status(r.Context(), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, st)
+}
+
+// attributeReferral never fails the sign-up it's part of.
+func (s *Server) attributeReferral(r *http.Request, userID, code string) {
+	if err := s.Billing.Attribute(r.Context(), userID, code); err != nil {
+		slog.Warn("referral", "err", err)
+	}
+}
+
+func (s *Server) referralStatus(w http.ResponseWriter, r *http.Request) {
+	st, err := s.Billing.ReferralStatus(r.Context(), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, st)
+}
+
+func (s *Server) creditUsage(w http.ResponseWriter, r *http.Request) {
+	rows, err := s.Billing.Usage(r.Context(), userOf(r).ID, 50)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"usage": rows})
+}
+
+func (s *Server) creditCheckout(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		Package string `json:"package"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	url, err := s.Billing.Checkout(r.Context(), userOf(r).ID, b.Package)
+	var ue *billing.UserError
+	if errors.As(err, &ue) {
+		fail(w, 422, ue.Msg)
+		return
+	}
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"url": url})
+}
+
+// stripeWebhook answers 400 to what isn't really from Stripe, and 500 to what it should send
+// again. Delivering an event twice adds credits once.
+func (s *Server) stripeWebhook(w http.ResponseWriter, r *http.Request) {
+	payload, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 1<<20))
+	if err != nil {
+		fail(w, 400, "too large")
+		return
+	}
+	paid, err := s.Billing.HandleWebhook(r.Context(), payload, r.Header.Get("Stripe-Signature"), time.Now())
+	if errors.Is(err, billing.ErrBadSignature) {
+		fail(w, 400, "bad signature")
+		return
+	}
+	if err != nil {
+		slog.Error("stripe webhook", "err", err)
+		fail(w, 500, "try again")
+		return
+	}
+	s.announcePaid(r, paid)
+	writeJSON(w, 200, map[string]any{"received": true})
+}
+
+func (s *Server) announcePaid(r *http.Request, paid *billing.Paid) {
+	if paid == nil {
+		return
+	}
+	ctx := r.Context()
+	lang := s.Dating.Lang(ctx, paid.UserID)
+	body := i18n.T(lang, "Thanks! I added {credits} credits, so you have {balance} now.", "credits", strconv.Itoa(paid.Credits), "balance", strconv.Itoa(paid.Balance))
+	if err := s.Dating.PostFromSuki(ctx, paid.UserID, body, "happy", nil, "credits:"+strconv.Itoa(paid.Balance)+":"+strconv.Itoa(paid.Credits)); err != nil {
+		slog.Error("credits announce", "err", err)
+	}
+	s.Dating.Touch(ctx, paid.UserID, "credits")
+}
+
+func (s *Server) wechatPrepay(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		Package string `json:"package"`
+		Code    string `json:"code"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	p, err := s.Billing.WeChatPrepay(r.Context(), userOf(r).ID, b.Package, b.Code)
+	var ue *billing.UserError
+	if errors.As(err, &ue) {
+		fail(w, 422, ue.Msg)
+		return
+	}
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, p)
+}
+
+func (s *Server) googleVerify(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		ProductID     string `json:"product_id"`
+		PurchaseToken string `json:"purchase_token"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	res, err := s.Billing.VerifyGooglePurchase(r.Context(), userOf(r).ID, b.ProductID, b.PurchaseToken)
+	var ue *billing.UserError
+	if errors.As(err, &ue) {
+		fail(w, 422, ue.Msg)
+		return
+	}
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	s.announcePaid(r, res.Paid)
+	writeJSON(w, 200, map[string]any{"pending": res.Pending})
+}
+
+// wechatNotify answers anything but 2xx to have WeChat send it again.
+func (s *Server) wechatNotify(w http.ResponseWriter, r *http.Request) {
+	payload, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 1<<20))
+	if err != nil {
+		fail(w, 400, "too large")
+		return
+	}
+	paid, err := s.Billing.HandleWeChatNotify(r.Context(), payload, r.Header, time.Now())
+	if errors.Is(err, billing.ErrBadSignature) {
+		fail(w, 400, "bad signature")
+		return
+	}
+	if err != nil {
+		slog.Error("wechat notify", "err", err)
+		fail(w, 500, "try again")
+		return
+	}
+	s.announcePaid(r, paid)
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// adminGrantCredits is for support. The key makes a repeated request harmless.
+func (s *Server) adminGrantCredits(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		Credits int    `json:"credits"`
+		Key     string `json:"key"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	if b.Credits <= 0 || b.Credits > 10000 || b.Key == "" {
+		fail(w, 422, "credits must be 1 to 10000, with a key")
+		return
+	}
+	if err := s.Billing.Grant(r.Context(), r.PathValue("id"), b.Credits, b.Key); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	s.Dating.Touch(r.Context(), r.PathValue("id"), "credits")
+	writeJSON(w, 200, map[string]any{"ok": true})
+}
+
+func (s *Server) creditsDone(w http.ResponseWriter, r *http.Request) {
+	line := "Thanks! Your credits will show up in a moment. You can go back to SynAgent now."
+	if r.URL.Query().Get("cancelled") != "" {
+		line = "Nothing was charged. You can go back to SynAgent now."
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+	_, _ = io.WriteString(w, `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SynAgent</title></head>`+
+		`<body style="font:18px/1.5 system-ui;max-width:32em;margin:20vh auto;padding:0 16px;text-align:center"><p>`+line+`</p><p><a href="/app/suki">Open SynAgent</a></p></body></html>`)
+}
+
+// ── Buddies ──
+
+func (s *Server) buddyBoard(w http.ResponseWriter, r *http.Request) {
+	list, missing, err := s.Dating.BuddyBoard(r.Context(), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"requests": list, "missing": missing})
+}
+
+func (s *Server) buddyMine(w http.ResponseWriter, r *http.Request) {
+	list, err := s.Dating.MyBuddyRequests(r.Context(), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"requests": list})
+}
+
+func (s *Server) buddyGet(w http.ResponseWriter, r *http.Request) {
+	b, err := s.Dating.BuddyView(r.Context(), r.PathValue("id"), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"request": b})
+}
+
+func (s *Server) buddyPost(w http.ResponseWriter, r *http.Request) {
+	var in dating.BuddyInput
+	if !read(w, r, &in) {
+		return
+	}
+	b, err := s.Dating.PostBuddy(r.Context(), userOf(r).ID, in)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 201, map[string]any{"request": b})
+}
+
+func (s *Server) buddyOffer(w http.ResponseWriter, r *http.Request) {
+	if err := s.Dating.OfferBuddy(r.Context(), r.PathValue("id"), userOf(r).ID); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"ok": true})
+}
+
+func (s *Server) buddyWithdraw(w http.ResponseWriter, r *http.Request) {
+	if err := s.Dating.WithdrawBuddyOffer(r.Context(), r.PathValue("id"), userOf(r).ID); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"ok": true})
+}
+
+func (s *Server) buddyPick(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		UserID string `json:"user_id"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	id, err := s.Dating.PickBuddy(r.Context(), r.PathValue("id"), userOf(r).ID, b.UserID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"match_id": id})
+}
+
+func (s *Server) buddyClose(w http.ResponseWriter, r *http.Request) {
+	if err := s.Dating.CloseBuddy(r.Context(), r.PathValue("id"), userOf(r).ID); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"ok": true})
+}
+
 // ── Introductions and matches ───────────────────────────────────────────────
 
 func (s *Server) proposals(w http.ResponseWriter, r *http.Request) {
@@ -1301,7 +1760,7 @@ func (s *Server) pushToken(w http.ResponseWriter, r *http.Request) {
 // message, and there is one read path, whose access checks are all in one place.
 func (s *Server) socket(w http.ResponseWriter, r *http.Request) {
 	u := userOf(r)
-	c, err := websocket.Accept(w, r, &websocket.AcceptOptions{InsecureSkipVerify: true}) // native clients send no Origin; auth is the bearer token
+	c, err := websocket.Accept(w, r, &websocket.AcceptOptions{InsecureSkipVerify: true, Subprotocols: []string{socketProtocol}}) // native clients send no Origin; auth is the bearer token
 	if err != nil {
 		return
 	}
@@ -1552,11 +2011,21 @@ func (s *Server) export(w http.ResponseWriter, r *http.Request) {
 		handleErr(w, r, err)
 		return
 	}
+	buddies, err := s.Dating.MyBuddyRequests(r.Context(), u.ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	credits, err := s.Billing.Usage(r.Context(), u.ID, 10000)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
 	notes, err := ids(r.Context(), s.Pool, `SELECT content FROM memories WHERE user_id=$1`, u.ID)
 	if err != nil {
 		handleErr(w, r, err)
 		return
 	}
 	writeJSON(w, 200, map[string]any{"account": map[string]any{"email": u.Email, "created_at": u.CreatedAt}, "profile": p, "photos": photos,
-		"settings": dating.GetSettings(r.Context(), s.Pool, u.ID), "suki_conversation": agentMsgs, "messages_you_sent": chats, "suki_notes": notes})
+		"settings": dating.GetSettings(r.Context(), s.Pool, u.ID), "buddy_posts": buddies, "credit_history": credits, "suki_conversation": agentMsgs, "messages_you_sent": chats, "suki_notes": notes})
 }

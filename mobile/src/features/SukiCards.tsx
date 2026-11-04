@@ -1,9 +1,12 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, Share, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Alert, Share } from '@/lib/dialogs';
 import * as api from '@/api/endpoints';
-import type { Card, Proposal } from '@/api/types';
-import { openNamedScreen } from '@/lib/links';
+import type { Card, CreditStatus, Proposal } from '@/api/types';
+import { BuddyOfferCard, BuddyPostCard, BuddyRequestCard } from './BuddyCards';
+import { openNamedScreen, openPayment } from '@/lib/links';
+import { buyOnPlay, isPlayBuild, playPrices, unfinishedPlayPurchases } from '@/lib/playBilling';
 import { pickAndUploadPhoto } from '@/lib/photos';
 import { useLive, useTopic } from '@/state/live';
 import { useSession } from '@/state/session';
@@ -203,6 +206,7 @@ function ConfirmCard({ card }: { card: Extract<Card, { kind: 'confirm' }> }) {
     unmatch: [tr('Unmatch?'), tr('The chat ends for both of you, and any open date plan is cancelled.')],
     block: [tr('Block this person?'), tr("You'll stop seeing each other, and any match ends at once.")],
     reset_taste: [tr('Start over?'), tr('I forget my notes and everything I learned about your taste.')],
+    buddy_close: [tr('Take this post down?'), tr("People can't join it any more.")],
   };
   const [title, body] = copy[card.action] ?? [tr('Are you sure?'), ''];
 
@@ -230,6 +234,10 @@ function ConfirmCard({ card }: { card: Extract<Card, { kind: 'confirm' }> }) {
       case 'reset_taste':
         await api.memories.reset();
         break;
+      case 'buddy_close':
+        if (!card.request_id) return;
+        await api.buddies.close(card.request_id);
+        break;
       default:
         return;
     }
@@ -248,12 +256,124 @@ function ConfirmCard({ card }: { card: Extract<Card, { kind: 'confirm' }> }) {
   );
 }
 
+function BuyCreditsCard() {
+  const [status, setStatus] = useState<CreditStatus | null>(null);
+  const load = () => {
+    api.credits.status().then(setStatus, () => {});
+  };
+  useEffect(load, []);
+  useTopic('credits', load);
+  return status ? <BuyCredits status={status} /> : null;
+}
+
+/** Their balance and the packs. Paying happens on the provider's page. */
+export function BuyCredits({ status }: { status: CreditStatus }) {
+  if (isPlayBuild) return <BuyOnPlay status={status} />;
+  return <BuyWithCheckout status={status} />;
+}
+
+function BuyOnPlay({ status }: { status: CreditStatus }) {
+  const [prices, setPrices] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+  const ids = status.google_products.map((p) => p.id).join(',');
+
+  useEffect(() => {
+    if (!status.google_enabled) return;
+    playPrices(ids.split(',')).then(setPrices, () => {});
+    // Anything paid for that never reached the server, because the app closed first.
+    unfinishedPlayPurchases()
+      .then((list) => Promise.all(list.filter((p) => !p.pending).map((p) => api.credits.verifyGoogle(p.productId, p.token))))
+      .catch(() => {});
+  }, [status.google_enabled, ids]);
+
+  return (
+    <Glass style={{ gap: space.sm }}>
+      <T v="small" style={{ fontWeight: '700' }}>
+        {tr('{n} credits left', { n: String(status.balance) })}
+      </T>
+      {!status.google_enabled ? <T v="small" soft>{tr("Buying credits isn't open yet.")}</T> : null}
+      {status.google_enabled
+        ? status.google_products.map((p) => (
+            <Button
+              key={p.id}
+              small
+              kind="secondary"
+              icon="card-outline"
+              label={prices[p.id] ? tr('{n} credits for {price}', { n: String(p.credits), price: prices[p.id] }) : tr('{n} credits', { n: String(p.credits) })}
+              loading={busy === p.id}
+              onPress={async () => {
+                setBusy(p.id);
+                setNote(null);
+                try {
+                  const bought = await buyOnPlay(p.id, status.google_account);
+                  if (bought) {
+                    const res = await api.credits.verifyGoogle(bought.productId, bought.token);
+                    if (bought.pending || res.pending) setNote(tr("Your payment is still pending. The credits arrive once it's done."));
+                  }
+                } catch (e) {
+                  showError(e);
+                } finally {
+                  setBusy(null);
+                }
+              }}
+            />
+          ))
+        : null}
+      {note ? <T v="small" soft>{note}</T> : null}
+    </Glass>
+  );
+}
+
+function BuyWithCheckout({ status }: { status: CreditStatus }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  return (
+    <Glass style={{ gap: space.sm }}>
+      <T v="small" style={{ fontWeight: '700' }}>
+        {tr('{n} credits left', { n: String(status.balance) })}
+      </T>
+      {!status.payments_enabled ? (
+        <T v="small" soft>{tr("Buying credits isn't open yet.")}</T>
+      ) : (
+        status.packages.map((p) => (
+          <Button
+            key={p.id}
+            small
+            kind="secondary"
+            icon="card-outline"
+            label={tr('{n} credits for {price}', { n: String(p.credits), price: `$${(p.amount_cents / 100).toFixed(2)}` })}
+            loading={busy === p.id}
+            onPress={async () => {
+              setBusy(p.id);
+              try {
+                await openPayment(await api.credits.checkout(p.id));
+              } catch (e) {
+                showError(e);
+              } finally {
+                setBusy(null);
+              }
+            }}
+          />
+        ))
+      )}
+    </Glass>
+  );
+}
+
 export function SukiCard({ card }: { card: Card }) {
   const { matches } = useLive();
   const { user } = useSession();
   switch (card.kind) {
     case 'photo_upload':
       return <PhotoUploadCard />;
+    case 'buy_credits':
+      return <BuyCreditsCard />;
+    case 'buddy_post':
+      return <BuddyPostCard card={card} />;
+    case 'buddy_request':
+      return <BuddyRequestCard id={card.request_id} />;
+    case 'buddy_offer':
+      return <BuddyOfferCard id={card.request_id} userId={card.user_id} />;
     case 'bio_draft':
       return <BioDraftCard text={card.text} />;
     case 'proposal':

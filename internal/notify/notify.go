@@ -15,6 +15,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"github.com/damonleelcx/ai-social-network/internal/mail"
 )
 
@@ -27,6 +28,7 @@ const (
 
 // Pref is the settings key that switches a kind of notification off.
 var prefFor = map[string]string{
+	"buddy": "notify_matches", "buddy_offer": "notify_matches",
 	"proposal": "notify_matches", "match": "notify_matches", "message": "notify_messages", "hint": "notify_suki",
 	"date": "notify_dates", "reminder": "notify_dates", "debrief": "notify_dates", "safety": "",
 }
@@ -50,6 +52,8 @@ func Send(ctx context.Context, pool *pgxpool.Pool, userID, kind, title, body str
 	}
 	settings := map[string]any{}
 	_ = json.Unmarshal(prefs, &settings)
+	lang, _ := settings["language"].(string)
+	title, body = i18n.T(lang, title), i18n.T(lang, body)
 	if p := prefFor[kind]; p != "" && settings[p] == false {
 		enabled = false
 	}
@@ -149,9 +153,10 @@ func Render(kind, lang string, p map[string]any, origin string) (mail.Message, e
 	if title == "" {
 		return mail.Message{}, fmt.Errorf("outbox %s without a title", kind)
 	}
-	text := fmt.Sprintf("%s\n\n%s\n\nOpen SynAgent to see it.\n\nYou can turn these emails off in Settings > Notifications.\n\nSuki", title, body)
+	foot := i18n.T(lang, "You can turn these emails off in Settings > Notifications.")
+	text := fmt.Sprintf("%s\n\n%s\n\n%s\n\n%s\n\nSuki", title, body, i18n.T(lang, "Open SynAgent to see it."), foot)
 	return mail.Message{Subject: title + " · SynAgent", Text: text,
-		HTML: mail.Page(lang, title, body, "Open SynAgent", origin+"/open", "You can turn these emails off in Settings > Notifications.")}, nil
+		HTML: mail.Page(lang, title, body, i18n.T(lang, "Open SynAgent"), origin+"/open", foot)}, nil
 }
 
 // PushDue sends unsent notifications through Expo's push service. A token that

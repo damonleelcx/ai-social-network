@@ -27,6 +27,7 @@ import (
 
 	"github.com/damonleelcx/ai-social-network/internal/agent"
 	"github.com/damonleelcx/ai-social-network/internal/auth"
+	"github.com/damonleelcx/ai-social-network/internal/billing"
 	"github.com/damonleelcx/ai-social-network/internal/chatstore"
 	"github.com/damonleelcx/ai-social-network/internal/dating"
 	"github.com/damonleelcx/ai-social-network/internal/db"
@@ -82,6 +83,9 @@ type env struct {
 	store    *engine.Store
 	model    *engine.Model
 	svc      *dating.Service
+	billing  *billing.Service
+	srv      *httpapi.Server
+	auth     *auth.Service
 	fake     *fakeLLM
 	cancel   context.CancelFunc
 	wg       sync.WaitGroup
@@ -136,13 +140,15 @@ func setup(t *testing.T) *env {
 	photos := &photostore.Disk{Dir: t.TempDir()}
 	plc := &places.Client{Pool: pool, NominatimURL: geo.URL, OverpassURL: geo.URL + "/overpass"}
 	svc := &dating.Service{Pool: pool, Chats: chats, DateMinLead: time.Millisecond}
-	workflows.Init(&workflows.Deps{Pool: pool, Store: store, Model: model, Chats: chats, Photos: photos, Places: plc, Dating: svc, FastModel: "fast", DebriefDelay: time.Millisecond})
+	bill := &billing.Service{Pool: pool, PublicOrigin: "http://test"}
+	workflows.Init(&workflows.Deps{Billing: bill, Pool: pool, Store: store, Model: model, Chats: chats, Photos: photos, Places: plc, Dating: svc, FastModel: "fast", DebriefDelay: time.Millisecond})
 	m := &capturedMail{}
 	a := &auth.Service{Pool: pool, Mailer: m, PublicOrigin: "http://test", SessionTTL: time.Hour}
 	hub := httpapi.NewHub()
-	srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub}
+	srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill}
 	a.BeforeDelete = srv.BeforeDelete
-	e := &env{pool: pool, chats: chats, mail: m, bodies: &bytes.Buffer{}, store: store, model: model, svc: svc, fake: fake, cancel: cancel, photos: photos}
+	e := &env{billing: bill, pool: pool, chats: chats, mail: m, bodies: &bytes.Buffer{}, store: store, model: model, svc: svc, fake: fake, cancel: cancel, photos: photos}
+	e.srv, e.auth = srv, a
 	// Every response body is kept, so the test can search all of them for scores.
 	handler := srv.Handler()
 	e.api = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -156,7 +162,7 @@ func setup(t *testing.T) *env {
 		go func() { defer e.wg.Done(); w.Run(ctx) }()
 	}
 	for i := 0; i < 2; i++ {
-		r := &agent.Runner{ID: fmt.Sprintf("t%d", i), Pool: pool, Chats: chats, Model: model, Dating: svc, LLM: "main", FastLLM: "fast", Lease: 20 * time.Second, Wake: make(chan struct{})}
+		r := &agent.Runner{ID: fmt.Sprintf("t%d", i), Pool: pool, Chats: chats, Model: model, Dating: svc, Billing: bill, LLM: "main", FastLLM: "fast", Lease: 20 * time.Second, Wake: make(chan struct{})}
 		e.wg.Add(1)
 		go func() { defer e.wg.Done(); r.Run(ctx) }()
 	}
@@ -1240,6 +1246,71 @@ func TestFactsAreSavedWithoutTheModelsHelp(t *testing.T) {
 	}
 	if r.Profile.Goal != "" {
 		t.Fatalf("an invalid value was saved: %q", r.Profile.Goal)
+	}
+}
+
+// A birthdate can't be changed once saved, so a model's misreading must not get that far.
+func TestBirthdateYearMustBeInTheirOwnWords(t *testing.T) {
+	e := setup(t)
+	c := e.signup(t, "Rue", "rue@example.com")
+	c.verify()
+	birthdate := func() string {
+		var r struct {
+			Profile struct {
+				Birthdate string `json:"birthdate"`
+			} `json:"profile"`
+		}
+		c.do("GET", "/v1/profile", nil, 200, &r)
+		return r.Profile.Birthdate
+	}
+	c.askSuki("March 2, 1995. Please don't misread my birthday")
+	if got := birthdate(); got != "" {
+		t.Fatalf("saved a year they never said: %q", got)
+	}
+	c.askSuki("March 2, 1995. Please read my birthday")
+	if got := birthdate(); got != "1995-03-02" {
+		t.Fatalf("birthdate = %q", got)
+	}
+}
+
+// Suki can correct a birthdate the form can't change, but only from what they said, only
+// when they mean it, and never in a way that gets round being 18.
+func TestSukiCanCorrectABirthdate(t *testing.T) {
+	e := setup(t)
+	c := e.signup(t, "Rue", "rue@example.com")
+	c.verify()
+	birthdate := func() string {
+		var r struct {
+			Profile struct {
+				Birthdate string `json:"birthdate"`
+			} `json:"profile"`
+		}
+		c.do("GET", "/v1/profile", nil, 200, &r)
+		return r.Profile.Birthdate
+	}
+	c.do("PATCH", "/v1/profile", map[string]any{"birthdate": "2005-10-20"}, 200, nil)
+
+	c.do("PATCH", "/v1/profile", map[string]any{"birthdate": "1995-10-20"}, 422, nil) // the form stays locked
+	c.askSuki("my friend was born March 2, 1990")
+	if got := birthdate(); got != "2005-10-20" {
+		t.Fatalf("someone else's birthday was saved: %q", got)
+	}
+	c.askSuki("please correct my birthday, it's wrong")
+	if got := birthdate(); got != "2005-10-20" {
+		t.Fatalf("corrected to a year they never said: %q", got)
+	}
+	c.askSuki("please correct my birthday, it should be 1995")
+	if got := birthdate(); got != "1995-10-20" {
+		t.Fatalf("birthdate = %q", got)
+	}
+	var st string
+	year := time.Now().AddDate(-16, 0, 0).Format("2006")
+	c.askSuki("minor correction, I was born in " + year)
+	if err := e.pool.QueryRow(context.Background(), `SELECT status FROM profiles WHERE user_id=$1`, c.id).Scan(&st); err != nil {
+		t.Fatal(err)
+	}
+	if st != "held" || birthdate() != "1995-10-20" {
+		t.Fatalf("a correction to under 18 must hold the account: status %q, birthdate %q", st, birthdate())
 	}
 }
 

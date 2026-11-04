@@ -1,6 +1,10 @@
 import type {
   AppNotification,
   Blocked,
+  BuddyRequest,
+  CreditStatus,
+  CreditUsage,
+  ReferralStatus,
   DatePlan,
   Hint,
   Match,
@@ -16,6 +20,7 @@ import type {
   User,
   UserMap,
 } from './types';
+import { currentLanguage } from '@/i18n';
 import { api } from './client';
 
 type AuthResult = { token: string; expires_at: string; user: User };
@@ -27,10 +32,13 @@ export const publicInfo = {
 };
 
 export const auth = {
-  signUp: (b: { email: string; password: string; name: string; accept_terms: boolean; language?: string }) =>
+  signUp: (b: { email: string; password: string; name: string; accept_terms: boolean; language?: string; ref?: string }) =>
     api<AuthResult>('/v1/auth/signup', { method: 'POST', body: b }),
   signIn: (email: string, password: string) =>
     api<AuthResult>('/v1/auth/signin', { method: 'POST', body: { email, password }, checksPassword: true }),
+  google: (id_token: string, accept_terms: boolean, ref?: string) =>
+    api<AuthResult>('/v1/auth/google', { method: 'POST', body: { id_token, accept_terms, ref, language: currentLanguage() }, checksPassword: true }),
+  deleteWithGoogle: (id_token: string) => api<Ok>('/v1/auth/google/delete', { method: 'POST', body: { id_token }, timeoutMs: 60000 }),
   signOut: () => api<Ok>('/v1/auth/signout', { method: 'POST', body: {} }),
   verify: (code: string) => api<{ user: User }>('/v1/auth/verify', { method: 'POST', body: { code } }),
   resend: () => api<Ok>('/v1/auth/resend', { method: 'POST', body: {} }),
@@ -106,6 +114,34 @@ export const dates = {
   cancel: async (id: string, reason?: string) =>
     (await api<DateResult>(`/v1/dates/${id}/cancel`, { method: 'POST', body: { reason: reason ?? '' } })).date,
   share: async (id: string) => (await api<{ text: string }>(`/v1/dates/${id}/share`)).text,
+};
+
+export const referral = {
+  status: () => api<ReferralStatus>('/v1/referral'),
+};
+
+export const credits = {
+  status: () => api<CreditStatus>('/v1/credits'),
+  usage: async () => (await api<{ usage: CreditUsage[] }>('/v1/credits/usage')).usage,
+  verifyGoogle: (product_id: string, purchase_token: string) =>
+    api<{ pending: boolean }>('/v1/credits/google/verify', { method: 'POST', body: { product_id, purchase_token } }),
+  checkout: async (pack: string) => (await api<{ url: string }>('/v1/credits/checkout', { method: 'POST', body: { package: pack } })).url,
+};
+
+export const buddies = {
+  board: async () => {
+    const r = await api<{ requests: BuddyRequest[] | null; missing: string[] | null }>('/v1/buddies');
+    return { requests: r.requests ?? [], missing: r.missing ?? [] };
+  },
+  mine: async () => (await api<{ requests: BuddyRequest[] | null }>('/v1/buddies/mine')).requests ?? [],
+  get: async (id: string) => (await api<{ request: BuddyRequest }>(`/v1/buddies/${id}`)).request,
+  post: async (b: { kind: string; when: string; note: string; expires_in_hours: number; same_gender: boolean }) =>
+    (await api<{ request: BuddyRequest }>('/v1/buddies', { method: 'POST', body: b })).request,
+  offer: (id: string) => api<Ok>(`/v1/buddies/${id}/offer`, { method: 'POST', body: {} }),
+  withdraw: (id: string) => api<Ok>(`/v1/buddies/${id}/offer`, { method: 'DELETE' }),
+  pick: async (id: string, user_id: string) =>
+    (await api<{ match_id: string }>(`/v1/buddies/${id}/pick`, { method: 'POST', body: { user_id } })).match_id,
+  close: (id: string) => api<Ok>(`/v1/buddies/${id}/close`, { method: 'POST', body: {} }),
 };
 
 export const safety = {

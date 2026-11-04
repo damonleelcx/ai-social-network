@@ -1,0 +1,21 @@
+<view class="chat">
+  <view class="row bar">
+    <view class="grow soft ellipsis">{{match.activity ? '搭子：' + match.activity : (match.person.city_name || '')}}</view>
+    <view wx:if="{{!match.activity}}" class="chip" bindtap="onDate">约会计划</view>
+    <view class="chip" bindtap="onMore">更多</view>
+  </view>
+  <scroll-view class="chat-list" scroll-y scroll-into-view="{{bottom}}">
+    <block wx:for="{{messages}}" wx:key="seq">
+      <view wx:if="{{item.role !== 'text'}}" class="note">{{item.body}}</view>
+      <view wx:else class="bubble-row {{item.sender_id === me ? 'mine' : ''}}">
+        <view class="bubble">{{item.body}}</view>
+      </view>
+    </block>
+    <view wx:if="{{match.status && match.status !== 'active'}}" class="note">这段聊天已结束。</view>
+    <view id="end" class="end"></view>
+  </scroll-view>
+  <view wx:if="{{match.status === 'active'}}" class="composer">
+    <input class="input" placeholder="发消息" value="{{draft}}" confirm-type="send" adjust-position bindinput="onInput" bindconfirm="onSend" />
+    <view class="send" bindtap="onSend">发送</view>
+  </view>
+</view>

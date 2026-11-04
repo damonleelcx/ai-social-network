@@ -25,9 +25,7 @@ const STRINGS = {
   'Your next': ['你的下一段', '다음 이야기는', '次の物語は'],
   'story starts': ['故事', '한마디', 'ひとことの'],
   'with hello': ['从你好开始', '인사로 시작돼요', 'あいさつから'],
-  'Tell Suki about you. She introduces you to people in your city, helps the conversation along, and finds a place for the date.': ['告诉 Suki 你的故事。她会为你介绍同城的人，帮你把话题聊下去，还会为约会找好地方。', 'Suki에게 당신에 대해 이야기해 보세요. 같은 도시의 사람을 소개하고, 대화를 도와주고, 데이트 장소까지 찾아 줘요.', 'Suki にあなたのことを話してみてください。同じ街の人を紹介し、会話を手助けし、デートの場所まで探してくれます。'],
   'Download the app': ['下载应用', '앱 다운로드', 'アプリをダウンロード'],
-  'Direct downloads for now.': ['目前提供直接下载。', '지금은 직접 다운로드만 가능해요.', '現在は直接ダウンロードのみです。'],
   'For adults 18 and over.': ['仅限 18 岁及以上成年人。', '만 18세 이상 성인 전용입니다.', '18歳以上の成人向けです。'],
 
   'Meet Suki': ['认识 Suki', 'Suki를 만나 보세요', 'Suki に会う'],
@@ -88,7 +86,6 @@ const STRINGS = {
 
   'II · Why Suki is different': ['二 · Suki 有何不同', 'II · Suki가 다른 이유', 'II · Suki が違う理由'],
   'Not an algorithm with a chat box': ['不只是带聊天框的算法', '채팅창 달린 알고리즘이 아니에요', 'チャット欄付きのアルゴリズムではありません'],
-  'Most dating apps hand you a deck. SynAgent gives you someone to talk to, who gets a better sense of your type each time.': ['大多数交友应用只给你一叠卡片。SynAgent 给你一个能聊天的对象，她每次都会更了解你的类型。', '대부분의 데이팅 앱은 카드 더미를 건네요. SynAgent는 대화 상대를 드리고, 그녀는 매번 당신의 타입을 더 잘 알아가요.', '多くのデートアプリはカードの山を渡すだけ。SynAgent には話し相手がいて、話すたびにあなたのタイプをより深く理解します。'],
   'She has a personality': ['她有自己的个性', '개성이 있어요', '個性があります'],
   'Suki has her own character, face and voice, and she answers as she thinks instead of making you wait. You can choose how she talks to you.': ['Suki 有自己的性格、面容和声音，边想边回答，不会让你干等。你还可以选择她和你说话的方式。', 'Suki에게는 자신만의 성격과 얼굴, 목소리가 있고, 기다리게 하지 않고 생각하는 대로 답해요. 어떻게 말할지도 고를 수 있어요.', 'Suki には自分の性格、顔、声があり、待たせることなく考えながら答えます。話し方も選べます。'],
   'She learns your type': ['她了解你的类型', '당신의 타입을 알아가요', 'あなたのタイプを学びます'],
@@ -112,8 +109,18 @@ const STRINGS = {
 
   'IV · Download': ['四 · 下载', 'IV · 다운로드', 'IV · ダウンロード'],
   'Take her with you': ['把她带在身边', 'Suki와 함께하세요', '彼女を連れていこう'],
-  "SynAgent isn't in the App Store or Google Play yet, so these are direct downloads. For adults 18 and over.": ['SynAgent 尚未上架 App Store 或 Google Play，因此这里提供直接下载。仅限 18 岁及以上成年人。', 'SynAgent는 아직 App Store나 Google Play에 없어서 직접 다운로드로 제공해요. 만 18세 이상 성인 전용입니다.', 'SynAgent はまだ App Store や Google Play にないため、直接ダウンロードでの提供です。18歳以上の成人向けです。'],
   'Open the file on your phone. Android will ask you to allow installs from your browser the first time.': ['在手机上打开文件。首次安装时，Android 会询问是否允许通过浏览器安装。', '휴대폰에서 파일을 여세요. 처음에는 Android가 브라우저에서 설치를 허용할지 물어봐요.', 'スマートフォンでファイルを開いてください。初回は、ブラウザからのインストールを許可するか Android が確認します。'],
+  "SynAgent isn't in the App Store or Google Play yet, so open it in your browser or use a direct download. For adults 18 and over. Your first 5 matches are free. After that, messages to Suki use credits, and chatting with your matches stays free.": ['SynAgent 还没有上架 App Store 和 Google Play，你可以直接在浏览器里打开，或者下载安装。仅限 18 岁及以上。前 5 次匹配免费，之后和 Suki 对话消耗积分，和匹配对象聊天一直免费。', 'SynAgent는 아직 App Store와 Google Play에 없어요. 브라우저에서 열거나 직접 내려받아 주세요. 18세 이상만 이용할 수 있어요. 처음 5번의 매칭은 무료이고, 그 후 Suki에게 보내는 메시지에는 크레딧이 들어요. 매칭 상대와의 채팅은 계속 무료예요.', 'SynAgent はまだ App Store や Google Play にありません。ブラウザで開くか、直接ダウンロードしてください。18 歳以上の方が対象です。最初の 5 回のマッチは無料で、その後 Suki へのメッセージにはクレジットを使います。マッチ相手とのチャットはずっと無料です。'],
+  'In your browser': ['在浏览器里用', '브라우저에서', 'ブラウザで'],
+  'Nothing to install, and it works on a computer too. Your account is the same one the app uses.': ['不用安装，电脑上也能用。账号和 App 是同一个。', '설치할 필요 없고 컴퓨터에서도 돼요. 계정은 앱과 같아요.', 'インストール不要で、パソコンでも使えます。アカウントはアプリと共通です。'],
+  'Open SynAgent': ['打开 SynAgent', 'SynAgent 열기', 'SynAgent を開く'],
+  'Not only dates': ['不只是约会', '데이트만이 아니에요', 'デートだけじゃない'],
+  "Nobody to see a movie with tonight? Just tell Suki, and it works for a meal, a trip or a business contact too. She asks people in your city, and you pick who to go with.": ['今晚想看电影却没人陪？告诉 Suki 就好，吃饭、旅行、商务合作也一样。她去问同城的人，你来选和谁一起。', '오늘 밤 함께 영화 볼 사람이 없나요? Suki에게 말해 보세요. 식사, 여행, 비즈니스 인맥도 좋아요. 같은 도시 사람들에게 물어봐 주고, 함께할 사람은 당신이 골라요.', '今夜一緒に映画を観る人がいない？Suki に話すだけ。ごはん、旅行、ビジネスのつながりも OK。同じ街の人に声をかけてくれて、一緒に行く人はあなたが選びます。'],
+  'Log in': ['登录', '로그인', 'ログイン'],
+  "Tell Suki about you. She introduces you to people in your city to date, or finds you company for a movie, a trip or a business contact.": ['告诉 Suki 你是什么样的人。她会介绍同城的人和你约会，也能帮你找看电影、旅行、商务合作的搭子。', 'Suki에게 당신에 대해 알려 주세요. 같은 도시에서 데이트할 사람을 소개하고, 영화나 여행, 비즈니스 인맥을 함께할 사람도 찾아 줘요.', 'Suki にあなたのことを話してください。同じ街でデートの相手を紹介し、映画や旅行、ビジネスのつながりの仲間も見つけてくれます。'],
+  'Most apps hand you a deck. SynAgent gives you someone to talk to, who gets a better sense of your type each time.': ['大多数应用只给你一叠卡片。SynAgent 给你的是一个能聊天的人，而且她每次都更懂你喜欢什么样的人。', '대부분의 앱은 카드 더미를 건네죠. SynAgent는 이야기할 상대를 줘요. 그리고 그녀는 갈수록 당신의 취향을 더 잘 알아가요.', '多くのアプリはカードの山を渡すだけ。SynAgent には話せる相手がいて、話すたびにあなたの好みを分かっていきます。'],
+  'Open in your browser': ['在浏览器中打开', '브라우저에서 열기', 'ブラウザで開く'],
+  'In your browser, or by direct download.': ['可以直接用浏览器，也可以下载安装。', '브라우저에서 바로 쓰거나 직접 내려받으세요.', 'ブラウザで使うか、直接ダウンロードできます。'],
   'Download for Android': ['下载 Android 版', 'Android용 다운로드', 'Android 版をダウンロード'],
   "This file is not signed, so an iPhone won't install it as it is.": ['此文件未经签名，iPhone 无法直接安装。', '이 파일은 서명되지 않아 iPhone에 그대로 설치할 수 없어요.', 'このファイルは署名されていないため、そのままでは iPhone にインストールできません。'],
   'You need a sideloading tool such as AltStore or Sideloadly, which signs it with your own Apple ID.': ['你需要 AltStore 或 Sideloadly 等侧载工具，用你自己的 Apple ID 为它签名。', 'AltStore나 Sideloadly 같은 사이드로딩 도구로 본인의 Apple ID로 서명해야 해요.', 'AltStore や Sideloadly などのサイドロードツールで、ご自身の Apple ID を使って署名する必要があります。'],
@@ -129,9 +136,9 @@ const STRINGS = {
 
   "SynAgent is for adults 18 and over. Suki is an AI and can be wrong. Meet in public places and tell someone you trust where you're going.": ['SynAgent 仅限 18 岁及以上成年人使用。Suki 是 AI，可能会出错。请在公共场所见面，并告诉你信任的人你要去哪里。', 'SynAgent는 만 18세 이상 성인 전용입니다. Suki는 AI이므로 틀릴 수 있어요. 공공장소에서 만나고, 믿을 수 있는 사람에게 어디 가는지 알려 주세요.', 'SynAgent は18歳以上の成人向けです。Suki は AI のため、間違えることがあります。公共の場所で会い、信頼できる人に行き先を伝えてください。'],
   Legal: ['法律信息', '법적 고지', '法的情報'],
-  Terms: ['条款（英文）', '약관(영문)', '規約（英語）'],
-  Privacy: ['隐私（英文）', '개인정보(영문)', 'プライバシー（英語）'],
-  'Delete your account': ['删除账户（英文）', '계정 삭제(영문)', 'アカウント削除（英語）'],
+  Terms: ['条款', '약관', '規約'],
+  Privacy: ['隐私', '개인정보', 'プライバシー'],
+  'Delete your account': ['删除账户', '계정 삭제', 'アカウント削除'],
   Contact: ['联系我们', '연락처', '連絡先'],
 };
 
@@ -175,6 +182,9 @@ export function translatePage() {
       const value = el.getAttribute(attr);
       if (value && STRINGS[value]) el.setAttribute(attr, tr(value));
     }
+  }
+  for (const a of document.querySelectorAll('a[href^="/legal/"]')) {
+    a.href = a.getAttribute('href').split('?')[0] + '?lang=' + LANG;
   }
   document.documentElement.classList.remove('i18n-pending');
 }

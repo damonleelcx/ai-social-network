@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Pressable, useWindowDimensions, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { useScreenSize } from '@/ui/screenSize';
 import * as api from '@/api/endpoints';
 import type { Photo } from '@/api/types';
 import { pickAndUploadPhoto } from '@/lib/photos';
@@ -25,7 +26,7 @@ const STATUS: Record<Photo['status'], { label: string; tone: 'good' | 'warn' | '
 
 export default function Photos() {
   const t = useTheme();
-  const { width } = useWindowDimensions();
+  const { width } = useScreenSize();
   const { refreshMe } = useSession();
   const { photos, loaded, refreshPhotos } = useLive();
   const [uploading, setUploading] = useState(false);
@@ -110,7 +111,7 @@ export default function Photos() {
                     <Pill label={tr(s.label)} tone={s.tone} />
                     {p.reason ? (
                       <T v="caption" soft>
-                        {p.reason}
+                        {tr(p.reason)}
                       </T>
                     ) : null}
                     {p.tips ? (

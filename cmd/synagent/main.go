@@ -22,11 +22,13 @@ import (
 
 	"github.com/damonleelcx/ai-social-network/internal/agent"
 	"github.com/damonleelcx/ai-social-network/internal/auth"
+	"github.com/damonleelcx/ai-social-network/internal/billing"
 	"github.com/damonleelcx/ai-social-network/internal/chatstore"
 	"github.com/damonleelcx/ai-social-network/internal/config"
 	"github.com/damonleelcx/ai-social-network/internal/dating"
 	"github.com/damonleelcx/ai-social-network/internal/db"
 	"github.com/damonleelcx/ai-social-network/internal/engine"
+	"github.com/damonleelcx/ai-social-network/internal/externalauth"
 	"github.com/damonleelcx/ai-social-network/internal/httpapi"
 	"github.com/damonleelcx/ai-social-network/internal/llm"
 	"github.com/damonleelcx/ai-social-network/internal/mail"
@@ -105,17 +107,35 @@ func run(mode string) error {
 	model := &engine.Model{Client: client, Store: store, AccountDailyTokens: cfg.AccountDailyTokens, DeploymentDailyTokens: cfg.DeploymentDailyTokens}
 	plc := &places.Client{Pool: pool, NominatimURL: cfg.NominatimURL, OverpassURL: cfg.OverpassURL, PhotonURL: cfg.PhotonURL}
 	svc := &dating.Service{Pool: pool, Chats: chats, DateMinLead: cfg.DateMinLead}
-	workflows.Init(&workflows.Deps{Pool: pool, Store: store, Model: model, Chats: chats, Photos: photos, Places: plc, Dating: svc,
+	bill := &billing.Service{Pool: pool, StripeKey: cfg.StripeSecretKey, WebhookSecret: cfg.StripeWebhookSecret, PublicOrigin: cfg.PublicOrigin}
+	if wc, err := billing.NewWeChat(cfg.WeChat); err != nil {
+		// Half-configured payments stay off, and shouldn't take the server down.
+		slog.Error("wechat pay is off", "err", err)
+	} else {
+		bill.WeChat = wc
+	}
+	if gp, err := billing.NewGooglePlay(cfg.GooglePlayPackage, cfg.GooglePlayServiceAccount); err != nil {
+		slog.Error("google play billing is off", "err", err)
+	} else {
+		bill.Google = gp
+	}
+	workflows.Init(&workflows.Deps{Billing: bill, Pool: pool, Store: store, Model: model, Chats: chats, Photos: photos, Places: plc, Dating: svc,
 		FastModel: cfg.LLMFastModel, PhotoAutoApprove: cfg.PhotoAutoApprove, DebriefDelay: cfg.DebriefDelay})
 
 	var wg sync.WaitGroup
 	if mode == "serve" || mode == "worker" {
-		startWorkers(ctx, &wg, cfg, store, model, chats, svc, mailer)
+		startWorkers(ctx, &wg, cfg, store, model, chats, svc, bill, mailer)
 	}
 	if mode == "serve" || mode == "web" {
 		hub := httpapi.NewHub()
 		a := &auth.Service{Pool: pool, Mailer: mailer, PublicOrigin: cfg.PublicOrigin, SessionTTL: cfg.SessionTTL, AdminEmails: cfg.AdminEmails}
-		srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub}
+		srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill}
+		if cfg.GoogleClientID != "" {
+			srv.GoogleLogin = &externalauth.Google{ClientID: cfg.GoogleClientID}
+		}
+		if cfg.WeChat.AppID != "" && cfg.WeChat.AppSecret != "" {
+			srv.WeChatLogin = &externalauth.WeChat{AppID: cfg.WeChat.AppID, AppSecret: cfg.WeChat.AppSecret}
+		}
 		a.BeforeDelete = srv.BeforeDelete
 		srv.SpeechDailyChars = cfg.TTSDailyChars
 		if cfg.TTSAPIKey != "" && cfg.TTSVoiceID != "" {
@@ -149,7 +169,7 @@ func run(mode string) error {
 	return nil
 }
 
-func startWorkers(ctx context.Context, wg *sync.WaitGroup, cfg config.Config, store *engine.Store, model *engine.Model, chats *chatstore.Store, svc *dating.Service, mailer mail.Mailer) {
+func startWorkers(ctx context.Context, wg *sync.WaitGroup, cfg config.Config, store *engine.Store, model *engine.Model, chats *chatstore.Store, svc *dating.Service, bill *billing.Service, mailer mail.Mailer) {
 	wake := make(chan struct{}, 16)
 	turnWake := make(chan struct{}, 16)
 	spawn := func(f func()) {
@@ -167,7 +187,7 @@ func startWorkers(ctx context.Context, wg *sync.WaitGroup, cfg config.Config, st
 		spawn(func() { w.Run(ctx) })
 	}
 	for i := 0; i < cfg.TurnWorkers; i++ {
-		r := &agent.Runner{ID: engine.NewWorkerID(), Pool: store.Pool, Chats: chats, Model: model, Dating: svc, LLM: cfg.LLMModel, FastLLM: cfg.LLMFastModel, Lease: cfg.TurnLease, Wake: turnWake}
+		r := &agent.Runner{ID: engine.NewWorkerID(), Pool: store.Pool, Chats: chats, Model: model, Dating: svc, LLM: cfg.LLMModel, FastLLM: cfg.LLMFastModel, Lease: cfg.TurnLease, Wake: turnWake, Billing: bill}
 		spawn(func() { r.Run(ctx) })
 	}
 	sched := &engine.Scheduler{Store: store, Model: model, FastLLM: cfg.LLMFastModel, Mailer: mailer, PublicOrigin: cfg.PublicOrigin, Cron: workflows.Cron}

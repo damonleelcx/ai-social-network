@@ -7,7 +7,7 @@ Paste-ready text for Play Console. Images are in `store/images/play`.
 - **App name:** SynAgent
 - **Default language:** English (United States). Add Chinese (Simplified) below.
 - **App or game:** App
-- **Free or paid:** Free
+- **Free or paid:** Free, with in-app purchases (credits)
 - **Category:** Dating
 - **Contact email:** support@heros-agent.space
 - **Website:** https://match.heros-agent.space
@@ -87,7 +87,7 @@ SynAgent 仅限 18 岁及以上的成年人使用。露骨的照片、消息和�
 - **Target audience:** 18 and over only.
 - **Content rating:** complete the questionnaire as a dating app with user-generated content and user-to-user chat, no location sharing with others.
 - **News, government, financial, health:** no.
-- **In-app purchases:** none.
+- **In-app purchases:** yes. One-time consumable credit packs, sold through Google Play in this build. Product IDs and credit amounts are in `internal/billing/google.go`. Prices are set in Play Console.
 
 ## Data safety answers
 
@@ -102,6 +102,7 @@ Collected, not sold. All data is encrypted in transit. Users can request deletio
 | In-app messages | Yes | Yes, AI provider | App functionality, safety |
 | Other user-generated content (bio, prompts, date feedback) | Yes | Yes, AI provider | App functionality, personalization |
 | App interactions (introductions accepted or passed) | Yes | No | Personalization |
+| Purchase history (credit packs) | Yes | No | App functionality |
 | Device or other IDs (push token) | Yes | Yes, Expo and Google for delivery | Notifications |
 
 The shared rows go to service providers; check Play's current definition of "shared", which excludes some service-provider transfers, when answering. Keep these answers in step with the privacy policy.
