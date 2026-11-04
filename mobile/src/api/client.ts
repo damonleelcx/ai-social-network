@@ -71,8 +71,6 @@ export async function api<T = unknown>(path: string, opts: RequestOptions = {}):
         Accept: 'application/json',
         ...(opts.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
         ...authHeaders(),
-        // Tells the server this person can buy credits through Google Play.
-        ...(process.env.EXPO_PUBLIC_PLAY_STORE === '1' ? { 'X-Synagent-Store': 'play' } : {}),
       },
       body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
     });

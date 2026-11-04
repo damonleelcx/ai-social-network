@@ -200,8 +200,9 @@ func TestNoChargeWithoutPayments(t *testing.T) {
 	}
 }
 
-// A store only sells inside its own app, so only people using that app can be charged.
-func TestChargesOnlyPeopleWhoCanBuy(t *testing.T) {
+// A store only sells inside its own app, but everyone pays once one is selling. The app sends
+// them there, so a card isn't needed for the charge to start.
+func TestChargedWhenOnlyAStoreSells(t *testing.T) {
 	e := setup(t)
 	e.billing.Google = &billing.GooglePlay{PackageName: "space.herosagent.synagent"}
 	a := e.signup(t, "Ada", "ada@example.com")
@@ -218,38 +219,14 @@ func TestChargesOnlyPeopleWhoCanBuy(t *testing.T) {
 		}
 	}
 	var st billing.Status
-	if a.do("GET", "/v1/credits", nil, 200, &st); !st.Free {
-		t.Fatalf("charged on the web with no way to buy: %+v", st)
+	a.do("GET", "/v1/credits", nil, 200, &st)
+	if st.Free || st.PaymentsEnabled || !st.GoogleEnabled {
+		t.Fatalf("after the free matches, with only Play selling: %+v", st)
 	}
-	if body, _ := a.askSuki("hello"); strings.Contains(body, "out of credits") {
-		t.Fatalf("stopped with no way to buy: %q", body)
+	if body, _ := a.askSuki("hello"); !strings.Contains(body, "out of credits") {
+		t.Fatalf("not charged: %q", body)
 	}
-
-	// A made-up store changes nothing.
-	a.store = "elsewhere"
-	if a.do("GET", "/v1/credits", nil, 200, &st); !st.Free {
-		t.Fatalf("a made-up store: %+v", st)
-	}
-
-	a.store = "play"
-	if a.do("GET", "/v1/credits", nil, 200, &st); st.Free {
-		t.Fatalf("free on the Play build: %+v", st)
-	}
-	if body, _ := a.askSuki("hello again"); !strings.Contains(body, "out of credits") {
-		t.Fatalf("Play build with no credits: %q", body)
-	}
-
-	// They can buy on their phone, so moving to the web doesn't make it free.
-	a.store = ""
-	if a.do("GET", "/v1/credits", nil, 200, &st); st.Free {
-		t.Fatalf("free again on the web: %+v", st)
-	}
-
-	// A store that isn't selling can't be the way to buy.
-	e.billing.Google = nil
-	if a.do("GET", "/v1/credits", nil, 200, &st); !st.Free {
-		t.Fatalf("charged with the store closed: %+v", st)
-	}
+	a.do("POST", "/v1/credits/checkout", map[string]any{"package": "small"}, 422, nil)
 }
 
 const testWebhookSecret = "whsec_test"

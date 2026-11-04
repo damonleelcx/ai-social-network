@@ -589,7 +589,7 @@ func registerSukiTools() {
 			if err != nil {
 				return nil, err
 			}
-			return map[string]any{"balance": st.Balance, "matches_so_far": st.MatchesUsed, "free_matches": st.FreeMatches, "messages_are_free_now": st.Free, "cost_per_message": st.CostPerMessage, "can_buy": st.PaymentsEnabled}, nil
+			return map[string]any{"balance": st.Balance, "matches_so_far": st.MatchesUsed, "free_matches": st.FreeMatches, "messages_are_free_now": st.Free, "cost_per_message": st.CostPerMessage, "can_buy": st.PaymentsEnabled || st.GoogleEnabled || st.WeChatEnabled}, nil
 		})
 
 	add("credits_usage", "This person's recent credit history, newest first.", noArgs, tools.Read,
@@ -605,7 +605,7 @@ func registerSukiTools() {
 			return map[string]any{"history": out}, nil
 		})
 
-	add("credits_prepare_buy", "Show the credit packs with their prices. A tap goes to the payment page.", noArgs, tools.Read,
+	add("credits_prepare_buy", "Show how to buy credits: the packs with their prices, or where to buy them if they can't be bought here.", noArgs, tools.Read,
 		func(context.Context, *tools.Env, map[string]any) (map[string]any, error) {
 			return card("buy_credits"), nil
 		})

@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Linking, Pressable, View } from 'react-native';
 import { Alert, Share } from '@/lib/dialogs';
 import * as api from '@/api/endpoints';
 import type { Card, CreditStatus, Proposal } from '@/api/types';
@@ -256,6 +256,8 @@ function ConfirmCard({ card }: { card: Extract<Card, { kind: 'confirm' }> }) {
   );
 }
 
+const PLAY_LISTING = 'https://play.google.com/store/apps/details?id=space.herosagent.synagent';
+
 function BuyCreditsCard() {
   const [status, setStatus] = useState<CreditStatus | null>(null);
   const load = () => {
@@ -325,6 +327,28 @@ function BuyOnPlay({ status }: { status: CreditStatus }) {
   );
 }
 
+/** Where to buy when it can't be done here. Credits belong to the account, so they arrive here too. */
+function BuyElsewhere({ status }: { status: CreditStatus }) {
+  if (!status.google_enabled && !status.wechat_enabled) {
+    return <T v="small" soft>{tr("Buying credits isn't open yet.")}</T>;
+  }
+  return (
+    <>
+      <T v="small" soft>{tr("Credits can't be bought here. Buy them with this account and they'll show up here too.")}</T>
+      {status.google_enabled ? (
+        <Button
+          small
+          kind="secondary"
+          icon="logo-google-playstore"
+          label={tr('Buy on Google Play')}
+          onPress={() => Linking.openURL(PLAY_LISTING).catch(showError)}
+        />
+      ) : null}
+      {status.wechat_enabled ? <T v="small" soft>{tr('Or buy them in the SynAgent mini program in WeChat.')}</T> : null}
+    </>
+  );
+}
+
 function BuyWithCheckout({ status }: { status: CreditStatus }) {
   const [busy, setBusy] = useState<string | null>(null);
   return (
@@ -333,7 +357,7 @@ function BuyWithCheckout({ status }: { status: CreditStatus }) {
         {tr('{n} credits left', { n: String(status.balance) })}
       </T>
       {!status.payments_enabled ? (
-        <T v="small" soft>{tr("Buying credits isn't open yet.")}</T>
+        <BuyElsewhere status={status} />
       ) : (
         status.packages.map((p) => (
           <Button
