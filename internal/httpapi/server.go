@@ -350,6 +350,7 @@ func (s *Server) Handler() http.Handler {
 	// Credits. The webhook signs itself, and the page is only somewhere to land after paying.
 	m.HandleFunc("GET /v1/credits", v(s.creditStatus))
 	m.HandleFunc("GET /v1/credits/usage", v(s.creditUsage))
+	m.HandleFunc("GET /v1/referral", v(s.referralStatus))
 	m.HandleFunc("POST /v1/credits/checkout", v(lim("checkout", 20, time.Hour, s.creditCheckout)))
 	m.HandleFunc("POST /v1/billing/stripe", s.stripeWebhook)
 	m.HandleFunc("POST /v1/credits/wechat/prepay", v(lim("checkout", 20, time.Hour, s.wechatPrepay)))
@@ -515,6 +516,7 @@ func (s *Server) googleSignIn(w http.ResponseWriter, r *http.Request) {
 	var b struct {
 		IDToken     string `json:"id_token"`
 		Language    string
+		Ref         string
 		AcceptTerms bool `json:"accept_terms"`
 	}
 	if !read(w, r, &b) {
@@ -535,6 +537,7 @@ func (s *Server) googleSignIn(w http.ResponseWriter, r *http.Request) {
 	status := 200
 	if created {
 		status = 201
+		s.attributeReferral(r, u.ID, b.Ref)
 		if g.Name != "" {
 			if _, err := profile.Save(r.Context(), s.Pool, u.ID, map[string]any{"display_name": g.Name}); err != nil {
 				slog.Warn("google signup name", "err", err)
@@ -564,8 +567,8 @@ func (s *Server) googleDelete(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) wechatSignIn(w http.ResponseWriter, r *http.Request) {
 	var b struct {
-		Code, Language string
-		AcceptTerms    bool `json:"accept_terms"`
+		Code, Language, Ref string
+		AcceptTerms         bool `json:"accept_terms"`
 	}
 	if !read(w, r, &b) {
 		return
@@ -585,6 +588,7 @@ func (s *Server) wechatSignIn(w http.ResponseWriter, r *http.Request) {
 	status := 200
 	if created {
 		status = 201
+		s.attributeReferral(r, u.ID, b.Ref)
 	}
 	s.issue(w, r, status, u)
 }
@@ -607,8 +611,8 @@ func (s *Server) wechatDelete(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) signup(w http.ResponseWriter, r *http.Request) {
 	var b struct {
-		Email, Password, Name, Language string
-		AcceptTerms                     bool `json:"accept_terms"`
+		Email, Password, Name, Language, Ref string
+		AcceptTerms                          bool `json:"accept_terms"`
 	}
 	if !read(w, r, &b) {
 		return
@@ -626,6 +630,7 @@ func (s *Server) signup(w http.ResponseWriter, r *http.Request) {
 			slog.Warn("signup name", "err", err)
 		}
 	}
+	s.attributeReferral(r, u.ID, b.Ref)
 	s.issue(w, r, 201, u)
 }
 
@@ -1082,6 +1087,22 @@ func (s *Server) agentSend(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) creditStatus(w http.ResponseWriter, r *http.Request) {
 	st, err := s.Billing.Status(r.Context(), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, st)
+}
+
+// attributeReferral never fails the sign-up it's part of.
+func (s *Server) attributeReferral(r *http.Request, userID, code string) {
+	if err := s.Billing.Attribute(r.Context(), userID, code); err != nil {
+		slog.Warn("referral", "err", err)
+	}
+}
+
+func (s *Server) referralStatus(w http.ResponseWriter, r *http.Request) {
+	st, err := s.Billing.ReferralStatus(r.Context(), userOf(r).ID)
 	if err != nil {
 		handleErr(w, r, err)
 		return

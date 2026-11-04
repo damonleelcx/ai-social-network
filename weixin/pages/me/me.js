@@ -2,11 +2,12 @@ const api = require('../../lib/api');
 const live = require('../../lib/live');
 const { time, showError, confirm } = require('../../lib/format');
 const pay = require('../../lib/pay');
+const share = require('../../lib/share');
 
-const REASON = { purchase: '购买积分', turn: '发给 Suki 的消息', refund: '退回：Suki 没能回复', grant: 'SynAgent 赠送' };
+const REASON = { purchase: '购买积分', turn: '发给 Suki 的消息', referral: '朋友加入', refund: '退回：Suki 没能回复', grant: 'SynAgent 赠送' };
 
 Page({
-  data: { user: {}, photos: [], credits: null, usage: [], packs: [], buying: false },
+  data: { user: {}, photos: [], invite: null, credits: null, usage: [], packs: [], buying: false },
   onLoad() {
     this.off = live.on((t) => {
       if (t === 'credits' || t === 'photos' || t === 'reconnect') this.load();
@@ -17,6 +18,9 @@ Page({
   },
   onShow() {
     if (api.getToken()) this.load();
+  },
+  onShareAppMessage() {
+    return share.message();
   },
   async onPullDownRefresh() {
     await this.load();
@@ -31,6 +35,7 @@ Page({
         packs: pay.packs(),
         usage: usage.slice(0, 20).map((u) => ({ delta: u.delta, text: REASON[u.reason] || u.reason, when: time(u.created_at) })),
       });
+      this.setData({ invite: await share.prepare() });
       const shown = await Promise.all(photos.map(async (p) => ({ id: p.id, path: await api.media(p.id) })));
       this.setData({ photos: shown });
     } catch (e) {

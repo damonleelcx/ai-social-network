@@ -16,6 +16,7 @@ const REASON: Record<string, string> = {
   turn: 'Message to Suki',
   refund: "Refund: Suki couldn't answer",
   grant: 'Added by SynAgent',
+  referral: 'A friend joined',
 };
 
 export default function CreditsScreen() {

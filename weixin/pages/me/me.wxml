@@ -11,6 +11,13 @@
     <view wx:if="{{photos.length < 6}}" class="photo add" bindtap="onAddPhoto">+</view>
   </view>
 
+  <view class="section">邀请朋友</view>
+  <view class="card" wx:if="{{invite}}">
+    <view class="soft">邀请码：<text selectable="true">{{invite.code}}</text></view>
+    <view class="soft gap" wx:if="{{invite.joined}}">已有 {{invite.joined}} 位朋友加入</view>
+    <button class="plain" open-type="share">发给微信朋友</button>
+  </view>
+
   <view class="section">积分</view>
   <view class="card" wx:if="{{credits}}">
     <view class="title">还剩 {{credits.balance}} 积分</view>

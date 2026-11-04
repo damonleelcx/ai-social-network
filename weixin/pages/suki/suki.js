@@ -1,6 +1,7 @@
 const api = require('../../lib/api');
 const live = require('../../lib/live');
 const { showError } = require('../../lib/format');
+const share = require('../../lib/share');
 
 const POLL_MS = 3000;
 const POLL_FOR_MS = 180000;
@@ -27,7 +28,13 @@ Page({
     this.stopPolling();
   },
   onShow() {
-    if (api.getToken()) this.load();
+    if (api.getToken()) {
+      this.load();
+      share.prepare();
+    }
+  },
+  onShareAppMessage() {
+    return share.message();
   },
   onHide() {
     this.stopPolling();

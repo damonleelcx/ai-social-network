@@ -135,7 +135,7 @@ module.exports = {
     signUp: (b) => post('/v1/auth/signup', b),
     signIn: (email, password) => post('/v1/auth/signin', { email, password }),
     signOut: () => post('/v1/auth/signout'),
-    wechat: (code, accept_terms) => post('/v1/auth/wechat', { code, accept_terms, language: 'zh' }),
+    wechat: (code, accept_terms, ref) => post('/v1/auth/wechat', { code, accept_terms, ref, language: 'zh' }),
     deleteWithWeChat: (code) => post('/v1/auth/wechat/delete', { code }),
     verify: (code) => post('/v1/auth/verify', { code }),
     resend: () => post('/v1/auth/resend'),
@@ -185,6 +185,9 @@ module.exports = {
     withdraw: (id) => del(`/v1/buddies/${id}/offer`),
     pick: async (id, user_id) => (await post(`/v1/buddies/${id}/pick`, { user_id })).match_id,
     close: (id) => post(`/v1/buddies/${id}/close`),
+  },
+  referral: {
+    status: () => get('/v1/referral'),
   },
   credits: {
     status: () => get('/v1/credits'),

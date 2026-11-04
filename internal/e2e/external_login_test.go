@@ -64,7 +64,11 @@ func TestWeChatSignUpAndSignIn(t *testing.T) {
 	}
 	// Someone else gets their own.
 	var other authReply
-	anon.do("POST", "/v1/auth/wechat", map[string]any{"code": "code-bea", "accept_terms": true}, 201, &other)
+	inviter, code := e.inviterCode(t, "inviter@example.com")
+	anon.do("POST", "/v1/auth/wechat", map[string]any{"code": "code-bea", "accept_terms": true, "ref": code}, 201, &other)
+	if got := e.referrerOf(t, other.User.ID); got != inviter {
+		t.Fatalf("invited by %s, want %s", got, inviter)
+	}
 	if other.User.ID == first.User.ID {
 		t.Fatal("two people on one account")
 	}

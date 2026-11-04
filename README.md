@@ -59,11 +59,13 @@ Nobody to see a movie with tonight? Dates aren't the only reason to meet someone
 
 Your first 5 matches are free. After that, each message to Suki uses a credit, and you can buy more by asking her: by card on the web and the direct download, with Google Play in the Play version of the Android app, and with WeChat Pay in the mini program. Chatting with your matches is always free, and so is anything about your safety or your account.
 
+**Inviting friends.** Everyone has an invite link and code (Me → Invite friends, or ask Suki). When a friend signs up with it and their profile goes live, the inviter gets 20 credits, up to 20 friends in 30 days. The mini program shares through WeChat's own share sheet.
+
 ## Also in the app
 
 - **The same account everywhere.** Use it in your browser with nothing to install, or on your phone.
 - **One-tap updates.** The Android app tells you when a new version is out and installs it from inside the app.
-- **Invite friends.** Share a link to download SynAgent.
+- **Invite friends.** Share your link or code, from the app, the web or WeChat, and earn credits when a friend joins.
 - **Your language and theme.** English, Chinese, Korean, Japanese and Spanish, in light or dark.
 
 ## WeChat mini program

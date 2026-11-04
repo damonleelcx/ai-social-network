@@ -2,6 +2,7 @@ const api = require('../../lib/api');
 const live = require('../../lib/live');
 const { confirm } = require('../../lib/format');
 
+const share = require('../../lib/share');
 const NEEDS_TERMS = '请先同意用户协议';
 const wxLogin = () => new Promise((resolve, reject) => {
   wx.login({ success: (r) => resolve(r.code), fail: () => reject(new Error('微信登录失败，请再试一次。')) });
@@ -45,6 +46,7 @@ Page({
   },
   after(res) {
     api.setToken(res.token);
+    share.clearPending();
     if (res.user.email_verified) this.enter();
     else this.setData({ mode: 'verify', password: '' });
   },
@@ -53,7 +55,7 @@ Page({
     this.act(async () => {
       if (mode === 'signin') return this.after(await api.auth.signIn(email.trim(), password));
       if (!accepted) throw new Error('请先勾选同意用户协议');
-      this.after(await api.auth.signUp({ email: email.trim(), password, name: name.trim(), accept_terms: true, language: 'zh' }));
+      this.after(await api.auth.signUp({ email: email.trim(), password, name: name.trim(), accept_terms: true, ref: share.pending(), language: 'zh' }));
     });
   },
   onVerify() {
@@ -66,11 +68,11 @@ Page({
     this.act(async () => {
       // A code works once, so each try gets its own.
       try {
-        this.after(await api.auth.wechat(await wxLogin(), false));
+        this.after(await api.auth.wechat(await wxLogin(), false, share.pending()));
       } catch (e) {
         if (e.message !== NEEDS_TERMS) throw e;
         if (!(await confirm('欢迎来到 SynAgent', '继续即表示你已年满 18 岁，并同意用户协议和隐私政策。'))) return;
-        this.after(await api.auth.wechat(await wxLogin(), true));
+        this.after(await api.auth.wechat(await wxLogin(), true, share.pending()));
       }
     });
   },

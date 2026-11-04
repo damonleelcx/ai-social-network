@@ -4,6 +4,7 @@ import type {
   BuddyRequest,
   CreditStatus,
   CreditUsage,
+  ReferralStatus,
   DatePlan,
   Hint,
   Match,
@@ -31,12 +32,12 @@ export const publicInfo = {
 };
 
 export const auth = {
-  signUp: (b: { email: string; password: string; name: string; accept_terms: boolean; language?: string }) =>
+  signUp: (b: { email: string; password: string; name: string; accept_terms: boolean; language?: string; ref?: string }) =>
     api<AuthResult>('/v1/auth/signup', { method: 'POST', body: b }),
   signIn: (email: string, password: string) =>
     api<AuthResult>('/v1/auth/signin', { method: 'POST', body: { email, password }, checksPassword: true }),
-  google: (id_token: string, accept_terms: boolean) =>
-    api<AuthResult>('/v1/auth/google', { method: 'POST', body: { id_token, accept_terms, language: currentLanguage() }, checksPassword: true }),
+  google: (id_token: string, accept_terms: boolean, ref?: string) =>
+    api<AuthResult>('/v1/auth/google', { method: 'POST', body: { id_token, accept_terms, ref, language: currentLanguage() }, checksPassword: true }),
   deleteWithGoogle: (id_token: string) => api<Ok>('/v1/auth/google/delete', { method: 'POST', body: { id_token }, timeoutMs: 60000 }),
   signOut: () => api<Ok>('/v1/auth/signout', { method: 'POST', body: {} }),
   verify: (code: string) => api<{ user: User }>('/v1/auth/verify', { method: 'POST', body: { code } }),
@@ -113,6 +114,10 @@ export const dates = {
   cancel: async (id: string, reason?: string) =>
     (await api<DateResult>(`/v1/dates/${id}/cancel`, { method: 'POST', body: { reason: reason ?? '' } })).date,
   share: async (id: string) => (await api<{ text: string }>(`/v1/dates/${id}/share`)).text,
+};
+
+export const referral = {
+  status: () => api<ReferralStatus>('/v1/referral'),
 };
 
 export const credits = {
