@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useState } from 'react';
-import { FlatList, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useMemo, useState } from 'react';
+import { FlatList, Platform, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useScreenSize } from '@/ui/screenSize';
 import { mediaSource } from '@/api/client';
 import type { Person } from '@/api/types';
@@ -28,14 +28,17 @@ export function MediaImage({
 }) {
   const t = useTheme();
   const [failed, setFailed] = useState(false);
+  // On the web a new source object means fetching the photo again.
+  const source = useMemo(() => (id ? mediaSource(id) : null), [id]);
   return (
     <View style={[{ backgroundColor: t.cardTint, overflow: 'hidden', borderRadius: radiusPx }, style]}>
       {id && !failed ? (
         <Image
-          source={mediaSource(id)}
+          source={source}
           style={{ width: '100%', height: '100%' }}
           contentFit={fit}
-          transition={160}
+          // On the web a fade that starts on a screen behind this one never finishes, and the photo stays invisible.
+          transition={Platform.OS === 'web' ? 0 : 160}
           cachePolicy="disk"
           accessibilityIgnoresInvertColors
           onError={() => setFailed(true)}
