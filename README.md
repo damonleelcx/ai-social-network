@@ -66,6 +66,10 @@ Your first 5 matches are free. After that, each message to Suki uses a credit, a
 - **Invite friends.** Share a link to download SynAgent.
 - **Your language and theme.** English, Chinese, Korean, Japanese and Spanish, in light or dark.
 
+## WeChat mini program
+
+[`weixin/`](weixin/README.md) is a native mini program on the same server and accounts. It isn't released: that needs a registered mini program, an ICP-filed domain and WeChat's review.
+
 ## Availability
 
 SynAgent is for adults 18 and over. [Open it in your browser](https://match.heros-agent.space/app/), or get the [direct downloads](https://match.heros-agent.space/#download). It isn't in the App Store or Google Play yet.

@@ -1,0 +1,3 @@
+.bar { padding: 12rpx 24rpx; background: #241644; }
+.bar .chip { margin: 0 0 0 12rpx; }
+.end { height: 2rpx; }

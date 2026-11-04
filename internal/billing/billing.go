@@ -55,6 +55,8 @@ type Service struct {
 	StripeURL    string
 	PublicOrigin string
 	HTTP         *http.Client
+	// WeChat is WeChat Pay for the mini program. Nil means it's off.
+	WeChat *WeChat
 }
 
 // ErrBadSignature means a webhook didn't come from the payment provider.
@@ -65,7 +67,10 @@ type UserError struct{ Msg string }
 
 func (e *UserError) Error() string { return e.Msg }
 
-func (s *Service) Enabled() bool { return s != nil && s.StripeKey != "" && s.WebhookSecret != "" }
+func (s *Service) stripeEnabled() bool { return s != nil && s.StripeKey != "" && s.WebhookSecret != "" }
+
+// Enabled says whether anyone can buy credits at all. Until they can, nobody is charged.
+func (s *Service) Enabled() bool { return s.stripeEnabled() || (s != nil && s.WeChat != nil) }
 
 type Status struct {
 	Balance         int       `json:"balance"`
@@ -75,6 +80,8 @@ type Status struct {
 	CostPerMessage  int       `json:"cost_per_message"`
 	PaymentsEnabled bool      `json:"payments_enabled"`
 	Packages        []Package `json:"packages"`
+	WeChatEnabled   bool      `json:"wechat_enabled"`
+	WeChatPackages  []Package `json:"wechat_packages"`
 }
 
 type queryer interface {
@@ -95,7 +102,7 @@ func (s *Service) Status(ctx context.Context, userID string) (*Status, error) {
 	if err != nil {
 		return nil, err
 	}
-	st := &Status{MatchesUsed: n, FreeMatches: FreeMatches, Free: free, CostPerMessage: CostPerMessage, PaymentsEnabled: s.Enabled(), Packages: Packages}
+	st := &Status{MatchesUsed: n, FreeMatches: FreeMatches, Free: free, CostPerMessage: CostPerMessage, PaymentsEnabled: s.stripeEnabled(), Packages: Packages, WeChatEnabled: s.WeChat != nil, WeChatPackages: WeChatPackages}
 	err = s.Pool.QueryRow(ctx, `SELECT coalesce((SELECT balance FROM credit_balances WHERE user_id=$1),0)`, userID).Scan(&st.Balance)
 	return st, err
 }
@@ -194,7 +201,7 @@ func (s *Service) stripeBase() string {
 
 // Checkout starts a purchase and returns the provider's payment page.
 func (s *Service) Checkout(ctx context.Context, userID, packageID string) (string, error) {
-	if !s.Enabled() {
+	if !s.stripeEnabled() {
 		return "", &UserError{"Buying credits isn't open yet."}
 	}
 	var pkg *Package
@@ -268,7 +275,7 @@ type Paid struct {
 // HandleWebhook takes the provider's report of a payment. It returns nil Paid for anything
 // that adds nothing, including a repeat of an event it has already handled.
 func (s *Service) HandleWebhook(ctx context.Context, payload []byte, signature string, now time.Time) (*Paid, error) {
-	if !s.Enabled() || !validSignature(payload, signature, s.WebhookSecret, now) {
+	if !s.stripeEnabled() || !validSignature(payload, signature, s.WebhookSecret, now) {
 		return nil, ErrBadSignature
 	}
 	var ev struct {
@@ -290,16 +297,22 @@ func (s *Service) HandleWebhook(ctx context.Context, payload []byte, signature s
 	if (ev.Type != "checkout.session.completed" && ev.Type != "checkout.session.async_payment_succeeded") || o.PaymentStatus != "paid" {
 		return nil, nil
 	}
+	return s.completePurchase(ctx, o.Reference, o.ID, o.AmountTotal, o.Currency)
+}
+
+// completePurchase adds what was paid for, once. It returns nil Paid when there's nothing
+// to add. reference is the purchase id, with or without its hyphens.
+func (s *Service) completePurchase(ctx context.Context, reference, providerID string, amount int, paidCurrency string) (*Paid, error) {
 	var paid *Paid
 	err := pgx.BeginFunc(ctx, s.Pool, func(tx pgx.Tx) error {
 		var userID *string
 		var credits, cents int
 		var currency, status string
-		err := tx.QueryRow(ctx, `SELECT user_id, credits, amount_cents, currency, status FROM credit_purchases WHERE id::text=$1 FOR UPDATE`, o.Reference).
+		err := tx.QueryRow(ctx, `SELECT user_id, credits, amount_cents, currency, status FROM credit_purchases WHERE replace(id::text,'-','')=replace($1,'-','') FOR UPDATE`, reference).
 			Scan(&userID, &credits, &cents, &currency, &status)
 		if errors.Is(err, pgx.ErrNoRows) {
 			// Some other payment on the same Stripe account. Sending it again won't help.
-			slog.Warn("payment for an unknown purchase", "session", o.ID)
+			slog.Warn("payment for an unknown purchase", "session", providerID)
 			return nil
 		}
 		if err != nil {
@@ -308,16 +321,16 @@ func (s *Service) HandleWebhook(ctx context.Context, payload []byte, signature s
 		if status == "paid" {
 			return nil
 		}
-		if o.AmountTotal != cents || !strings.EqualFold(o.Currency, currency) {
-			return fmt.Errorf("purchase %s: paid %d %s, expected %d %s", o.Reference, o.AmountTotal, o.Currency, cents, currency)
+		if amount != cents || !strings.EqualFold(paidCurrency, currency) {
+			return fmt.Errorf("purchase %s: paid %d %s, expected %d %s", reference, amount, paidCurrency, cents, currency)
 		}
-		if _, err := tx.Exec(ctx, `UPDATE credit_purchases SET status='paid', paid_at=now(), session_id=$2 WHERE id=$1`, o.Reference, o.ID); err != nil {
+		if _, err := tx.Exec(ctx, `UPDATE credit_purchases SET status='paid', paid_at=now(), session_id=$2 WHERE replace(id::text,'-','')=replace($1,'-','')`, reference, providerID); err != nil {
 			return err
 		}
 		if userID == nil {
 			return nil // They deleted their account while paying.
 		}
-		if err := addCredits(ctx, tx, *userID, credits, "purchase", "purchase:"+o.Reference); err != nil {
+		if err := addCredits(ctx, tx, *userID, credits, "purchase", "purchase:"+strings.ReplaceAll(reference, "-", "")); err != nil {
 			return err
 		}
 		p := Paid{UserID: *userID, Credits: credits}

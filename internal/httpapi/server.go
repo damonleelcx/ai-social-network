@@ -343,6 +343,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /v1/credits/usage", v(s.creditUsage))
 	m.HandleFunc("POST /v1/credits/checkout", v(lim("checkout", 20, time.Hour, s.creditCheckout)))
 	m.HandleFunc("POST /v1/billing/stripe", s.stripeWebhook)
+	m.HandleFunc("POST /v1/credits/wechat/prepay", v(lim("checkout", 20, time.Hour, s.wechatPrepay)))
+	m.HandleFunc("POST /v1/billing/wechat", s.wechatNotify)
 	m.HandleFunc("GET /credits/done", s.creditsDone)
 
 	// Buddies
@@ -994,16 +996,63 @@ func (s *Server) stripeWebhook(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "try again")
 		return
 	}
-	if paid != nil {
-		ctx := r.Context()
-		lang := s.Dating.Lang(ctx, paid.UserID)
-		body := i18n.T(lang, "Thanks! I added {credits} credits, so you have {balance} now.", "credits", strconv.Itoa(paid.Credits), "balance", strconv.Itoa(paid.Balance))
-		if err := s.Dating.PostFromSuki(ctx, paid.UserID, body, "happy", nil, "credits:"+strconv.Itoa(paid.Balance)+":"+strconv.Itoa(paid.Credits)); err != nil {
-			slog.Error("credits announce", "err", err)
-		}
-		s.Dating.Touch(ctx, paid.UserID, "credits")
-	}
+	s.announcePaid(r, paid)
 	writeJSON(w, 200, map[string]any{"received": true})
+}
+
+func (s *Server) announcePaid(r *http.Request, paid *billing.Paid) {
+	if paid == nil {
+		return
+	}
+	ctx := r.Context()
+	lang := s.Dating.Lang(ctx, paid.UserID)
+	body := i18n.T(lang, "Thanks! I added {credits} credits, so you have {balance} now.", "credits", strconv.Itoa(paid.Credits), "balance", strconv.Itoa(paid.Balance))
+	if err := s.Dating.PostFromSuki(ctx, paid.UserID, body, "happy", nil, "credits:"+strconv.Itoa(paid.Balance)+":"+strconv.Itoa(paid.Credits)); err != nil {
+		slog.Error("credits announce", "err", err)
+	}
+	s.Dating.Touch(ctx, paid.UserID, "credits")
+}
+
+func (s *Server) wechatPrepay(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		Package string `json:"package"`
+		Code    string `json:"code"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	p, err := s.Billing.WeChatPrepay(r.Context(), userOf(r).ID, b.Package, b.Code)
+	var ue *billing.UserError
+	if errors.As(err, &ue) {
+		fail(w, 422, ue.Msg)
+		return
+	}
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, p)
+}
+
+// wechatNotify answers anything but 2xx to have WeChat send it again.
+func (s *Server) wechatNotify(w http.ResponseWriter, r *http.Request) {
+	payload, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 1<<20))
+	if err != nil {
+		fail(w, 400, "too large")
+		return
+	}
+	paid, err := s.Billing.HandleWeChatNotify(r.Context(), payload, r.Header, time.Now())
+	if errors.Is(err, billing.ErrBadSignature) {
+		fail(w, 400, "bad signature")
+		return
+	}
+	if err != nil {
+		slog.Error("wechat notify", "err", err)
+		fail(w, 500, "try again")
+		return
+	}
+	s.announcePaid(r, paid)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // adminGrantCredits is for support. The key makes a repeated request harmless.

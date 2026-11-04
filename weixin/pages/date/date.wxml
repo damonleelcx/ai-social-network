@@ -1,0 +1,44 @@
+<view class="page" wx:if="{{date}}">
+  <view class="title">和 {{date.person.display_name}} 的约会</view>
+  <view wx:if="{{date.status === 'searching'}}" class="empty">Suki 正在找合适的地方…</view>
+
+  <block wx:if="{{date.status === 'voting'}}">
+    <view class="section">选一个地方{{date.other_voted ? '（对方已选）' : ''}}</view>
+    <view wx:for="{{date.venues}}" wx:key="id" class="card">
+      <view class="title">{{item.name}}</view>
+      <view class="soft">{{item.address}}</view>
+      <view wx:if="{{item.reason}}">{{item.reason}}</view>
+      <view wx:if="{{date.my_vote === item.id}}" class="soft gap">你选了这里</view>
+      <button wx:else class="plain" data-id="{{item.id}}" bindtap="onVote">选这里</button>
+    </view>
+  </block>
+
+  <view wx:if="{{date.venue}}" class="card gap">
+    <view class="title">{{date.venue.name}}</view>
+    <view class="soft">{{date.venue.address}}</view>
+  </view>
+
+  <block wx:if="{{date.status === 'scheduling'}}">
+    <view wx:if="{{proposedText}}" class="card">
+      <view class="soft">{{date.proposed_by_me ? '你提议的时间' : '对方提议的时间'}}</view>
+      <view class="title">{{proposedText}}</view>
+      <view wx:if="{{date.proposed_by_me}}" class="soft">等对方确认。</view>
+      <button wx:else class="primary" bindtap="onConfirm">就这个时间</button>
+    </view>
+    <view class="section">{{proposedText ? '换个时间' : '提议一个时间'}}</view>
+    <view class="card">
+      <picker mode="date" start="{{today}}" value="{{day}}" bindchange="onDay"><view class="input">日期：{{day || '请选择'}}</view></picker>
+      <picker mode="time" value="{{clock}}" bindchange="onClock"><view class="input">时间：{{clock || '请选择'}}</view></picker>
+      <button class="primary" disabled="{{!day || !clock}}" bindtap="onTime">提议这个时间</button>
+    </view>
+  </block>
+
+  <view wx:if="{{date.status === 'confirmed'}}" class="card">
+    <view class="soft">时间定了</view>
+    <view class="title">{{scheduledText}}</view>
+    <button class="plain" bindtap="onShare">复制计划，发给朋友</button>
+  </view>
+
+  <button wx:if="{{date.status !== 'cancelled' && date.status !== 'completed'}}" class="danger" bindtap="onCancel">取消约会</button>
+  <view wx:if="{{date.status === 'cancelled'}}" class="empty">这次约会取消了。</view>
+</view>

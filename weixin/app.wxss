@@ -1,0 +1,32 @@
+page { background: #1b1033; color: #f3effa; font-size: 30rpx; line-height: 1.5; }
+.page { padding: 24rpx; box-sizing: border-box; }
+.card { background: rgba(255,255,255,.08); border-radius: 24rpx; padding: 24rpx; margin-bottom: 20rpx; }
+.title { font-size: 34rpx; font-weight: 600; }
+.section { font-size: 28rpx; color: #a99fc4; margin: 28rpx 0 14rpx; }
+.soft { color: #a99fc4; font-size: 26rpx; }
+.error { color: #ff8a9a; font-size: 26rpx; margin: 12rpx 0; }
+.row { display: flex; align-items: center; }
+.grow { flex: 1; min-width: 0; }
+.gap { margin-top: 16rpx; }
+.ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.avatar { width: 88rpx; height: 88rpx; border-radius: 50%; background: rgba(255,255,255,.12); margin-right: 20rpx; flex-shrink: 0; }
+.badge { background: #ff5c8a; border-radius: 20rpx; font-size: 22rpx; padding: 0 12rpx; margin-left: 12rpx; }
+.input { background: rgba(255,255,255,.1); border-radius: 16rpx; padding: 18rpx 20rpx; margin-bottom: 18rpx; min-height: 44rpx; color: #fff; }
+button { margin: 12rpx 0 0 !important; width: 100% !important; font-size: 28rpx !important; font-weight: 500 !important; border-radius: 40rpx !important; }
+button.primary { background: #ff5c8a !important; color: #fff !important; }
+button.plain { background: rgba(255,255,255,.14) !important; color: #fff !important; }
+button.danger { background: rgba(255,92,120,.22) !important; color: #ff9db0 !important; }
+.empty { text-align: center; color: #a99fc4; padding: 80rpx 20rpx; }
+
+.chat { height: 100vh; display: flex; flex-direction: column; }
+.chat-list { flex: 1; min-height: 0; padding: 20rpx 24rpx; box-sizing: border-box; }
+.bubble-row { display: flex; margin-bottom: 18rpx; }
+.bubble-row.mine { justify-content: flex-end; }
+.bubble { max-width: 78%; padding: 16rpx 22rpx; border-radius: 24rpx; background: rgba(255,255,255,.1); word-break: break-word; white-space: pre-wrap; }
+.mine .bubble { background: #ff5c8a; color: #fff; }
+.note { text-align: center; color: #a99fc4; font-size: 24rpx; margin: 12rpx 0 20rpx; }
+.composer { display: flex; align-items: center; padding: 14rpx 20rpx; padding-bottom: calc(14rpx + env(safe-area-inset-bottom)); background: #241644; }
+.composer .input { flex: 1; margin: 0 16rpx 0 0; }
+.send { background: #ff5c8a; color: #fff; padding: 14rpx 28rpx; border-radius: 32rpx; font-size: 28rpx; }
+.chips { display: flex; flex-wrap: wrap; padding: 0 24rpx 8rpx; }
+.chip { border: 1px solid rgba(255,255,255,.3); border-radius: 30rpx; padding: 8rpx 22rpx; margin: 0 12rpx 12rpx 0; font-size: 26rpx; }
