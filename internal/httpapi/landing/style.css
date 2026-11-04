@@ -320,6 +320,7 @@ h1 .lit { color: var(--accent); }
 @media (max-width: 560px) {
   body { font-size: 21px; }
   .brand span { display: none; }
+  .nav-end .btn-heart { display: none; }
   .hero { width: calc(100% - 32px); }
   .btn { padding: 13px 14px; }
   .fan-card { width: min(100%, 300px); }

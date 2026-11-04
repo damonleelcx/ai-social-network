@@ -117,6 +117,7 @@ const STRINGS = {
   'In your browser': ['在浏览器里用', '브라우저에서', 'ブラウザで'],
   'Nothing to install, and it works on a computer too. Your account is the same one the app uses.': ['不用安装，电脑上也能用。账号和 App 是同一个。', '설치할 필요 없고 컴퓨터에서도 돼요. 계정은 앱과 같아요.', 'インストール不要で、パソコンでも使えます。アカウントはアプリと共通です。'],
   'Open SynAgent': ['打开 SynAgent', 'SynAgent 열기', 'SynAgent を開く'],
+  'Log in': ['登录', '로그인', 'ログイン'],
   'Download for Android': ['下载 Android 版', 'Android용 다운로드', 'Android 版をダウンロード'],
   "This file is not signed, so an iPhone won't install it as it is.": ['此文件未经签名，iPhone 无法直接安装。', '이 파일은 서명되지 않아 iPhone에 그대로 설치할 수 없어요.', 'このファイルは署名されていないため、そのままでは iPhone にインストールできません。'],
   'You need a sideloading tool such as AltStore or Sideloadly, which signs it with your own Apple ID.': ['你需要 AltStore 或 Sideloadly 等侧载工具，用你自己的 Apple ID 为它签名。', 'AltStore나 Sideloadly 같은 사이드로딩 도구로 본인의 Apple ID로 서명해야 해요.', 'AltStore や Sideloadly などのサイドロードツールで、ご自身の Apple ID を使って署名する必要があります。'],
