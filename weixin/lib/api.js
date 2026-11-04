@@ -185,6 +185,7 @@ module.exports = {
   credits: {
     status: () => get('/v1/credits'),
     usage: async () => (await get('/v1/credits/usage')).usage || [],
+    wechatPrepay: (pack, code) => post('/v1/credits/wechat/prepay', { package: pack, code }),
   },
   safety: {
     block: (user_id) => post('/v1/blocks', { user_id }),

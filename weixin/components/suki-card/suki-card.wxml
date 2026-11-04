@@ -81,7 +81,10 @@
 
 <view wx:elif="{{card.kind === 'buy_credits' && item}}" class="card">
   <view class="title">还剩 {{item.balance}} 积分</view>
-  <view class="soft">小程序内暂不支持充值。</view>
+  <block wx:if="{{item.wechat_enabled && packs.length}}">
+    <button wx:for="{{packs}}" wx:for-item="p" wx:key="id" class="plain" disabled="{{state === 'busy'}}" data-id="{{p.id}}" bindtap="onBuy">{{p.label}}</button>
+  </block>
+  <view wx:else class="soft">{{item.wechat_enabled ? 'iOS 暂不支持充值。' : '暂时还不能充值。'}}</view>
 </view>
 
 <view wx:elif="{{card.kind === 'confirm'}}" class="card">

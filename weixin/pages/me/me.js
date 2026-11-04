@@ -1,11 +1,12 @@
 const api = require('../../lib/api');
 const live = require('../../lib/live');
 const { time, showError, confirm } = require('../../lib/format');
+const pay = require('../../lib/pay');
 
 const REASON = { purchase: '购买积分', turn: '发给 Suki 的消息', refund: '退回：Suki 没能回复', grant: 'SynAgent 赠送' };
 
 Page({
-  data: { user: {}, photos: [], credits: null, usage: [] },
+  data: { user: {}, photos: [], credits: null, usage: [], packs: [], buying: false },
   onLoad() {
     this.off = live.on((t) => {
       if (t === 'credits' || t === 'photos' || t === 'reconnect') this.load();
@@ -27,6 +28,7 @@ Page({
       this.setData({
         user: me.user,
         credits,
+        packs: pay.packs(),
         usage: usage.slice(0, 20).map((u) => ({ delta: u.delta, text: REASON[u.reason] || u.reason, when: time(u.created_at) })),
       });
       const shown = await Promise.all(photos.map(async (p) => ({ id: p.id, path: await api.media(p.id) })));
@@ -34,6 +36,16 @@ Page({
     } catch (e) {
       if (e.status !== 401 && e.status !== 403) showError(e);
     }
+  },
+  async onBuy(e) {
+    if (this.data.buying) return;
+    this.setData({ buying: true });
+    try {
+      if (await pay.buy(e.currentTarget.dataset.id)) await this.load();
+    } catch (err) {
+      showError(err);
+    }
+    this.setData({ buying: false });
   },
   async onAddPhoto() {
     try {

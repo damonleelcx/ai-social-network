@@ -107,6 +107,12 @@ func run(mode string) error {
 	plc := &places.Client{Pool: pool, NominatimURL: cfg.NominatimURL, OverpassURL: cfg.OverpassURL, PhotonURL: cfg.PhotonURL}
 	svc := &dating.Service{Pool: pool, Chats: chats, DateMinLead: cfg.DateMinLead}
 	bill := &billing.Service{Pool: pool, StripeKey: cfg.StripeSecretKey, WebhookSecret: cfg.StripeWebhookSecret, PublicOrigin: cfg.PublicOrigin}
+	if wc, err := billing.NewWeChat(cfg.WeChat); err != nil {
+		// Half-configured payments stay off, and shouldn't take the server down.
+		slog.Error("wechat pay is off", "err", err)
+	} else {
+		bill.WeChat = wc
+	}
 	workflows.Init(&workflows.Deps{Billing: bill, Pool: pool, Store: store, Model: model, Chats: chats, Photos: photos, Places: plc, Dating: svc,
 		FastModel: cfg.LLMFastModel, PhotoAutoApprove: cfg.PhotoAutoApprove, DebriefDelay: cfg.DebriefDelay})
 

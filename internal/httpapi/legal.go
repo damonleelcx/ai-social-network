@@ -144,6 +144,7 @@ const privacyHTML = `<h1>Privacy Policy</h1>
 <tr><th>Provider</th><th>Purpose</th><th>Data</th></tr>
 <tr><td>Alibaba Cloud (Beijing, China)</td><td>AI model that powers Suki, matching, coaching and moderation</td><td>Messages to Suki, messages between matches, profile details and photos</td></tr>
 <tr><td>Amazon Web Services (United States)</td><td>Hosting, photo storage and backups</td><td>All the data described in this policy</td></tr>
+<tr><td>Tenpay (WeChat Pay)</td><td>Taking payment when you buy credits in the WeChat mini program</td><td>Your WeChat identifier for the mini program, and the pack you're buying</td></tr>
 <tr><td>Stripe</td><td>Taking payment when you buy credits</td><td>The payment details you enter on Stripe's page, and the pack you're buying</td></tr>
 <tr><td>Fish Audio</td><td>Suki's voice, only when you play it or turn on auto-play</td><td>The text of Suki's reply. On the plan we use, Fish Audio may use it to improve its models, so you can leave the voice off in Settings.</td></tr>
 <tr><td>Expo, Apple and Google</td><td>Push notifications</td><td>Device token, notification title and text, and the screen to open. Notifications don't contain message text, though a match notification can include the other person's name.</td></tr>

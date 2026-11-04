@@ -1,6 +1,7 @@
 // The things Suki puts in the conversation. Same cards as the app, same API.
 const api = require('../../lib/api');
 const { showError, confirm } = require('../../lib/format');
+const pay = require('../../lib/pay');
 
 const CONFIRM = {
   remove_photo: ['删除这张照片？', '会立刻从你的资料里移除。'],
@@ -14,7 +15,7 @@ const TABS = { matches: '/pages/matches/matches', dates: '/pages/dates/dates' };
 
 Component({
   properties: { card: { type: Object, value: {} } },
-  data: { item: null, photo: '', state: '', error: '', gone: false },
+  data: { packs: [], item: null, photo: '', state: '', error: '', gone: false },
   lifetimes: {
     attached() {
       this.load();
@@ -38,7 +39,7 @@ Component({
           this.setData({ item: Object.assign({}, post, { person: offer ? offer.person : null }) });
           if (offer) this.photo(offer.person);
         } else if (c.kind === 'buy_credits') {
-          this.setData({ item: await api.credits.status() });
+          this.setData({ item: await api.credits.status(), packs: pay.packs() });
         }
       } catch (e) {
         // A post that's over, or that this person can no longer see.
@@ -104,6 +105,12 @@ Component({
     onPhoto() {
       this.run('', async () => {
         if (await api.uploadPhoto()) this.setData({ state: 'done' });
+      });
+    },
+    onBuy(e) {
+      this.run('', async () => {
+        const bought = await pay.buy(e.currentTarget.dataset.id);
+        if (bought) this.setData({ item: bought });
       });
     },
     async onShare() {
