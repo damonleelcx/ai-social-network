@@ -13,6 +13,7 @@ func TestPublicPages(t *testing.T) {
 		{"privacy", "Privacy Policy", "Beijing, China"},
 		{"delete-account", "Delete your SynAgent account", "up to 30 days"},
 		{"contact", "Contact us", "support@heros-agent.space"},
+		{"child-safety", "Child safety standards", "National Center for Missing &amp; Exploited Children"},
 	} {
 		w := httptest.NewRecorder()
 		legalPage(tc.page)(w, httptest.NewRequest("GET", "/", nil))
@@ -52,7 +53,7 @@ var (
 
 // A translation has to say the same things in the same places, and link to the same ones.
 func TestLegalTranslationsMatchEnglish(t *testing.T) {
-	for _, page := range []string{"terms", "privacy", "delete-account", "contact", "open"} {
+	for _, page := range []string{"terms", "privacy", "delete-account", "contact", "child-safety", "open"} {
 		en, err := legalFiles.ReadFile("legal/en/" + page + ".html")
 		if err != nil {
 			t.Fatal(err)
