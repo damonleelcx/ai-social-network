@@ -30,7 +30,7 @@ const STRINGS = {
 
   'Meet Suki': ['认识 Suki', 'Suki를 만나 보세요', 'Suki に会う'],
   'Suki in pixel art: long dark hair, a glowing cat hair clip, winking and flashing a peace sign': ['像素风的 Suki：深色长发，戴着发光的猫咪发夹，眨着眼比出剪刀手', '픽셀 아트로 그린 Suki: 긴 검은 머리에 빛나는 고양이 머리핀을 하고, 윙크하며 브이를 하고 있어요', 'ピクセルアートの Suki：長い黒髪に光る猫のヘアクリップ、ウインクしてピースサイン'],
-  'Playful · Curious · Your AI wingwoman': ['爱玩 · 好奇 · 你的 AI 僚机', '장난기 · 호기심 · 당신의 AI 윙우먼', 'おちゃめ · 好奇心旺盛 · あなたの AI ウィングウーマン'],
+  'Playful · Curious · Your AI winggirl': ['爱玩 · 好奇 · 你的 AI 僚机', '장난기 · 호기심 · 당신의 AI 윙걸', 'おちゃめ · 好奇心旺盛 · あなたの AI ウィングガール'],
   '"Tell me about you, and I\'ll introduce you to people worth meeting."': ['“跟我说说你吧，我会介绍值得见的人给你。”', '“당신에 대해 들려주세요. 만날 만한 사람을 소개해 드릴게요.”', '「あなたのことを教えて。会う価値のある人を紹介するね。」'],
   Talk: ['聊聊', '대화', '話す'],
   'Why her?': ['为什么是她？', '왜 그녀일까요?', 'なぜ彼女？'],
