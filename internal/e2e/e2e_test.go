@@ -211,6 +211,7 @@ type client struct {
 	token string
 	id    string
 	email string
+	store string
 }
 
 func (c *client) do(method, path string, body any, want int, out any) {
@@ -225,6 +226,9 @@ func (c *client) do(method, path string, body any, want int, out any) {
 	req, _ := http.NewRequest(method, c.e.api.URL+path, rd)
 	if c.token != "" {
 		req.Header.Set("Authorization", "Bearer "+c.token)
+	}
+	if c.store != "" {
+		req.Header.Set("X-Synagent-Store", c.store)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
