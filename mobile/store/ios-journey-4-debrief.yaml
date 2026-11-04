@@ -46,10 +46,8 @@ appId: space.herosagent.synagent
     visible: "Edit profile"
     timeout: 15000
 - takeScreenshot: ios-shots/j20-me-complete
-- scrollUntilVisible:
-    element: "Settings"
-    direction: DOWN
-    timeout: 10000
+# Settings sits under the tab bar until the page is scrolled, and still counts as visible there.
+- scroll
 - tapOn: "Settings"
 - tapOn: "Suki"
 - scrollUntilVisible:

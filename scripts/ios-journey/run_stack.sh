@@ -37,7 +37,13 @@ wait_for mongod 60 "nc -z 127.0.0.1 27017"
 nohup python3 "$HERE/fake_services.py" 9000 > "$LOGS/fake.log" 2>&1 &
 wait_for fake 15 "nc -z 127.0.0.1 9000"
 
-(cd "$ROOT" && go build -o "$LOGS/../synagent-bin" ./cmd/synagent)
+# The module proxy's name sometimes fails to resolve on these runners.
+built=0
+for try in 1 2 3 4; do
+  if (cd "$ROOT" && go build -o "$LOGS/../synagent-bin" ./cmd/synagent); then built=1; break; fi
+  echo "go build failed, try $try"; sleep 45
+done
+[ "$built" = 1 ]
 export SYN_DATABASE_URL="postgres://$USER@127.0.0.1:5432/syn?sslmode=disable"
 export SYN_MONGO_URL="mongodb://127.0.0.1:27017" SYN_MONGO_DB=syn
 export SYN_PHOTO_DIR="$(mktemp -d)"
