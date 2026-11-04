@@ -334,6 +334,16 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /v1/agent/speech", v(s.speechStatus))
 	m.HandleFunc("POST /v1/agent/speech", v(lim("speech", 20, time.Minute, s.speak)))
 
+	// Buddies
+	m.HandleFunc("GET /v1/buddies", v(s.buddyBoard))
+	m.HandleFunc("GET /v1/buddies/mine", v(s.buddyMine))
+	m.HandleFunc("GET /v1/buddies/{id}", v(s.buddyGet))
+	m.HandleFunc("POST /v1/buddies", v(lim("buddy_post", 10, time.Hour, s.buddyPost)))
+	m.HandleFunc("POST /v1/buddies/{id}/offer", v(lim("buddy_offer", 30, time.Hour, s.buddyOffer)))
+	m.HandleFunc("DELETE /v1/buddies/{id}/offer", v(s.buddyWithdraw))
+	m.HandleFunc("POST /v1/buddies/{id}/pick", v(lim("buddy_pick", 30, time.Hour, s.buddyPick)))
+	m.HandleFunc("POST /v1/buddies/{id}/close", v(s.buddyClose))
+
 	// Introductions and matches
 	m.HandleFunc("GET /v1/proposals", v(s.proposals))
 	m.HandleFunc("GET /v1/proposals/{id}", v(s.proposal))
@@ -498,7 +508,7 @@ func (s *Server) verifyEmail(w http.ResponseWriter, r *http.Request) {
 		handleErr(w, r, err)
 		return
 	}
-	if err := s.Dating.PostFromSuki(r.Context(), u.ID, "Hi, I'm Suki! I'm an AI matchmaker, and I'm going to help you meet someone you actually click with. No endless swiping, just good introductions. Let's get to know each other. What should I call you?", "playful", nil, "welcome"); err != nil {
+	if err := s.Dating.PostFromSuki(r.Context(), u.ID, "Hi, I'm Suki! I'm an AI matchmaker, and I'm going to help you meet people you actually click with: someone to date, or just company for a movie or a trip. No endless swiping, just good introductions. Let's get to know each other. What should I call you?", "playful", nil, "welcome"); err != nil {
 		slog.Warn("welcome", "err", err)
 	}
 	writeJSON(w, 200, map[string]any{"user": u})
@@ -912,6 +922,87 @@ func (s *Server) agentSend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 202, map[string]any{"message": m})
+}
+
+// ── Buddies ──
+
+func (s *Server) buddyBoard(w http.ResponseWriter, r *http.Request) {
+	list, missing, err := s.Dating.BuddyBoard(r.Context(), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"requests": list, "missing": missing})
+}
+
+func (s *Server) buddyMine(w http.ResponseWriter, r *http.Request) {
+	list, err := s.Dating.MyBuddyRequests(r.Context(), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"requests": list})
+}
+
+func (s *Server) buddyGet(w http.ResponseWriter, r *http.Request) {
+	b, err := s.Dating.BuddyView(r.Context(), r.PathValue("id"), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"request": b})
+}
+
+func (s *Server) buddyPost(w http.ResponseWriter, r *http.Request) {
+	var in dating.BuddyInput
+	if !read(w, r, &in) {
+		return
+	}
+	b, err := s.Dating.PostBuddy(r.Context(), userOf(r).ID, in)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 201, map[string]any{"request": b})
+}
+
+func (s *Server) buddyOffer(w http.ResponseWriter, r *http.Request) {
+	if err := s.Dating.OfferBuddy(r.Context(), r.PathValue("id"), userOf(r).ID); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"ok": true})
+}
+
+func (s *Server) buddyWithdraw(w http.ResponseWriter, r *http.Request) {
+	if err := s.Dating.WithdrawBuddyOffer(r.Context(), r.PathValue("id"), userOf(r).ID); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"ok": true})
+}
+
+func (s *Server) buddyPick(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		UserID string `json:"user_id"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	id, err := s.Dating.PickBuddy(r.Context(), r.PathValue("id"), userOf(r).ID, b.UserID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"match_id": id})
+}
+
+func (s *Server) buddyClose(w http.ResponseWriter, r *http.Request) {
+	if err := s.Dating.CloseBuddy(r.Context(), r.PathValue("id"), userOf(r).ID); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"ok": true})
 }
 
 // ── Introductions and matches ───────────────────────────────────────────────
@@ -1573,11 +1664,16 @@ func (s *Server) export(w http.ResponseWriter, r *http.Request) {
 		handleErr(w, r, err)
 		return
 	}
+	buddies, err := s.Dating.MyBuddyRequests(r.Context(), u.ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
 	notes, err := ids(r.Context(), s.Pool, `SELECT content FROM memories WHERE user_id=$1`, u.ID)
 	if err != nil {
 		handleErr(w, r, err)
 		return
 	}
 	writeJSON(w, 200, map[string]any{"account": map[string]any{"email": u.Email, "created_at": u.CreatedAt}, "profile": p, "photos": photos,
-		"settings": dating.GetSettings(r.Context(), s.Pool, u.ID), "suki_conversation": agentMsgs, "messages_you_sent": chats, "suki_notes": notes})
+		"settings": dating.GetSettings(r.Context(), s.Pool, u.ID), "buddy_posts": buddies, "suki_conversation": agentMsgs, "messages_you_sent": chats, "suki_notes": notes})
 }

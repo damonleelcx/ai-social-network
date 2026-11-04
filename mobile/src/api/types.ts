@@ -68,13 +68,17 @@ export type Card =
   | { kind: 'date'; date_id: string; focus?: 'time' | 'change' }
   | { kind: 'share_plan'; date_id: string }
   | { kind: 'open_screen'; screen: string; label: string }
+  | { kind: 'buddy_post'; activity: string; when: string; note?: string; expires_in_hours: number; same_gender?: boolean }
+  | { kind: 'buddy_request'; request_id: string }
+  | { kind: 'buddy_offer'; request_id: string; user_id: string }
   | {
       kind: 'confirm';
-      action: 'remove_photo' | 'unmatch' | 'block' | 'reset_taste';
+      action: 'remove_photo' | 'unmatch' | 'block' | 'reset_taste' | 'buddy_close';
       label: string;
       photo_id?: string;
       match_id?: string;
       user_id?: string;
+      request_id?: string;
     };
 
 export type MessageMeta = {
@@ -141,6 +145,24 @@ export type Match = {
   last_preview: string;
   unread: number;
   open_date_id?: string;
+  /** The kind of plan this match came from. Absent for an introduction. */
+  activity?: string;
+};
+
+export type BuddyRequest = {
+  id: string;
+  kind: string;
+  note: string;
+  when: string;
+  city_name: string;
+  same_gender: boolean;
+  status: 'open' | 'filled' | 'closed';
+  match_id?: string;
+  created_at: string;
+  expires_at: string;
+  offered: boolean;
+  person?: Person;
+  offers?: { person: Person; created_at: string }[];
 };
 
 export type Hint = { id: string; body: string; suggestions: string[] | null; created_at: string };

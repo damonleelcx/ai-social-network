@@ -4,6 +4,7 @@ import { Pressable, View } from 'react-native';
 import { Alert, Share } from '@/lib/dialogs';
 import * as api from '@/api/endpoints';
 import type { Card, Proposal } from '@/api/types';
+import { BuddyOfferCard, BuddyPostCard, BuddyRequestCard } from './BuddyCards';
 import { openNamedScreen } from '@/lib/links';
 import { pickAndUploadPhoto } from '@/lib/photos';
 import { useLive, useTopic } from '@/state/live';
@@ -204,6 +205,7 @@ function ConfirmCard({ card }: { card: Extract<Card, { kind: 'confirm' }> }) {
     unmatch: [tr('Unmatch?'), tr('The chat ends for both of you, and any open date plan is cancelled.')],
     block: [tr('Block this person?'), tr("You'll stop seeing each other, and any match ends at once.")],
     reset_taste: [tr('Start over?'), tr('I forget my notes and everything I learned about your taste.')],
+    buddy_close: [tr('Take this post down?'), tr("People can't join it any more.")],
   };
   const [title, body] = copy[card.action] ?? [tr('Are you sure?'), ''];
 
@@ -231,6 +233,10 @@ function ConfirmCard({ card }: { card: Extract<Card, { kind: 'confirm' }> }) {
       case 'reset_taste':
         await api.memories.reset();
         break;
+      case 'buddy_close':
+        if (!card.request_id) return;
+        await api.buddies.close(card.request_id);
+        break;
       default:
         return;
     }
@@ -255,6 +261,12 @@ export function SukiCard({ card }: { card: Card }) {
   switch (card.kind) {
     case 'photo_upload':
       return <PhotoUploadCard />;
+    case 'buddy_post':
+      return <BuddyPostCard card={card} />;
+    case 'buddy_request':
+      return <BuddyRequestCard id={card.request_id} />;
+    case 'buddy_offer':
+      return <BuddyOfferCard id={card.request_id} userId={card.user_id} />;
     case 'bio_draft':
       return <BioDraftCard text={card.text} />;
     case 'proposal':

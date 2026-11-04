@@ -28,6 +28,7 @@ const (
 
 // Pref is the settings key that switches a kind of notification off.
 var prefFor = map[string]string{
+	"buddy": "notify_matches", "buddy_offer": "notify_matches",
 	"proposal": "notify_matches", "match": "notify_matches", "message": "notify_messages", "hint": "notify_suki",
 	"date": "notify_dates", "reminder": "notify_dates", "debrief": "notify_dates", "safety": "",
 }
