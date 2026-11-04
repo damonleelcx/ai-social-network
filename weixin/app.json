@@ -1,0 +1,32 @@
+{
+  "pages": [
+    "pages/suki/suki",
+    "pages/matches/matches",
+    "pages/dates/dates",
+    "pages/me/me",
+    "pages/login/login",
+    "pages/chat/chat",
+    "pages/date/date"
+  ],
+  "window": {
+    "navigationBarTitleText": "SynAgent",
+    "navigationBarBackgroundColor": "#1b1033",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#1b1033"
+  },
+  "tabBar": {
+    "color": "#a99fc4",
+    "selectedColor": "#ffffff",
+    "backgroundColor": "#1b1033",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/suki/suki", "text": "Suki" },
+      { "pagePath": "pages/matches/matches", "text": "匹配" },
+      { "pagePath": "pages/dates/dates", "text": "约会" },
+      { "pagePath": "pages/me/me", "text": "我的" }
+    ]
+  },
+  "usingComponents": { "suki-card": "/components/suki-card/suki-card" },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2"
+}

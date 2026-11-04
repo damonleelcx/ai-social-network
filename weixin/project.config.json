@@ -1,0 +1,8 @@
+{
+  "description": "SynAgent WeChat mini program",
+  "appid": "touristappid",
+  "projectname": "synagent",
+  "compileType": "miniprogram",
+  "setting": { "es6": true, "enhance": true, "minified": true, "postcss": true, "urlCheck": true },
+  "libVersion": "3.0.0"
+}

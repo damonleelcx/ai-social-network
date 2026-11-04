@@ -1,0 +1,3 @@
+.photos { display: flex; flex-wrap: wrap; }
+.photo { width: 200rpx; height: 200rpx; border-radius: 16rpx; margin: 0 16rpx 16rpx 0; background: rgba(255,255,255,.1); }
+.add { display: flex; align-items: center; justify-content: center; font-size: 60rpx; color: #a99fc4; }
