@@ -304,7 +304,7 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 			defs = append(defs, llm.NewToolDef(tl.Name, tl.Description, tl.Schema()))
 		}
 	}
-	env := &tools.Env{Pool: r.Pool, UserID: t.UserID, ConversationID: t.ConversationID, Lang: st.Language, Scope: "turn:" + t.ID}
+	env := &tools.Env{Pool: r.Pool, UserID: t.UserID, ConversationID: t.ConversationID, Lang: st.Language, Scope: "turn:" + t.ID, UserText: userText}
 	// Facts about themselves are saved by code, before Suki answers, and she's told exactly
 	// what was saved. So "saved!" is true whether or not the model calls a tool.
 	if t.Kind == "message" && dom.Name != "safety" {

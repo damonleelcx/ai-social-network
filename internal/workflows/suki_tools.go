@@ -80,6 +80,9 @@ func registerSukiTools() {
 			"languages":{"type":"array","items":{"type":"string"}},"interests":{"type":"array","items":{"type":"string"},"description":"The complete list; include existing ones to keep them"},
 			"prompts":{"type":"array","items":{"type":"object","required":["q","a"],"properties":{"q":{"type":"string"},"a":{"type":"string"}}}}}}`,
 		tools.Write, func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
+			if b, _ := a["birthdate"].(string); b != "" && env.UserText != "" && !profile.StatesBirthYear(env.UserText, b) {
+				return map[string]any{"saved": false, "stop": "birthdate: nothing was saved, because a birthdate can't be changed later. Ask for their full date of birth with the four-digit year, like March 2, 1996."}, nil
+			}
 			p, err := profile.Save(ctx, d.Pool, env.UserID, a)
 			if errors.Is(err, profile.ErrUnderage) {
 				if _, e := d.Dating.FileReport(ctx, dating.Report{SubjectID: env.UserID, Source: "onboarding", Reason: "underage_birthdate", Severity: "critical", Key: "underage:" + env.UserID}); e != nil {
