@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
-import { FlatList, Pressable, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
+import { FlatList, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useScreenSize } from '@/ui/screenSize';
 import { mediaSource } from '@/api/client';
 import type { Person } from '@/api/types';
 import { GOALS, HABITS, KIDS, labelOf, WANTS_KIDS } from '@/lib/format';
@@ -60,7 +61,7 @@ export function PersonAvatar({ id, size = 56 }: { id?: string | null; size?: num
 }
 
 export function PhotoPager({ ids, height, onPress }: { ids: string[]; height: number; onPress?: () => void }) {
-  const { width } = useWindowDimensions();
+  const { width } = useScreenSize();
   const t = useTheme();
   const [page, setPage] = useState(0);
   const list = ids.length ? ids : [''];

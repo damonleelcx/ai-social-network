@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import type { NotificationData } from '@/api/types';
@@ -12,6 +13,7 @@ const asData = (r: Notifications.NotificationResponse) =>
 
 function useNotificationLinks() {
   useEffect(() => {
+    if (Platform.OS === 'web') return;
     registerForPush();
 
     // A tap that launched the app: wait a moment for the tabs to be in place.

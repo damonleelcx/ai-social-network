@@ -1,7 +1,6 @@
-import { File, Paths } from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
+import { saveJson } from '@/lib/saveJson';
 import { useCallback, useEffect, useState } from 'react';
-import { Share, View } from 'react-native';
+import { View } from 'react-native';
 import { API_URL, legalUrl } from '@/api/client';
 import * as api from '@/api/endpoints';
 import type { Session } from '@/api/types';
@@ -145,15 +144,7 @@ export default function AccountSettings() {
     try {
       const data = await api.auth.exportData();
       const json = JSON.stringify(data, null, 2);
-      const file = new File(Paths.cache, 'synagent-data.json');
-      if (file.exists) file.delete();
-      file.create();
-      file.write(json);
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(file.uri, { mimeType: 'application/json', dialogTitle: tr('Your SynAgent data') });
-      } else {
-        await Share.share({ message: json });
-      }
+      await saveJson('synagent-data.json', json, tr('Your SynAgent data'));
     } catch (e) {
       showError(e);
     } finally {

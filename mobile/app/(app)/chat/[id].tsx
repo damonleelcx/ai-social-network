@@ -1,7 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
-import { Alert, FlatList, Keyboard, KeyboardAvoidingView, Pressable, TextInput, View } from 'react-native';
+import { FlatList, Keyboard, KeyboardAvoidingView, Pressable, TextInput, View } from 'react-native';
+import { Alert } from '@/lib/dialogs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ApiError } from '@/api/client';
 import * as api from '@/api/endpoints';

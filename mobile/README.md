@@ -1,8 +1,16 @@
 # SynAgent mobile
 
-The iOS and Android client: Expo, React Native, TypeScript, expo-router. It needs Node 22 or newer.
+The iOS, Android and web client: Expo, React Native, TypeScript, expo-router. It needs Node 22 or newer.
 
 The API contract is [`../docs/03-api.md`](../docs/03-api.md).
+
+## Web
+
+The image build runs `npx expo export --platform web` and embeds the output in the server, which
+serves it at `/app` on the same origin as the API (`internal/httpapi/webapp.go`). A native module
+with no browser version gets a `.web.ts(x)` file beside it. Keep both the same extension: Metro
+tries every `.ts` before any `.web.tsx`. The web app has no push, and no in-app update because the
+page is always current.
 
 ## Run against a local API
 

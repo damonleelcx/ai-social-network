@@ -220,6 +220,25 @@ func bearer(r *http.Request) string {
 	return ""
 }
 
+// socketProtocol is what the server answers to a browser's WebSocket, which has to name
+// a subprotocol it can get back before it will open.
+const socketProtocol = "synagent"
+
+// browserSocketAuth lets a browser, which can't set headers on a WebSocket, send its token as
+// a "bearer.<token>" subprotocol. Not a query parameter: those end up in access logs.
+func browserSocketAuth(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") == "" {
+			for _, p := range strings.Split(r.Header.Get("Sec-WebSocket-Protocol"), ",") {
+				if t, ok := strings.CutPrefix(strings.TrimSpace(p), "bearer."); ok {
+					r.Header.Set("Authorization", "Bearer "+t)
+				}
+			}
+		}
+		next(w, r)
+	}
+}
+
 // signedIn requires a session. Being signed in is not enough for most things:
 // see verified.
 func (s *Server) signedIn(next http.HandlerFunc) http.HandlerFunc {
@@ -273,6 +292,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /readyz", s.ready)
 	m.Handle("GET /{$}", landing)
 	m.Handle("GET /landing/", landing)
+	m.Handle("GET /app", webapp)
+	m.Handle("GET /app/", webapp)
 	m.HandleFunc("GET /legal/terms", legalPage("Terms of Use", termsHTML))
 	m.HandleFunc("GET /legal/privacy", legalPage("Privacy Policy", privacyHTML))
 	m.HandleFunc("GET /legal/delete-account", legalPage("Delete your SynAgent account", deleteHTML))
@@ -355,7 +376,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /v1/notifications", v(s.notifications))
 	m.HandleFunc("POST /v1/notifications/read", v(s.readNotifications))
 	m.HandleFunc("POST /v1/push-tokens", v(s.pushToken))
-	m.HandleFunc("GET /v1/ws", s.verified(s.socket))
+	m.HandleFunc("GET /v1/ws", browserSocketAuth(s.verified(s.socket)))
 
 	// Moderators: where the humans in the loop act. Agents have no route here.
 	m.HandleFunc("GET /v1/admin/reports", s.moderator(s.adminReports))
@@ -1301,7 +1322,7 @@ func (s *Server) pushToken(w http.ResponseWriter, r *http.Request) {
 // message, and there is one read path, whose access checks are all in one place.
 func (s *Server) socket(w http.ResponseWriter, r *http.Request) {
 	u := userOf(r)
-	c, err := websocket.Accept(w, r, &websocket.AcceptOptions{InsecureSkipVerify: true}) // native clients send no Origin; auth is the bearer token
+	c, err := websocket.Accept(w, r, &websocket.AcceptOptions{InsecureSkipVerify: true, Subprotocols: []string{socketProtocol}}) // native clients send no Origin; auth is the bearer token
 	if err != nil {
 		return
 	}

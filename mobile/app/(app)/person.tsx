@@ -1,7 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, useWindowDimensions, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { useScreenSize } from '@/ui/screenSize';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as api from '@/api/endpoints';
 import type { Match, Person, Proposal } from '@/api/types';
@@ -19,7 +20,7 @@ import { tr } from '@/i18n';
 export default function PersonScreen() {
   const t = useTheme();
   const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
+  const { height } = useScreenSize();
   const params = useLocalSearchParams<{ proposal?: string; match?: string }>();
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [match, setMatch] = useState<Match | null>(null);

@@ -272,6 +272,7 @@ h1 .lit { color: var(--accent); }
 .save-list b { font: 700 17px/1 var(--label); text-transform: uppercase; }
 
 .downloads { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 38px; }
+.download-web { grid-column: 1 / -1; }
 .download { --frame: var(--line-soft); display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin: var(--px); padding: 24px; background: var(--panel); }
 .download h3 { font: 400 18px/1.2 var(--display); text-transform: uppercase; }
 .download p { font-size: 23px; line-height: 1.12; color: var(--soft); }

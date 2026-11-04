@@ -1,4 +1,4 @@
-import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { DateTimePicker, DateTimePickerAndroid } from '@/ui/datePicker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
@@ -134,7 +134,7 @@ function Birthdate({ value, onSaved }: { value: string; onSaved: () => void }) {
         accessibilityRole="button"
         accessibilityLabel={tr('Set your birthday')}
         onPress={() => {
-          if (Platform.OS === 'ios') setIosOpen(true);
+          if (Platform.OS !== 'android') setIosOpen(true);
           else {
             DateTimePickerAndroid.open({
               value: eighteenAgo,
@@ -150,7 +150,7 @@ function Birthdate({ value, onSaved }: { value: string; onSaved: () => void }) {
       >
         <T color={t.accent} style={{ fontWeight: '700' }}>{tr('Set your birthday')}</T>
       </Pressable>
-      {Platform.OS === 'ios' ? (
+      {Platform.OS !== 'android' ? (
         <Sheet visible={iosOpen} onClose={() => setIosOpen(false)} title={tr('Your birthday')}>
           <DateTimePicker value={draft} mode="date" display="spinner" maximumDate={new Date()} onChange={(_, d) => d && setDraft(d)} />
           <Button

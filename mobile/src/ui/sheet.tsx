@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
-import { Alert, KeyboardAvoidingView, Modal, Pressable, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, View } from 'react-native';
+import { Alert } from '@/lib/dialogs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
 import { IrisRule, T, type IconName } from './primitives';
+import { WEB_WIDTH } from './screenSize';
 import { tr } from '@/i18n';
 
 /** A bottom sheet. Android alerts only hold three buttons, so anything longer goes here. */
@@ -21,10 +23,12 @@ export function Sheet({
 }) {
   const t = useTheme();
   const insets = useSafeAreaInsets();
+  // A modal covers the whole window, and the web app is a column in the middle of it.
+  const web = Platform.OS === 'web';
   return (
     <Modal visible={visible} transparent animationType="slide" statusBarTranslucent navigationBarTranslucent onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior="padding" style={{ flex: 1, justifyContent: 'flex-end' }}>
-        <Pressable accessibilityLabel={tr('Close')} onPress={onClose} style={{ flex: 1, backgroundColor: t.scrim }} />
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: web ? t.scrim : undefined }}>
+        <Pressable accessibilityLabel={tr('Close')} onPress={onClose} style={{ flex: 1, backgroundColor: web ? undefined : t.scrim }} />
         <View
           style={{
             backgroundColor: t.sheet,
@@ -34,6 +38,7 @@ export function Sheet({
             paddingHorizontal: space.xl,
             paddingBottom: insets.bottom + space.lg,
             maxHeight: '86%',
+            ...(web ? { width: '100%', maxWidth: WEB_WIDTH, alignSelf: 'center' } : null),
           }}
         >
           <IrisRule style={{ width: 44, alignSelf: 'center', height: 4, borderRadius: 2, marginBottom: space.md }} />

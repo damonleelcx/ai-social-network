@@ -4,3 +4,10 @@
 !go.mod
 !go.sum
 internal/**/*_test.go
+!mobile
+mobile/node_modules
+mobile/.expo
+mobile/dist
+mobile/android
+mobile/ios
+mobile/.env

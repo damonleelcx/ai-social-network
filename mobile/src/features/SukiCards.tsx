@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, Share, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Alert, Share } from '@/lib/dialogs';
 import * as api from '@/api/endpoints';
 import type { Card, Proposal } from '@/api/types';
 import { openNamedScreen } from '@/lib/links';
