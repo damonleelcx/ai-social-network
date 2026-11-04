@@ -57,6 +57,8 @@ type Service struct {
 	HTTP         *http.Client
 	// WeChat is WeChat Pay for the mini program. Nil means it's off.
 	WeChat *WeChat
+	// Google is Google Play Billing for the Play build of the Android app. Nil means it's off.
+	Google *GooglePlay
 }
 
 // ErrBadSignature means a webhook didn't come from the payment provider.
@@ -70,18 +72,23 @@ func (e *UserError) Error() string { return e.Msg }
 func (s *Service) stripeEnabled() bool { return s != nil && s.StripeKey != "" && s.WebhookSecret != "" }
 
 // Enabled says whether anyone can buy credits at all. Until they can, nobody is charged.
-func (s *Service) Enabled() bool { return s.stripeEnabled() || (s != nil && s.WeChat != nil) }
+func (s *Service) Enabled() bool {
+	return s.stripeEnabled() || (s != nil && (s.WeChat != nil || s.Google != nil))
+}
 
 type Status struct {
-	Balance         int       `json:"balance"`
-	MatchesUsed     int       `json:"matches_used"`
-	FreeMatches     int       `json:"free_matches"`
-	Free            bool      `json:"free"`
-	CostPerMessage  int       `json:"cost_per_message"`
-	PaymentsEnabled bool      `json:"payments_enabled"`
-	Packages        []Package `json:"packages"`
-	WeChatEnabled   bool      `json:"wechat_enabled"`
-	WeChatPackages  []Package `json:"wechat_packages"`
+	Balance         int             `json:"balance"`
+	MatchesUsed     int             `json:"matches_used"`
+	FreeMatches     int             `json:"free_matches"`
+	Free            bool            `json:"free"`
+	CostPerMessage  int             `json:"cost_per_message"`
+	PaymentsEnabled bool            `json:"payments_enabled"`
+	Packages        []Package       `json:"packages"`
+	WeChatEnabled   bool            `json:"wechat_enabled"`
+	WeChatPackages  []Package       `json:"wechat_packages"`
+	GoogleEnabled   bool            `json:"google_enabled"`
+	GoogleProducts  []GoogleProduct `json:"google_products"`
+	GoogleAccount   string          `json:"google_account"`
 }
 
 type queryer interface {
@@ -102,7 +109,8 @@ func (s *Service) Status(ctx context.Context, userID string) (*Status, error) {
 	if err != nil {
 		return nil, err
 	}
-	st := &Status{MatchesUsed: n, FreeMatches: FreeMatches, Free: free, CostPerMessage: CostPerMessage, PaymentsEnabled: s.stripeEnabled(), Packages: Packages, WeChatEnabled: s.WeChat != nil, WeChatPackages: WeChatPackages}
+	st := &Status{MatchesUsed: n, FreeMatches: FreeMatches, Free: free, CostPerMessage: CostPerMessage, PaymentsEnabled: s.stripeEnabled(), Packages: Packages, WeChatEnabled: s.WeChat != nil, WeChatPackages: WeChatPackages,
+		GoogleEnabled: s.Google != nil, GoogleProducts: GoogleProducts, GoogleAccount: GoogleAccountTag(userID)}
 	err = s.Pool.QueryRow(ctx, `SELECT coalesce((SELECT balance FROM credit_balances WHERE user_id=$1),0)`, userID).Scan(&st.Balance)
 	return st, err
 }

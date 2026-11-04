@@ -2,6 +2,8 @@
 // person, so these keep her voice: warm and casual. Placeholders have to survive translation.
 export const catalog: Record<string, readonly [string, string, string, string]> = {
   // Credits
+  '{n} credits': ['{n} 积分', '{n}크레딧', '{n} クレジット', '{n} créditos'],
+  "Your payment is still pending. The credits arrive once it's done.": ['你的付款还在处理中，完成后积分会到账。', '결제가 아직 처리 중이에요. 완료되면 크레딧이 들어와요.', 'お支払いはまだ処理中です。完了するとクレジットが届きます。', 'Tu pago sigue pendiente. Los créditos llegarán cuando se complete.'],
   Credits: ['积分', '크레딧', 'クレジット', 'Créditos'],
   'Bought credits': ['购买积分', '크레딧 구매', 'クレジットを購入', 'Créditos comprados'],
   'Message to Suki': ['发给 Suki 的消息', 'Suki에게 보낸 메시지', 'Suki へのメッセージ', 'Mensaje a Suki'],

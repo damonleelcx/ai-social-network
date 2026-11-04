@@ -159,6 +159,9 @@ export type CreditStatus = {
   cost_per_message: number;
   payments_enabled: boolean;
   packages: CreditPackage[];
+  google_enabled: boolean;
+  google_products: { id: string; credits: number }[];
+  google_account: string;
 };
 
 export type CreditUsage = { delta: number; reason: string; created_at: string };
