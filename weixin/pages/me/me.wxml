@@ -36,6 +36,7 @@
   <view class="section">账号</view>
   <button class="plain" data-page="terms" bindtap="onLegal">复制用户协议链接</button>
   <button class="plain" data-page="privacy" bindtap="onLegal">复制隐私政策链接</button>
+  <button class="plain" data-page="contact" bindtap="onLegal">复制联系方式链接</button>
   <button class="plain" bindtap="onSignOut">退出登录</button>
   <button class="danger" bindtap="onDelete">删除账号</button>
 </view>

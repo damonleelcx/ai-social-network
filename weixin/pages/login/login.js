@@ -22,7 +22,7 @@ Page({
   },
   onLegal(e) {
     // A web-view needs a filed business domain, so the address goes to the clipboard.
-    wx.setClipboardData({ data: `${api.API_URL}/legal/${e.currentTarget.dataset.page}` });
+    wx.setClipboardData({ data: `${api.API_URL}/legal/${e.currentTarget.dataset.page}?lang=zh` });
   },
   onSwitch() {
     this.setData({ mode: this.data.mode === 'signup' ? 'signin' : 'signup', error: '' });

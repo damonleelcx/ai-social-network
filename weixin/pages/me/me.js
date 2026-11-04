@@ -78,7 +78,7 @@ Page({
     });
   },
   onLegal(e) {
-    wx.setClipboardData({ data: `${api.API_URL}/legal/${e.currentTarget.dataset.page}` });
+    wx.setClipboardData({ data: `${api.API_URL}/legal/${e.currentTarget.dataset.page}?lang=zh` });
   },
   leave() {
     api.setToken('');
