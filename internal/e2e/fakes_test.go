@@ -97,6 +97,10 @@ func (f *fakeLLM) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case strings.Contains(user, "creative types"):
 			reply(w, `{"taste_note":"Goes for creative types","occupation":"should not be saved"}`, nil)
+		case strings.Contains(user, "misread my birthday"):
+			reply(w, `{"birthdate":"2005-03-02"}`, nil)
+		case strings.Contains(user, "read my birthday"):
+			reply(w, `{"birthdate":"1995-03-02"}`, nil)
 		case strings.Contains(user, "extractable city"):
 			reply(w, `{"city":"Testville","goal":"not_a_goal","interests":["origami"]}`, nil)
 		default:

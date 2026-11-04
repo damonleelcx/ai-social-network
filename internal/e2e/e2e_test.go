@@ -1243,6 +1243,30 @@ func TestFactsAreSavedWithoutTheModelsHelp(t *testing.T) {
 	}
 }
 
+// A birthdate can't be changed once saved, so a model's misreading must not get that far.
+func TestBirthdateYearMustBeInTheirOwnWords(t *testing.T) {
+	e := setup(t)
+	c := e.signup(t, "Rue", "rue@example.com")
+	c.verify()
+	birthdate := func() string {
+		var r struct {
+			Profile struct {
+				Birthdate string `json:"birthdate"`
+			} `json:"profile"`
+		}
+		c.do("GET", "/v1/profile", nil, 200, &r)
+		return r.Profile.Birthdate
+	}
+	c.askSuki("March 2, 1995. Please don't misread my birthday")
+	if got := birthdate(); got != "" {
+		t.Fatalf("saved a year they never said: %q", got)
+	}
+	c.askSuki("March 2, 1995. Please read my birthday")
+	if got := birthdate(); got != "1995-03-02" {
+		t.Fatalf("birthdate = %q", got)
+	}
+}
+
 // The app's lists depend on these signals: an introduction must reach the Matches tab
 // without anyone reopening the app.
 func TestListsAreToldWhenSomethingArrives(t *testing.T) {

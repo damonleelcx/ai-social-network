@@ -19,7 +19,7 @@ const extractPrompt = `You extract profile facts from one message a person sent 
 
 Fields:
 display_name: the name they want to go by
-birthdate: yyyy-mm-dd, only for a complete date
+birthdate: yyyy-mm-dd, only for a complete date with a four-digit year. Copy the year exactly as they wrote it. Leave it out if the year has two digits
 city: where they live, as they said it
 gender: woman | man | nonbinary | other
 pronouns: text
