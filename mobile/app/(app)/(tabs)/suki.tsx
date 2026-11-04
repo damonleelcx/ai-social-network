@@ -278,7 +278,7 @@ export default function SukiChat() {
           {typing ? (
             <T v="small" color={t.accent} style={{ fontWeight: '600' }}>{tr('Thinking about what you said...')}</T>
           ) : (
-            <T v="small" soft>{tr('Your wingwoman. Openly an AI.')}</T>
+            <T v="small" soft>{tr('Your winggirl. Openly an AI.')}</T>
           )}
         </View>
         <IconButton icon="options-outline" label={tr("Suki's settings")} filled onPress={() => router.push('/settings/suki')} />

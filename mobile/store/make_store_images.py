@@ -22,7 +22,7 @@ LILAC = [(244, 238, 255), (226, 214, 255), (250, 226, 244)]
 
 # Screenshot, headline, sub-line, Suki's face, background.
 SLIDES = [
-    ("02_onboard", "Meet Suki,\nyour AI wingwoman", "Set up your profile just by talking", "playful", "deep"),
+    ("02_onboard", "Meet Suki,\nyour AI winggirl", "Set up your profile just by talking", "playful", "deep"),
     ("05_suki_found", "Introductions,\nnot endless swiping", "People in your city she thinks you'd like", "happy", "light"),
     ("08_coach", "Never stuck\nfor words", "Private hints that only you can see", "thinking", "deep"),
     ("10_venues", "A date spot\nyou'd both love", "Real places, picked around what you share", "surprised", "light"),
@@ -146,7 +146,7 @@ def feature(out):
     glow(img, 120, 460, 300, (255, 120, 210), 90)
     d = ImageDraw.Draw(img)
     d.text((56, 112), "SynAgent", font=ImageFont.truetype(BOLD, 84), fill=(255, 255, 255))
-    d.text((60, 226), "Meet Suki, your AI wingwoman.", font=ImageFont.truetype(SEMI, 31), fill=(236, 226, 255))
+    d.text((60, 226), "Meet Suki, your AI winggirl.", font=ImageFont.truetype(SEMI, 31), fill=(236, 226, 255))
     d.text((60, 276), "Good introductions,", font=ImageFont.truetype(SEMI, 27), fill=(214, 200, 250))
     d.text((60, 314), "no endless swiping.", font=ImageFont.truetype(SEMI, 27), fill=(214, 200, 250))
     p = Image.open(os.path.join(SUKI, "portrait.png")).convert("RGB").resize((360, 360), Image.LANCZOS)

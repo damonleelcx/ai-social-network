@@ -72,7 +72,7 @@ export default function Welcome() {
               source={sukiFace('portrait') as any}
               style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 3, borderColor: t.glassBorder }}
               contentFit="cover"
-              accessibilityLabel={tr('Suki, your AI wingwoman, winking')}
+              accessibilityLabel={tr('Suki, your AI winggirl, winking')}
             />
           </View>
           <View
@@ -93,7 +93,7 @@ export default function Welcome() {
 
         {height >= ROOM_FOR_INTRO ? (
           <Glass style={{ marginBottom: space.lg }}>
-            <T soft center>{tr("I'm Suki, your AI wingwoman. Tell me about you, and I'll introduce you to people worth meeting. No swiping.")}</T>
+            <T soft center>{tr("I'm Suki, your AI winggirl. Tell me about you, and I'll introduce you to people worth meeting. No swiping.")}</T>
           </Glass>
         ) : null}
         <View style={{ gap: space.sm }}>
