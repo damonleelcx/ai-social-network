@@ -408,7 +408,7 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 				content = resultText(res, err)
 				if res != nil {
 					if c, ok := res.Output["card"].(map[string]any); ok {
-						cards = append(cards, c)
+						cards = addCard(cards, c)
 					}
 				}
 				if err != nil && !isModelFixable(err) {
@@ -422,6 +422,19 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 		}
 	}
 	return intent, errors.New("no reply after the step budget")
+}
+
+// addCard adds a tool's card. The post card may already be showing, drafted by code, and two
+// of them would offer to post the same plan twice.
+func addCard(cards []map[string]any, c map[string]any) []map[string]any {
+	if c["kind"] == "buddy_post" {
+		for _, have := range cards {
+			if have["kind"] == "buddy_post" {
+				return cards
+			}
+		}
+	}
+	return append(cards, c)
 }
 
 // draftBuddyPost reads what they want from the last few messages. It returns the card for
