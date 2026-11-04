@@ -51,7 +51,7 @@ export default function CreditsScreen() {
             <Glass>
               <T v="small" soft>
                 {status.free
-                  ? tr('Messages to Suki are free right now. You have used {used} of your {free} free matches.', {
+                  ? tr('Messages to Suki are free right now. You have used {used} of your {free} free match.', {
                       used: String(status.matches_used),
                       free: String(status.free_matches),
                     })
