@@ -58,9 +58,9 @@ automated. Effects: **R** read, **W** writes our database, **X** reaches outside
 |---|---|---|
 | `buddy_find` | "I want someone to see a movie with tonight" | `buddy_prepare_post` (G1 tap) |
 | `buddy_browse` | "what are people doing nearby?" | `buddy_board`, `buddy_show_post` |
-| `buddy_join` | "I'd go to that hike" | `buddy_show_post` (G1 tap) |
+| `buddy_join` | "I'd go to that hike" | `buddy_join`, or `buddy_show_post` if it's unclear which |
 | `buddy_status` | "has anyone said yes to my post?" | `buddy_mine`, `buddy_show_offer` |
-| `buddy_pick` | "let's go with Kai" | `buddy_show_offer` (G1 tap) |
+| `buddy_pick` | "let's go with Kai" | `buddy_pick`, or `buddy_show_offer` if it's unclear who |
 | `buddy_close` | "take my post down" | `buddy_prepare_close` (G1 tap) |
 
 ### 1.3 Guided conversation (`chat`)
@@ -236,7 +236,9 @@ Column **Agents** lists who may call a tool. The worker refuses anyone else.
 | `buddy_prepare_post` | R | G1 | Suki | renders the post for a tap, or says what's missing |
 | `buddy_board` | R | G0 | Suki | open posts this person can see, by the one visibility rule |
 | `buddy_show_post` | R | G1 | Suki | renders a visible post with an I'm in button |
+| `buddy_join` | W | G0 | Suki | says they're in on a visible post, when their own message asks to |
 | `buddy_mine` | R | G0 | Suki | this person's own posts and who's in |
+| `buddy_pick` | W | G0 | Suki | picks someone who's in on their own post, when their own message chooses them |
 | `buddy_show_offer` | R | G1 | Suki | renders someone who's in, with a button to pick them |
 | `buddy_prepare_close` | R | G1 | Suki | renders a confirm button |
 
