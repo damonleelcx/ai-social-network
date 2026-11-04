@@ -32,6 +32,9 @@ export const catalog: Record<string, readonly [string, string, string, string]> 
   '{n} credits left': ['还剩 {n} 积分', '{n}크레딧 남음', '残り {n} クレジット', 'Te quedan {n} créditos'],
   '{n} credits for {price}': ['{n} 积分，{price}', '{n}크레딧, {price}', '{n} クレジット、{price}', '{n} créditos por {price}'],
   "Buying credits isn't open yet.": ['暂时还不能购买积分。', '아직 크레딧을 구매할 수 없어요.', 'クレジットの購入はまだ始まっていません。', 'Aún no se pueden comprar créditos.'],
+  "Credits can't be bought here. Buy them with this account and they'll show up here too.": ['这里不能购买积分。用这个账户去购买，积分也会显示在这里。', '여기서는 크레딧을 구매할 수 없어요. 이 계정으로 구매하면 여기에도 표시돼요.', 'ここではクレジットを購入できません。このアカウントで購入すると、ここにも反映されます。', 'Aquí no se pueden comprar créditos. Cómpralos con esta cuenta y también aparecerán aquí.'],
+  'Buy on Google Play': ['在 Google Play 购买', 'Google Play에서 구매', 'Google Play で購入', 'Comprar en Google Play'],
+  'Or buy them in the SynAgent mini program in WeChat.': ['也可以在微信的 SynAgent 小程序里购买。', 'WeChat의 SynAgent 미니 프로그램에서도 구매할 수 있어요.', 'WeChat の SynAgent ミニプログラムでも購入できます。', 'También puedes comprarlos en el miniprograma de SynAgent en WeChat.'],
   'Pick one of the credit packs.': ['请选择一个积分包。', '크레딧 팩을 하나 골라 주세요.', 'クレジットパックを選んでください。', 'Elige uno de los paquetes de créditos.'],
   // Buddies
   'Your buddy posts': ['我发布的搭子', '내가 올린 버디 글', '自分の仲間募集', 'Tus planes publicados'],

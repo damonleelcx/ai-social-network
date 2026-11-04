@@ -71,25 +71,10 @@ func (e *UserError) Error() string { return e.Msg }
 
 func (s *Service) stripeEnabled() bool { return s != nil && s.StripeKey != "" && s.WebhookSecret != "" }
 
-// openStores are the stores selling credits right now. Each one only sells inside its own app.
-func (s *Service) openStores() []string {
-	stores := []string{}
-	if s != nil && s.Google != nil {
-		stores = append(stores, "play")
-	}
-	if s != nil && s.WeChat != nil {
-		stores = append(stores, "wechat")
-	}
-	return stores
-}
-
-// NoteStore records that this person is using a store's app. Anything else is ignored.
-func (s *Service) NoteStore(ctx context.Context, userID, store string) error {
-	if store != "play" && store != "wechat" {
-		return nil
-	}
-	_, err := s.Pool.Exec(ctx, `INSERT INTO user_stores (user_id, store) VALUES ($1,$2) ON CONFLICT DO NOTHING`, userID, store)
-	return err
+// Enabled says whether credits are on sale anywhere. Until they are, nobody is charged. Someone
+// who can't buy where they are is sent to where they can.
+func (s *Service) Enabled() bool {
+	return s.stripeEnabled() || (s != nil && (s.WeChat != nil || s.Google != nil))
 }
 
 type Status struct {
@@ -112,16 +97,12 @@ type queryer interface {
 }
 
 // isFree counts every match they've ever had, ended ones too, so unmatching can't refill it.
-// Nobody is charged until they have a way to buy: a card anywhere, or a store whose app they've used.
 func (s *Service) isFree(ctx context.Context, q queryer, userID string) (bool, int, error) {
 	var n int
-	var inStore bool
-	err := q.QueryRow(ctx, `SELECT (SELECT count(*) FROM matches WHERE user_a=$1 OR user_b=$1),
-		EXISTS (SELECT 1 FROM user_stores WHERE user_id=$1 AND store = ANY($2))`, userID, s.openStores()).Scan(&n, &inStore)
-	if err != nil {
+	if err := q.QueryRow(ctx, `SELECT count(*) FROM matches WHERE user_a=$1 OR user_b=$1`, userID).Scan(&n); err != nil {
 		return false, 0, err
 	}
-	return n < FreeMatches || !(s.stripeEnabled() || inStore), n, nil
+	return n < FreeMatches || !s.Enabled(), n, nil
 }
 
 func (s *Service) Status(ctx context.Context, userID string) (*Status, error) {
