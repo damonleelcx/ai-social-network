@@ -25,9 +25,7 @@ const STRINGS = {
   'Your next': ['你的下一段', '다음 이야기는', '次の物語は'],
   'story starts': ['故事', '한마디', 'ひとことの'],
   'with hello': ['从你好开始', '인사로 시작돼요', 'あいさつから'],
-  'Tell Suki about you. She introduces you to people in your city, helps the conversation along, and finds a place for the date.': ['告诉 Suki 你的故事。她会为你介绍同城的人，帮你把话题聊下去，还会为约会找好地方。', 'Suki에게 당신에 대해 이야기해 보세요. 같은 도시의 사람을 소개하고, 대화를 도와주고, 데이트 장소까지 찾아 줘요.', 'Suki にあなたのことを話してみてください。同じ街の人を紹介し、会話を手助けし、デートの場所まで探してくれます。'],
   'Download the app': ['下载应用', '앱 다운로드', 'アプリをダウンロード'],
-  'Direct downloads for now.': ['目前提供直接下载。', '지금은 직접 다운로드만 가능해요.', '現在は直接ダウンロードのみです。'],
   'For adults 18 and over.': ['仅限 18 岁及以上成年人。', '만 18세 이상 성인 전용입니다.', '18歳以上の成人向けです。'],
 
   'Meet Suki': ['认识 Suki', 'Suki를 만나 보세요', 'Suki に会う'],
@@ -88,7 +86,6 @@ const STRINGS = {
 
   'II · Why Suki is different': ['二 · Suki 有何不同', 'II · Suki가 다른 이유', 'II · Suki が違う理由'],
   'Not an algorithm with a chat box': ['不只是带聊天框的算法', '채팅창 달린 알고리즘이 아니에요', 'チャット欄付きのアルゴリズムではありません'],
-  'Most dating apps hand you a deck. SynAgent gives you someone to talk to, who gets a better sense of your type each time.': ['大多数交友应用只给你一叠卡片。SynAgent 给你一个能聊天的对象，她每次都会更了解你的类型。', '대부분의 데이팅 앱은 카드 더미를 건네요. SynAgent는 대화 상대를 드리고, 그녀는 매번 당신의 타입을 더 잘 알아가요.', '多くのデートアプリはカードの山を渡すだけ。SynAgent には話し相手がいて、話すたびにあなたのタイプをより深く理解します。'],
   'She has a personality': ['她有自己的个性', '개성이 있어요', '個性があります'],
   'Suki has her own character, face and voice, and she answers as she thinks instead of making you wait. You can choose how she talks to you.': ['Suki 有自己的性格、面容和声音，边想边回答，不会让你干等。你还可以选择她和你说话的方式。', 'Suki에게는 자신만의 성격과 얼굴, 목소리가 있고, 기다리게 하지 않고 생각하는 대로 답해요. 어떻게 말할지도 고를 수 있어요.', 'Suki には自分の性格、顔、声があり、待たせることなく考えながら答えます。話し方も選べます。'],
   'She learns your type': ['她了解你的类型', '당신의 타입을 알아가요', 'あなたのタイプを学びます'],
@@ -120,6 +117,10 @@ const STRINGS = {
   'Not only dates': ['不只是约会', '데이트만이 아니에요', 'デートだけじゃない'],
   "Nobody to see a movie with tonight? Post a plan, for a meal, a trip or a business contact too. People in your city say they're in, and you pick who to go with.": ['今晚想看电影却没人陪？发一个搭子请求吧，吃饭、旅行、商务合作都可以。同城的人说“我想去”，你来选和谁一起。', '오늘 밤 함께 영화 볼 사람이 없나요? 계획을 올려 보세요. 식사, 여행, 비즈니스 인맥도 좋아요. 같은 도시 사람들이 함께하겠다고 하면 당신이 고르면 돼요.', '今夜一緒に映画を観る人がいない？予定を投稿しましょう。ごはん、旅行、ビジネスのつながりも OK。同じ街の人が手を挙げたら、一緒に行く人を選ぶだけ。'],
   'Log in': ['登录', '로그인', 'ログイン'],
+  "Tell Suki about you. She introduces you to people in your city to date, or finds you company for a movie, a trip or a business contact.": ['告诉 Suki 你是什么样的人。她会介绍同城的人和你约会，也能帮你找看电影、旅行、商务合作的搭子。', 'Suki에게 당신에 대해 알려 주세요. 같은 도시에서 데이트할 사람을 소개하고, 영화나 여행, 비즈니스 인맥을 함께할 사람도 찾아 줘요.', 'Suki にあなたのことを話してください。同じ街でデートの相手を紹介し、映画や旅行、ビジネスのつながりの仲間も見つけてくれます。'],
+  'Most apps hand you a deck. SynAgent gives you someone to talk to, who gets a better sense of your type each time.': ['大多数应用只给你一叠卡片。SynAgent 给你的是一个能聊天的人，而且她每次都更懂你喜欢什么样的人。', '대부분의 앱은 카드 더미를 건네죠. SynAgent는 이야기할 상대를 줘요. 그리고 그녀는 갈수록 당신의 취향을 더 잘 알아가요.', '多くのアプリはカードの山を渡すだけ。SynAgent には話せる相手がいて、話すたびにあなたの好みを分かっていきます。'],
+  'Open in your browser': ['在浏览器中打开', '브라우저에서 열기', 'ブラウザで開く'],
+  'In your browser, or by direct download.': ['可以直接用浏览器，也可以下载安装。', '브라우저에서 바로 쓰거나 직접 내려받으세요.', 'ブラウザで使うか、直接ダウンロードできます。'],
   'Download for Android': ['下载 Android 版', 'Android용 다운로드', 'Android 版をダウンロード'],
   "This file is not signed, so an iPhone won't install it as it is.": ['此文件未经签名，iPhone 无法直接安装。', '이 파일은 서명되지 않아 iPhone에 그대로 설치할 수 없어요.', 'このファイルは署名されていないため、そのままでは iPhone にインストールできません。'],
   'You need a sideloading tool such as AltStore or Sideloadly, which signs it with your own Apple ID.': ['你需要 AltStore 或 Sideloadly 等侧载工具，用你自己的 Apple ID 为它签名。', 'AltStore나 Sideloadly 같은 사이드로딩 도구로 본인의 Apple ID로 서명해야 해요.', 'AltStore や Sideloadly などのサイドロードツールで、ご自身の Apple ID を使って署名する必要があります。'],

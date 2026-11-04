@@ -213,11 +213,11 @@ export default function Buddies() {
             <SukiLoading line={tr('Seeing who is around...')} />
           ) : !ready ? (
             <SukiSays face="playful" size={132} title={tr('A little about you first')} body={tr('People want to know who is coming. Add your name, birthday, city and a photo, and you can post or join.')}>
-              <Button label={tr('Do it with Suki')} icon="sparkles" onPress={() => router.navigate('/suki')} />
+              <Button label={tr('Do it with Suki')} icon="sparkles" full onPress={() => router.navigate('/suki')} />
             </SukiSays>
           ) : (
             <SukiSays face="playful" size={132} title={tr('Nothing posted nearby yet')} body={tr('Be the first. Say what you want to do and when, and people in your city can join you.')}>
-              <Button label={tr('Post a plan')} icon="add" onPress={() => setPosting(true)} />
+              <Button label={tr('Post a plan')} icon="add" full onPress={() => setPosting(true)} />
             </SukiSays>
           )
         }

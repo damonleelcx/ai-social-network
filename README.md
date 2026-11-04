@@ -7,14 +7,17 @@
 <p align="center"><strong>Meet Suki, a matchmaker you talk to, not a deck you swipe.</strong></p>
 
 <p align="center">
+  <a href="https://match.heros-agent.space/app/">Open in your browser</a> ·
   <a href="mobile/store/demo/synagent-demo.mp4">Watch the demo</a> ·
   <a href="https://match.heros-agent.space/legal/privacy">Privacy</a> ·
   <a href="https://match.heros-agent.space/legal/terms">Terms</a>
 </p>
 
-SynAgent is a dating app for iOS and Android, built around one AI character. Tell Suki about
-yourself, and she introduces you to people in your city, helps the conversation along, finds
-a place for the date, and gets a better sense of your type each time.
+SynAgent is an app for meeting people, on the web, iOS and Android, built around one AI
+character. Tell Suki about yourself, and she introduces you to people in your city, helps the
+conversation along, finds a place for the date, and gets a better sense of your type each time.
+And when you just want company, for a movie tonight, a trip or a business contact, she helps you
+find someone for that too.
 
 <table>
   <tr>
@@ -37,6 +40,14 @@ a place for the date, and gets a better sense of your type each time.
 4. **Plan the date.** She shortlists public places based on what you both enjoy. You each pick a favorite privately, and the date is set once you both confirm.
 5. **Tell her how it went.** What you share after a date helps her make better introductions next time.
 
+## Company for a plan
+
+Nobody to see a movie with tonight? Dates aren't the only reason to meet someone.
+
+1. **Post a plan.** In the Buddies tab, or just by telling Suki: a movie, a meal, a show, a trip, sports, games, business or studying, and when.
+2. **People say they're in.** Members in your city see it and can offer to join. You can limit it to people of your gender.
+3. **Pick who to go with.** You choose one, and the two of you can chat right away. For a first meet-up, pick somewhere public and tell a friend.
+
 ## Why Suki is different
 
 - **She has a personality.** Suki has her own character, face and voice, and she answers as she thinks instead of making you wait. You can choose how she talks to you.
@@ -44,9 +55,16 @@ a place for the date, and gets a better sense of your type each time.
 - **She keeps things respectful.** Explicit photos, messages and profile text are filtered, and you can block or report anyone.
 - **You stay in control.** You can read and delete what Suki remembers about you, reset what she has learned, export your data, or delete your account in Settings.
 
+## Also in the app
+
+- **The same account everywhere.** Use it in your browser with nothing to install, or on your phone.
+- **One-tap updates.** The Android app tells you when a new version is out and installs it from inside the app.
+- **Invite friends.** Share a link to download SynAgent.
+- **Your language and theme.** English, Chinese, Korean, Japanese and Spanish, in light or dark.
+
 ## Availability
 
-SynAgent is for adults 18 and over. It isn't in the App Store or Google Play yet.
+SynAgent is for adults 18 and over. [Open it in your browser](https://match.heros-agent.space/app/), or get the [direct downloads](https://match.heros-agent.space/#download). It isn't in the App Store or Google Play yet.
 
 ## Contact
 
