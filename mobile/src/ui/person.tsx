@@ -18,10 +18,13 @@ export function MediaImage({
   id,
   style,
   radiusPx = 0,
+  fit = 'cover',
 }: {
   id?: string | null;
   style?: StyleProp<ViewStyle>;
   radiusPx?: number;
+  /** 'contain' shows the whole photo, for looking at it rather than a thumbnail. */
+  fit?: 'cover' | 'contain';
 }) {
   const t = useTheme();
   const [failed, setFailed] = useState(false);
@@ -31,7 +34,7 @@ export function MediaImage({
         <Image
           source={mediaSource(id)}
           style={{ width: '100%', height: '100%' }}
-          contentFit="cover"
+          contentFit={fit}
           transition={160}
           cachePolicy="disk"
           accessibilityIgnoresInvertColors
