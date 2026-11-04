@@ -18,7 +18,7 @@ Paste-ready text for Play Console. Images are in `store/images/play`.
 
 **Short description (80 characters at most)**
 
-A matchmaker you talk to, not a deck you swipe. Meet Suki, your AI wingwoman.
+A matchmaker you talk to, not a deck you swipe. Meet Suki, your AI winggirl.
 
 **Full description**
 
