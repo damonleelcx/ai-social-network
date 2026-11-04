@@ -17,7 +17,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     icon: './assets/brand/icon.png',
     userInterfaceStyle: 'automatic',
     backgroundColor: '#EDE5FF',
-    platforms: ['ios', 'android'],
+    platforms: ['ios', 'android', 'web'],
+    // Served by the API server at /app (internal/httpapi/webapp.go).
+    web: { bundler: 'metro', output: 'single', favicon: './assets/brand/icon.png' },
+    experiments: { ...config.experiments, baseUrl: '/app' },
     ios: {
       bundleIdentifier: 'space.herosagent.synagent',
       supportsTablet: false,

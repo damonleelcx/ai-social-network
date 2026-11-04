@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { getToken, socketUrl } from '@/api/client';
 
 /** "reconnect" is ours: the socket came back, so everything may be stale. */
@@ -47,7 +48,10 @@ function open() {
   if (!wanted || !token || ws) return;
   // React Native's third argument; the DOM lib's type doesn't know about it.
   const Native = WebSocket as unknown as new (url: string, protocols: null, options: { headers: Record<string, string> }) => WebSocket;
-  const socket = new Native(socketUrl(), null, { headers: { Authorization: `Bearer ${token}` } });
+  const socket =
+    Platform.OS === 'web'
+      ? new WebSocket(socketUrl(), ['synagent', `bearer.${token}`])
+      : new Native(socketUrl(), null, { headers: { Authorization: `Bearer ${token}` } });
   ws = socket;
   socket.onopen = () => {
     attempt = 0;

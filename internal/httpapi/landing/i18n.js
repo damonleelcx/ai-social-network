@@ -112,8 +112,12 @@ const STRINGS = {
 
   'IV · Download': ['四 · 下载', 'IV · 다운로드', 'IV · ダウンロード'],
   'Take her with you': ['把她带在身边', 'Suki와 함께하세요', '彼女を連れていこう'],
-  "SynAgent isn't in the App Store or Google Play yet, so these are direct downloads. For adults 18 and over.": ['SynAgent 尚未上架 App Store 或 Google Play，因此这里提供直接下载。仅限 18 岁及以上成年人。', 'SynAgent는 아직 App Store나 Google Play에 없어서 직접 다운로드로 제공해요. 만 18세 이상 성인 전용입니다.', 'SynAgent はまだ App Store や Google Play にないため、直接ダウンロードでの提供です。18歳以上の成人向けです。'],
   'Open the file on your phone. Android will ask you to allow installs from your browser the first time.': ['在手机上打开文件。首次安装时，Android 会询问是否允许通过浏览器安装。', '휴대폰에서 파일을 여세요. 처음에는 Android가 브라우저에서 설치를 허용할지 물어봐요.', 'スマートフォンでファイルを開いてください。初回は、ブラウザからのインストールを許可するか Android が確認します。'],
+  "SynAgent isn't in the App Store or Google Play yet, so open it in your browser or use a direct download. For adults 18 and over.": ['SynAgent 还没有上架 App Store 和 Google Play，你可以直接在浏览器里打开，或者下载安装。仅限 18 岁及以上。', 'SynAgent는 아직 App Store와 Google Play에 없어요. 브라우저에서 열거나 직접 내려받아 주세요. 18세 이상만 이용할 수 있어요.', 'SynAgent はまだ App Store や Google Play にありません。ブラウザで開くか、直接ダウンロードしてください。18 歳以上の方が対象です。'],
+  'In your browser': ['在浏览器里用', '브라우저에서', 'ブラウザで'],
+  'Nothing to install, and it works on a computer too. Your account is the same one the app uses.': ['不用安装，电脑上也能用。账号和 App 是同一个。', '설치할 필요 없고 컴퓨터에서도 돼요. 계정은 앱과 같아요.', 'インストール不要で、パソコンでも使えます。アカウントはアプリと共通です。'],
+  'Open SynAgent': ['打开 SynAgent', 'SynAgent 열기', 'SynAgent を開く'],
+  'Log in': ['登录', '로그인', 'ログイン'],
   'Download for Android': ['下载 Android 版', 'Android용 다운로드', 'Android 版をダウンロード'],
   "This file is not signed, so an iPhone won't install it as it is.": ['此文件未经签名，iPhone 无法直接安装。', '이 파일은 서명되지 않아 iPhone에 그대로 설치할 수 없어요.', 'このファイルは署名されていないため、そのままでは iPhone にインストールできません。'],
   'You need a sideloading tool such as AltStore or Sideloadly, which signs it with your own Apple ID.': ['你需要 AltStore 或 Sideloadly 等侧载工具，用你自己的 Apple ID 为它签名。', 'AltStore나 Sideloadly 같은 사이드로딩 도구로 본인의 Apple ID로 서명해야 해요.', 'AltStore や Sideloadly などのサイドロードツールで、ご自身の Apple ID を使って署名する必要があります。'],

@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
 import { tr } from '@/i18n';
 
@@ -6,6 +7,7 @@ const DEFAULT_API = 'https://match.heros-agent.space';
 
 export const API_URL: string = (
   process.env.EXPO_PUBLIC_API_URL ||
+  (Platform.OS === 'web' ? window.location.origin : '') ||
   (Constants.expoConfig?.extra as { apiUrl?: string } | undefined)?.apiUrl ||
   DEFAULT_API
 ).replace(/\/+$/, '');

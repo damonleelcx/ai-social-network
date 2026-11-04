@@ -1,7 +1,7 @@
 import { router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useRef } from 'react';
-import { View } from 'react-native';
+import { type ReactNode, useEffect, useRef } from 'react';
+import { Platform, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppUpdate } from '@/features/AppUpdate';
 import { SessionProvider, useSession } from '@/state/session';
@@ -9,6 +9,7 @@ import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
 import { Backdrop } from '@/ui/layout';
 import { Button } from '@/ui/primitives';
+import { WEB_WIDTH } from '@/ui/screenSize';
 import { SukiSays } from '@/ui/suki';
 import { tr } from '@/i18n';
 
@@ -71,12 +72,24 @@ function Routes() {
   );
 }
 
+function WebColumn({ children }: { children: ReactNode }) {
+  const t = useTheme();
+  if (Platform.OS !== 'web') return children;
+  return (
+    <View style={{ flex: 1, backgroundColor: t.bg[1] }}>
+      <View style={{ flex: 1, width: '100%', maxWidth: WEB_WIDTH, alignSelf: 'center', overflow: 'hidden' }}>{children}</View>
+    </View>
+  );
+}
+
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <SessionProvider>
         <ThemeProvider>
-          <Routes />
+          <WebColumn>
+            <Routes />
+          </WebColumn>
         </ThemeProvider>
       </SessionProvider>
     </SafeAreaProvider>

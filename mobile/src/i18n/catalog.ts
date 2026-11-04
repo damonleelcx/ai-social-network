@@ -1,6 +1,7 @@
 // [Simplified Chinese, Korean, Japanese, Spanish], keyed by the English in the code. Suki speaks in the first
 // person, so these keep her voice: warm and casual. Placeholders have to survive translation.
 export const catalog: Record<string, readonly [string, string, string, string]> = {
+  'Copied. Paste it wherever you like.': ['已复制，粘贴到任何地方都可以。', '복사했어요. 원하는 곳에 붙여넣으세요.', 'コピーしました。好きな場所に貼り付けてください。', 'Copiado. Pégalo donde quieras.'],
   ' Your main photo.': [' 你的主照片。', ' 대표 사진이에요.', ' メイン写真です。', ' Tu foto principal.'],
   ' on {time}': [' · {time}', ' · {time}', ' · {time}', ' el {time}'],
   ' · Read': [' · 已读', ' · 읽음', ' · 既読', ' · Leído'],

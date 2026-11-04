@@ -2,7 +2,8 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, useWindowDimensions, View } from 'react-native';
+import { Animated, Easing, View } from 'react-native';
+import { useScreenSize } from '@/ui/screenSize';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
@@ -19,7 +20,7 @@ const ROOM_FOR_INTRO = 720;
 export default function Welcome() {
   const t = useTheme();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
+  const { width, height } = useScreenSize();
   // Small phones can't fit her at full size, so she gives up whatever the words need.
   const [room, setRoom] = useState(height);
   const [wordsHeight, setWordsHeight] = useState(0);

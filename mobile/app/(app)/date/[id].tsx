@@ -1,7 +1,8 @@
-import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { DateTimePicker, DateTimePickerAndroid } from '@/ui/datePicker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Linking, Platform, Pressable, Share, View } from 'react-native';
+import { Linking, Platform, Pressable, View } from 'react-native';
+import { Share } from '@/lib/dialogs';
 import * as api from '@/api/endpoints';
 import type { DatePlan, Venue } from '@/api/types';
 import { longDateTime } from '@/lib/format';
@@ -83,7 +84,7 @@ function useTimePicker(onPick: (d: Date) => void) {
     const max = new Date(Date.now() + 89 * DAY);
     const start = initial && new Date(initial) > min ? new Date(initial) : new Date(Date.now() + 2 * DAY);
     start.setSeconds(0, 0);
-    if (Platform.OS === 'ios') {
+    if (Platform.OS !== 'android') {
       setValue(start);
       setIosOpen(true);
       return;
@@ -110,7 +111,7 @@ function useTimePicker(onPick: (d: Date) => void) {
   };
 
   const sheet =
-    Platform.OS === 'ios' ? (
+    Platform.OS !== 'android' ? (
       <Sheet visible={iosOpen} onClose={() => setIosOpen(false)} title={tr('When works for you?')}>
         <DateTimePicker
           value={value}

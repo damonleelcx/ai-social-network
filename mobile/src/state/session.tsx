@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '@/lib/store';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ApiError, setApiHandlers, setToken } from '@/api/client';
 import { auth, settings as settingsApi } from '@/api/endpoints';

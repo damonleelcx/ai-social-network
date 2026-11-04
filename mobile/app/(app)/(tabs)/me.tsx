@@ -1,7 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Share, View } from 'react-native';
+import { View } from 'react-native';
+import { Share } from '@/lib/dialogs';
 import * as api from '@/api/endpoints';
 import { missingLabel } from '@/lib/format';
 import { useLive } from '@/state/live';
