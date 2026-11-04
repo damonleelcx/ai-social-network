@@ -5,7 +5,6 @@ export const catalog: Record<string, readonly [string, string, string, string]> 
   'Continue with Google': ['使用 Google 继续', 'Google로 계속하기', 'Google で続ける', 'Continuar con Google'],
   'Welcome to SynAgent': ['欢迎来到 SynAgent', 'SynAgent에 오신 걸 환영해요', 'SynAgent へようこそ', 'Te damos la bienvenida a SynAgent'],
   'By continuing, you confirm you are 18 or over and accept the Terms of Use and Privacy Policy.': ['继续即表示你已年满 18 岁，并同意用户协议和隐私政策。', '계속하면 만 18세 이상이며 이용약관과 개인정보처리방침에 동의하는 것으로 간주돼요.', '続行すると、18 歳以上であることを確認し、利用規約とプライバシーポリシーに同意したことになります。', 'Al continuar, confirmas que tienes 18 años o más y aceptas las Condiciones de uso y la Política de privacidad.'],
-  'Continue': ['继续', '계속', '続ける', 'Continuar'],
   'Confirm with your Google account to finish.': ['请用你的 Google 账号确认以完成操作。', 'Google 계정으로 확인하면 완료돼요.', 'Google アカウントで確認すると完了します。', 'Confirma con tu cuenta de Google para terminar.'],
   "Google sign-in isn't open yet.": ['Google 登录暂未开放。', 'Google 로그인은 아직 열리지 않았어요.', 'Google ログインはまだ利用できません。', 'El inicio de sesión con Google aún no está disponible.'],
   "Google couldn't confirm who you are. Please try again.": ['Google 没能确认你的身份，请再试一次。', 'Google에서 본인 확인을 하지 못했어요. 다시 시도해 주세요.', 'Google で本人確認ができませんでした。もう一度お試しください。', 'Google no pudo confirmar tu identidad. Inténtalo de nuevo.'],
