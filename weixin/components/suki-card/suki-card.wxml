@@ -1,0 +1,92 @@
+<view wx:if="{{gone}}" class="card"><view class="soft">这条已经结束了。</view></view>
+
+<view wx:elif="{{card.kind === 'buddy_post'}}" class="card">
+  <view class="title">{{card.activity}}</view>
+  <view class="soft">{{card.when}}</view>
+  <view wx:if="{{card.note}}">{{card.note}}</view>
+  <view wx:if="{{state === 'done'}}" class="done">发布好了，有人报名我会告诉你。</view>
+  <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onPost">发布</button>
+</view>
+
+<view wx:elif="{{card.kind === 'buddy_request' && item}}" class="card">
+  <view class="row">
+    <image wx:if="{{photo}}" class="avatar" src="{{photo}}" mode="aspectFill" />
+    <view class="grow">
+      <view class="title">{{item.kind}}</view>
+      <view class="soft">{{item.person.display_name}} · {{item.when}}</view>
+    </view>
+  </view>
+  <view wx:if="{{item.note}}">{{item.note}}</view>
+  <view wx:if="{{item.status !== 'open'}}" class="soft">这条已经结束了。</view>
+  <button wx:elif="{{item.offered}}" class="plain" loading="{{state === 'busy'}}" bindtap="onOffer">撤回报名</button>
+  <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onOffer">我想去</button>
+</view>
+
+<view wx:elif="{{card.kind === 'buddy_offer' && item && item.person}}" class="card">
+  <view class="row">
+    <image wx:if="{{photo}}" class="avatar" src="{{photo}}" mode="aspectFill" />
+    <view class="grow">
+      <view class="title">{{item.person.display_name}} 想一起去</view>
+      <view class="soft">{{item.kind}} · {{item.when}}</view>
+    </view>
+  </view>
+  <view wx:if="{{state === 'done' || item.status !== 'open'}}" class="done">已经选好了。</view>
+  <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onPick">选 TA</button>
+</view>
+
+<view wx:elif="{{card.kind === 'proposal' && item}}" class="card">
+  <view class="row">
+    <image wx:if="{{photo}}" class="avatar" src="{{photo}}" mode="aspectFill" />
+    <view class="grow">
+      <view class="title">{{item.person.display_name}}，{{item.person.age}}</view>
+      <view class="soft">{{item.person.city_name}}</view>
+    </view>
+  </view>
+  <view>{{item.pitch}}</view>
+  <block wx:if="{{item.status === 'pending' && !state}}">
+    <button class="primary" data-decision="accept" bindtap="onDecide">想认识</button>
+    <button class="plain" data-decision="pass" bindtap="onDecide">算了</button>
+  </block>
+  <view wx:elif="{{state === 'busy'}}" class="soft">稍等…</view>
+  <view wx:else class="done">已回复。</view>
+</view>
+
+<view wx:elif="{{card.kind === 'match'}}" class="card">
+  <button class="primary" bindtap="onOpenMatch">打开聊天</button>
+</view>
+
+<view wx:elif="{{card.kind === 'date'}}" class="card">
+  <button class="primary" bindtap="onOpenDate">{{card.focus === 'time' ? '选个时间' : card.focus === 'change' ? '修改计划' : '查看约会计划'}}</button>
+</view>
+
+<view wx:elif="{{card.kind === 'share_plan'}}" class="card">
+  <view class="soft">把计划告诉一位朋友，会更安全。</view>
+  <button class="plain" bindtap="onShare">复制计划</button>
+</view>
+
+<view wx:elif="{{card.kind === 'open_screen' && card.screen !== 'verify_email'}}" class="card">
+  <button class="plain" bindtap="onOpenScreen">{{card.label}}</button>
+</view>
+
+<view wx:elif="{{card.kind === 'bio_draft'}}" class="card">
+  <view>{{card.text}}</view>
+  <view wx:if="{{state === 'done'}}" class="done">已更新。</view>
+  <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onBio">就用这个</button>
+</view>
+
+<view wx:elif="{{card.kind === 'photo_upload'}}" class="card">
+  <view wx:if="{{state === 'done'}}" class="done">收到，正在审核。</view>
+  <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onPhoto">上传照片</button>
+</view>
+
+<view wx:elif="{{card.kind === 'buy_credits' && item}}" class="card">
+  <view class="title">还剩 {{item.balance}} 积分</view>
+  <view class="soft">小程序内暂不支持充值。</view>
+</view>
+
+<view wx:elif="{{card.kind === 'confirm'}}" class="card">
+  <view wx:if="{{state === 'done'}}" class="done">完成了。</view>
+  <button wx:else class="danger" loading="{{state === 'busy'}}" bindtap="onConfirm">{{card.label}}</button>
+</view>
+
+<view wx:if="{{error}}" class="error">{{error}}</view>

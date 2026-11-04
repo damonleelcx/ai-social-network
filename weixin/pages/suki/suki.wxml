@@ -1,0 +1,20 @@
+<view class="chat">
+  <scroll-view class="chat-list" scroll-y scroll-into-view="{{bottom}}" scroll-with-animation>
+    <view wx:if="{{loaded && !messages.length}}" class="empty">跟 Suki 打个招呼吧。</view>
+    <block wx:for="{{messages}}" wx:key="seq">
+      <view wx:if="{{item.body}}" class="bubble-row {{item.role === 'user' ? 'mine' : ''}}">
+        <view class="bubble">{{item.body}}</view>
+      </view>
+      <suki-card wx:for="{{item.cards}}" wx:for-item="card" wx:for-index="i" wx:key="i" card="{{card}}" />
+    </block>
+    <view wx:if="{{thinking}}" class="note">Suki 正在想…</view>
+    <view id="end" class="end"></view>
+  </scroll-view>
+  <view wx:if="{{replies.length && !thinking}}" class="chips">
+    <view wx:for="{{replies}}" wx:key="*this" class="chip" data-text="{{item}}" bindtap="onReply">{{item}}</view>
+  </view>
+  <view class="composer">
+    <input class="input" placeholder="跟 Suki 说点什么" value="{{draft}}" confirm-type="send" adjust-position bindinput="onInput" bindconfirm="onSend" />
+    <view class="send" bindtap="onSend">发送</view>
+  </view>
+</view>

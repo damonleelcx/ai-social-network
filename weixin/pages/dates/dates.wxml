@@ -1,0 +1,26 @@
+<view class="page">
+  <block wx:if="{{posts.length}}">
+    <view class="section">你发布的搭子</view>
+    <view wx:for="{{posts}}" wx:key="id" wx:for-item="post" class="card">
+      <view class="title">{{post.kind}}</view>
+      <view class="soft">{{post.when}} · {{post.statusText}}</view>
+      <view wx:if="{{post.note}}">{{post.note}}</view>
+      <block wx:if="{{post.status === 'open'}}">
+        <view wx:for="{{post.offers}}" wx:key="created_at" wx:for-item="offer" class="row gap">
+          <view class="grow">{{offer.person.display_name}} 想一起去</view>
+          <view class="chip" data-post="{{post.id}}" data-user="{{offer.person.user_id}}" bindtap="onPick">选 TA</view>
+        </view>
+        <view wx:if="{{!post.offers.length}}" class="soft gap">还没有人报名。</view>
+        <button class="plain" data-id="{{post.id}}" bindtap="onClose">撤下</button>
+      </block>
+      <button wx:elif="{{post.match_id}}" class="plain" data-id="{{post.match_id}}" bindtap="onChat">打开聊天</button>
+    </view>
+  </block>
+  <view wx:if="{{dates.length}}" class="section">约会计划</view>
+  <view wx:for="{{dates}}" wx:key="id" class="card" data-id="{{item.id}}" bindtap="onOpen">
+    <view class="title">{{item.person.display_name}}</view>
+    <view class="soft">{{item.statusText}}<text wx:if="{{item.whenText}}"> · {{item.whenText}}</text></view>
+    <view wx:if="{{item.venue}}">{{item.venue.name}}</view>
+  </view>
+  <view wx:if="{{loaded && !dates.length && !posts.length}}" class="empty">这里会显示你的约会计划和发布的搭子。想找人一起做点什么，告诉 Suki 就行。</view>
+</view>
