@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -294,10 +295,12 @@ func (s *Service) HandleWebhook(ctx context.Context, payload []byte, signature s
 		var userID *string
 		var credits, cents int
 		var currency, status string
-		err := tx.QueryRow(ctx, `SELECT user_id, credits, amount_cents, currency, status FROM credit_purchases WHERE id=$1 FOR UPDATE`, o.Reference).
+		err := tx.QueryRow(ctx, `SELECT user_id, credits, amount_cents, currency, status FROM credit_purchases WHERE id::text=$1 FOR UPDATE`, o.Reference).
 			Scan(&userID, &credits, &cents, &currency, &status)
 		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("payment for an unknown purchase %q", o.Reference)
+			// Some other payment on the same Stripe account. Sending it again won't help.
+			slog.Warn("payment for an unknown purchase", "session", o.ID)
+			return nil
 		}
 		if err != nil {
 			return err

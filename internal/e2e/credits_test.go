@@ -119,6 +119,12 @@ func TestCreditsAfterFiveMatches(t *testing.T) {
 			"id": "cs_test_1", "payment_status": "paid", "amount_total": amount, "currency": "usd", "client_reference_id": purchase}}})
 		return raw
 	}
+	// Someone else's payment on the same Stripe account: acknowledged, and nothing added.
+	other, _ := json.Marshal(map[string]any{"type": "checkout.session.completed", "data": map[string]any{"object": map[string]any{
+		"id": "cs_other", "payment_status": "paid", "amount_total": 499, "currency": "usd", "client_reference_id": "not-ours"}}})
+	if c := e.stripeEvent(t, other, testWebhookSecret); c != 200 {
+		t.Fatalf("another payment: %d", c)
+	}
 	// Forged, or the wrong amount: nothing.
 	if c := e.stripeEvent(t, event(499), "whsec_wrong"); c != 400 {
 		t.Fatalf("forged webhook: %d", c)
