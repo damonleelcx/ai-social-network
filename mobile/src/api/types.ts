@@ -69,13 +69,16 @@ export type Card =
   | { kind: 'share_plan'; date_id: string }
   | { kind: 'open_screen'; screen: string; label: string }
   | { kind: 'buddy_post'; activity: string; when: string; note?: string; expires_in_hours: number; same_gender?: boolean }
+  | { kind: 'buddy_request'; request_id: string }
+  | { kind: 'buddy_offer'; request_id: string; user_id: string }
   | {
       kind: 'confirm';
-      action: 'remove_photo' | 'unmatch' | 'block' | 'reset_taste';
+      action: 'remove_photo' | 'unmatch' | 'block' | 'reset_taste' | 'buddy_close';
       label: string;
       photo_id?: string;
       match_id?: string;
       user_id?: string;
+      request_id?: string;
     };
 
 export type MessageMeta = {
@@ -230,7 +233,7 @@ export type Session = {
 export type Memory = { id: string; note: string; created_at: string };
 export type Blocked = { user_id: string; display_name: string };
 
-export type NotificationData = { screen?: 'agent' | 'proposal' | 'chat' | 'date' | 'buddies'; id?: string };
+export type NotificationData = { screen?: 'agent' | 'proposal' | 'chat' | 'date'; id?: string };
 export type AppNotification = {
   id: number;
   kind: string;

@@ -115,6 +115,7 @@ export const buddies = {
     return { requests: r.requests ?? [], missing: r.missing ?? [] };
   },
   mine: async () => (await api<{ requests: BuddyRequest[] | null }>('/v1/buddies/mine')).requests ?? [],
+  get: async (id: string) => (await api<{ request: BuddyRequest }>(`/v1/buddies/${id}`)).request,
   post: async (b: { kind: string; when: string; note: string; expires_in_hours: number; same_gender: boolean }) =>
     (await api<{ request: BuddyRequest }>('/v1/buddies', { method: 'POST', body: b })).request,
   offer: (id: string) => api<Ok>(`/v1/buddies/${id}/offer`, { method: 'POST', body: {} }),

@@ -1,9 +1,11 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, View } from 'react-native';
-import type { DatePlan } from '@/api/types';
+import * as api from '@/api/endpoints';
+import type { BuddyRequest, DatePlan } from '@/api/types';
+import { MyBuddyPost } from '@/features/BuddyCards';
 import { longDateTime } from '@/lib/format';
-import { dateNeedsMe, useLive } from '@/state/live';
+import { dateNeedsMe, useLive, useTopic } from '@/state/live';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
 import { Backdrop, TabHeader } from '@/ui/layout';
@@ -78,6 +80,21 @@ export default function Dates() {
   const t = useTheme();
   const { dates, loaded, refreshDates } = useLive();
   const [refreshing, setRefreshing] = useState(false);
+  const [posts, setPosts] = useState<BuddyRequest[]>([]);
+
+  // Their own buddy posts: open ones, and filled ones until the plan has passed.
+  const loadPosts = useCallback(async () => {
+    try {
+      const mine = await api.buddies.mine();
+      setPosts(mine.filter((p) => p.status === 'open' || (p.status === 'filled' && new Date(p.expires_at).getTime() > Date.now())));
+    } catch {
+      // Pull to refresh tries again; what's on screen stays.
+    }
+  }, []);
+  useEffect(() => {
+    loadPosts();
+  }, [loadPosts]);
+  useTopic('buddies', loadPosts);
 
   return (
     <Backdrop>
@@ -93,13 +110,23 @@ export default function Dates() {
             colors={[t.accent]}
             onRefresh={async () => {
               setRefreshing(true);
-              await refreshDates();
+              await Promise.all([refreshDates(), loadPosts()]);
               setRefreshing(false);
             }}
           />
         }
+        ListHeaderComponent={
+          posts.length ? (
+            <View style={{ gap: space.md }}>
+              <T v="subheading">{tr('Your buddy posts')}</T>
+              {posts.map((p) => (
+                <MyBuddyPost key={p.id} request={p} onChange={loadPosts} />
+              ))}
+            </View>
+          ) : undefined
+        }
         ListEmptyComponent={
-          !loaded.dates ? (
+          posts.length ? undefined : !loaded.dates ? (
             <SukiLoading line={tr('Checking your calendar...')} />
           ) : (
             <SukiSays

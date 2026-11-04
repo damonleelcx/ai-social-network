@@ -447,7 +447,7 @@ func registerSukiTools() {
 		})
 
 	add("app_open_screen", "Show a button to a screen in the app. Password, email and account deletion are handled only there, never in chat.",
-		`{"type":"object","required":["screen","label"],"additionalProperties":false,"properties":{"screen":{"type":"string","enum":["settings","settings_app","settings_agent","settings_account","settings_memory","settings_blocked","profile_edit","photos","matches","dates","verify_email","buddies"]},"label":{"type":"string","maxLength":40}}}`, tools.Read,
+		`{"type":"object","required":["screen","label"],"additionalProperties":false,"properties":{"screen":{"type":"string","enum":["settings","settings_app","settings_agent","settings_account","settings_memory","settings_blocked","profile_edit","photos","matches","dates","verify_email"]},"label":{"type":"string","maxLength":40}}}`, tools.Read,
 		func(_ context.Context, _ *tools.Env, a map[string]any) (map[string]any, error) {
 			return card("open_screen", "screen", objStr(a, "screen"), "label", objStr(a, "label")), nil
 		})
@@ -475,7 +475,7 @@ func registerSukiTools() {
 			}
 			out := []map[string]any{}
 			for _, b := range list {
-				out = append(out, map[string]any{"kind": b.Kind, "when": b.When, "note": b.Note, "name": b.Person.DisplayName, "already_in": b.Offered})
+				out = append(out, map[string]any{"request_id": b.ID, "kind": b.Kind, "when": b.When, "note": b.Note, "name": b.Person.DisplayName, "already_in": b.Offered})
 			}
 			return map[string]any{"posts": out, "missing": missing}, nil
 		})
@@ -488,13 +488,42 @@ func registerSukiTools() {
 			}
 			out := []map[string]any{}
 			for _, b := range list {
-				names := []string{}
+				in := []map[string]any{}
 				for _, o := range b.Offers {
-					names = append(names, o.Person.DisplayName)
+					in = append(in, map[string]any{"user_id": o.Person.UserID, "name": o.Person.DisplayName})
 				}
-				out = append(out, map[string]any{"kind": b.Kind, "when": b.When, "status": b.Status, "in": names})
+				out = append(out, map[string]any{"request_id": b.ID, "kind": b.Kind, "when": b.When, "status": b.Status, "in": in})
 			}
 			return map[string]any{"posts": out}, nil
+		})
+
+	const buddyInput = `{"type":"object","required":["request_id"],"additionalProperties":false,"properties":{"request_id":{"type":"string"}}}`
+	add("buddy_show_post", "Show someone else's post as a card with an I'm in button. Only their tap joins.", buddyInput, tools.Read,
+		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
+			if _, err := d.Dating.BuddyView(ctx, objStr(a, "request_id"), env.UserID); err != nil {
+				return nil, userError(err)
+			}
+			return card("buddy_request", "request_id", objStr(a, "request_id")), nil
+		})
+
+	add("buddy_show_offer", "Show someone who said they're in on this person's post, with a button to pick them. Only their tap picks.",
+		`{"type":"object","required":["request_id","user_id"],"additionalProperties":false,"properties":{"request_id":{"type":"string"},"user_id":{"type":"string"}}}`, tools.Read,
+		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
+			b, err := d.Dating.BuddyView(ctx, objStr(a, "request_id"), env.UserID)
+			if err != nil {
+				return nil, userError(err)
+			}
+			for _, o := range b.Offers {
+				if o.Person.UserID == objStr(a, "user_id") {
+					return card("buddy_offer", "request_id", b.ID, "user_id", o.Person.UserID), nil
+				}
+			}
+			return map[string]any{"error": "that person isn't in on this post"}, nil
+		})
+
+	add("buddy_prepare_close", "Show a confirm button to take this person's own post down.", buddyInput, tools.Read,
+		func(_ context.Context, _ *tools.Env, a map[string]any) (map[string]any, error) {
+			return card("confirm", "action", "buddy_close", "label", "Take it down", "request_id", objStr(a, "request_id")), nil
 		})
 
 	add("app_explain", "A truthful general explanation of how matching works, to put in your own words.", noArgs, tools.Read,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/damonleelcx/ai-social-network/internal/chatstore"
 	"github.com/damonleelcx/ai-social-network/internal/dating"
 )
 
@@ -84,6 +85,37 @@ func TestBuddyPlanBecomesAChat(t *testing.T) {
 		t.Fatalf("mine: %+v", mine)
 	}
 	bID := mine.Requests[0].Offers[0].Person.UserID
+
+	// It all happens in the conversation: people hear from Suki, with a card to tap.
+	sukiCard := func(x *client, kind string) bool {
+		var r struct {
+			Messages []chatstore.Message `json:"messages"`
+		}
+		x.do("GET", "/v1/agent/messages", nil, 200, &r)
+		for _, m := range r.Messages {
+			if cards, ok := m.Meta["cards"].([]any); ok {
+				for _, c := range cards {
+					if c.(map[string]any)["kind"] == kind {
+						return true
+					}
+				}
+			}
+		}
+		return false
+	}
+	if !sukiCard(a, "buddy_offer") {
+		t.Fatal("the poster didn't hear about the offer from Suki")
+	}
+	if !sukiCard(b, "buddy_request") {
+		t.Fatal("someone nearby didn't hear about the post from Suki")
+	}
+	var one struct {
+		Request dating.BuddyRequest `json:"request"`
+	}
+	b.do("GET", "/v1/buddies/"+id, nil, 200, &one)
+	if !one.Request.Offered || one.Request.Person == nil {
+		t.Fatalf("card view: %+v", one.Request)
+	}
 
 	b.do("POST", "/v1/buddies/"+id+"/pick", map[string]any{"user_id": bID}, 404, nil)
 	a.do("POST", "/v1/buddies/"+id+"/pick", map[string]any{"user_id": a.id}, 404, nil)

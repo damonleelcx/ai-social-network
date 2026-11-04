@@ -337,6 +337,7 @@ func (s *Server) Handler() http.Handler {
 	// Buddies
 	m.HandleFunc("GET /v1/buddies", v(s.buddyBoard))
 	m.HandleFunc("GET /v1/buddies/mine", v(s.buddyMine))
+	m.HandleFunc("GET /v1/buddies/{id}", v(s.buddyGet))
 	m.HandleFunc("POST /v1/buddies", v(lim("buddy_post", 10, time.Hour, s.buddyPost)))
 	m.HandleFunc("POST /v1/buddies/{id}/offer", v(lim("buddy_offer", 30, time.Hour, s.buddyOffer)))
 	m.HandleFunc("DELETE /v1/buddies/{id}/offer", v(s.buddyWithdraw))
@@ -941,6 +942,15 @@ func (s *Server) buddyMine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, map[string]any{"requests": list})
+}
+
+func (s *Server) buddyGet(w http.ResponseWriter, r *http.Request) {
+	b, err := s.Dating.BuddyView(r.Context(), r.PathValue("id"), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"request": b})
 }
 
 func (s *Server) buddyPost(w http.ResponseWriter, r *http.Request) {

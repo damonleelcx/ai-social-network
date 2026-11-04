@@ -20,6 +20,8 @@ import (
 // Buddies are the fast path beside introductions: someone wants company for one plan,
 // people in the same city say they're in, and the person who posted picks one. The picked
 // pair gets an ordinary match, so chat, blocking and reporting all work as they always do.
+// All of it happens in the conversation with Suki: she brings posts and offers as cards,
+// and the person's tap on a card is what acts.
 const (
 	buddyNoteMax     = 200
 	buddyWhenMax     = 60
@@ -199,11 +201,13 @@ func (s *Service) tellNearby(ctx context.Context, userID, requestID string, in B
 	for _, id := range people {
 		lang := s.Lang(ctx, id)
 		body := i18n.T(lang, "{name} is looking for company for {plan}: {when}.", "name", p.DisplayName, "plan", i18n.T(lang, buddyKindNames[in.Kind]), "when", in.When)
+		if err := s.PostFromSuki(ctx, id, body, "playful", []map[string]any{{"kind": "buddy_request", "request_id": requestID}}, "buddy:"+requestID+":"+id); err != nil {
+			slog.Error("buddy announce", "err", err)
+		}
 		if err := notify.Send(ctx, s.Pool, id, "buddy", "Someone nearby wants company", body,
-			map[string]any{"screen": "buddies"}, "buddy:"+requestID+":"+id); err != nil {
+			map[string]any{"screen": "agent"}, "buddy:"+requestID+":"+id); err != nil {
 			slog.Error("buddy notify", "err", err)
 		}
-		s.notifyUser(ctx, id, "buddies")
 	}
 }
 
@@ -356,6 +360,31 @@ func (s *Service) buddyRequest(ctx context.Context, id, ownerID string) (*BuddyR
 	return b, nil
 }
 
+// BuddyView is one post for one of Suki's cards: the owner's view with who's in, or
+// the view anyone it's visible to gets. Anyone else, and a post that has closed, gets not found.
+func (s *Service) BuddyView(ctx context.Context, id, viewerID string) (*BuddyRequest, error) {
+	if b, err := s.buddyRequest(ctx, id, viewerID); err == nil {
+		return b, nil
+	} else if !errors.Is(err, ErrNotFound) {
+		return nil, err
+	}
+	var b BuddyRequest
+	var owner string
+	err := s.Pool.QueryRow(ctx, `SELECT `+buddyCols+`, EXISTS(SELECT 1 FROM buddy_offers o WHERE o.request_id=r.id AND o.user_id=$1)
+		FROM buddy_requests r JOIN profiles me ON me.user_id=$1 WHERE r.id=$2 AND `+buddyVisible, viewerID, id).
+		Scan(&b.ID, &owner, &b.Kind, &b.Note, &b.When, &b.CityName, &b.SameGender, &b.Status, &b.MatchID, &b.CreatedAt, &b.ExpiresAt, &b.Offered)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	if b.Person, err = s.publicOf(ctx, owner); err != nil {
+		return nil, err
+	}
+	return &b, nil
+}
+
 // OfferBuddy says "I'm in". The poster hears about it and decides.
 func (s *Service) OfferBuddy(ctx context.Context, requestID, userID string) error {
 	if err := s.requireBuddyReady(ctx, userID); err != nil {
@@ -382,12 +411,15 @@ func (s *Service) OfferBuddy(ctx context.Context, requestID, userID string) erro
 		return err
 	}
 	lang := s.Lang(ctx, owner)
-	if err := notify.Send(ctx, s.Pool, owner, "buddy_offer", "Someone's in", i18n.T(lang, "{name} wants to join you for {plan}.", "name", name, "plan", i18n.T(lang, buddyKindNames[kind])),
-		map[string]any{"screen": "buddies"}, "buddy-offer:"+requestID+":"+userID); err != nil {
+	body := i18n.T(lang, "{name} wants to join you for {plan}.", "name", name, "plan", i18n.T(lang, buddyKindNames[kind]))
+	if err := s.PostFromSuki(ctx, owner, body, "happy", []map[string]any{{"kind": "buddy_offer", "request_id": requestID, "user_id": userID}}, "buddy-offer:"+requestID+":"+userID); err != nil {
+		slog.Error("buddy offer announce", "err", err)
+	}
+	if err := notify.Send(ctx, s.Pool, owner, "buddy_offer", "Someone's in", body,
+		map[string]any{"screen": "agent"}, "buddy-offer:"+requestID+":"+userID); err != nil {
 		slog.Error("buddy offer notify", "err", err)
 	}
 	s.notifyUser(ctx, owner, "buddies")
-	s.notifyUser(ctx, userID, "buddies")
 	return nil
 }
 
@@ -403,7 +435,6 @@ func (s *Service) WithdrawBuddyOffer(ctx context.Context, requestID, userID stri
 		return err
 	}
 	s.notifyUser(ctx, owner, "buddies")
-	s.notifyUser(ctx, userID, "buddies")
 	return nil
 }
 

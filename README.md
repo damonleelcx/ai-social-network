@@ -44,9 +44,9 @@ find someone for that too.
 
 Nobody to see a movie with tonight? Dates aren't the only reason to meet someone.
 
-1. **Post a plan.** In the Buddies tab, or just by telling Suki: a movie, a meal, a show, a trip, sports, games, business or studying, and when.
-2. **People say they're in.** Members in your city see it and can offer to join. You can limit it to people of your gender.
-3. **Pick who to go with.** You choose one, and the two of you can chat right away. For a first meet-up, pick somewhere public and tell a friend.
+1. **Tell Suki.** A movie, a meal, a show, a trip, sports, games, business or studying, and when. She drafts a post, and a tap puts it up.
+2. **People say they're in.** Suki tells members in your city, and they can offer to join with a tap. You can limit it to people of your gender.
+3. **Pick who to go with.** Suki shows you who's in, and your posts stay on the Dates tab. You choose one, and the two of you can chat right away in Matches. For a first meet-up, pick somewhere public and tell a friend.
 
 ## Why Suki is different
 
