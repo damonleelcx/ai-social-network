@@ -67,6 +67,7 @@ Your first 5 matches are free. After that, each message to Suki uses a credit, a
 - **One-tap updates.** The Android app tells you when a new version is out and installs it from inside the app.
 - **Invite friends.** Share your link or code, from the app, the web or WeChat, and earn credits when a friend joins.
 - **Your language and theme.** English, Chinese, Korean, Japanese and Spanish, in light or dark.
+
 ## WeChat mini program
 
 [`weixin/`](weixin/README.md) is a native mini program on the same server and accounts. It isn't released: that needs a registered mini program, an ICP-filed domain and WeChat's review.

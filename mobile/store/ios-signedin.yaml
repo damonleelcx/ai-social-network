@@ -67,6 +67,10 @@ appId: space.herosagent.synagent
     point: "87%,94%"
 - assertVisible: "Edit profile"
 - takeScreenshot: ios-shots/10-me
+# The Me page is longer than the screen.
+- scrollUntilVisible:
+    element: "Settings"
+    direction: DOWN
 - tapOn: "Settings"
 - takeScreenshot: ios-shots/11-settings
 # iOS reports each row by its label alone, without the hint under it.
