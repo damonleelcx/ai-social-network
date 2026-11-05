@@ -46,6 +46,9 @@ func testDSN(t *testing.T) string {
 	defer cancel()
 	conn, err := pgx.Connect(ctx, url)
 	if err != nil {
+		if os.Getenv("CI") != "" {
+			t.Fatalf("no test database at %s (%v); start syn-pg or set SYN_TEST_DATABASE_URL", url, err)
+		}
 		t.Skipf("no test database at %s (%v); start syn-pg or set SYN_TEST_DATABASE_URL", url, err)
 	}
 	_ = conn.Close(ctx)

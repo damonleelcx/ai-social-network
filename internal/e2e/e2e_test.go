@@ -106,6 +106,9 @@ func setup(t *testing.T) *env {
 	defer c0()
 	conn, err := pgx.Connect(ctx0, base)
 	if err != nil {
+		if os.Getenv("CI") != "" {
+			t.Fatalf("no test postgres: %v", err)
+		}
 		t.Skipf("no test postgres: %v", err)
 	}
 	_ = conn.Close(ctx0)
@@ -128,6 +131,9 @@ func setup(t *testing.T) *env {
 	}
 	chats, err := chatstore.Open(ctx, mongoURL, "syn_e2e_"+fmt.Sprint(time.Now().UnixNano()))
 	if err != nil {
+		if os.Getenv("CI") != "" {
+			t.Fatalf("no test mongo: %v", err)
+		}
 		t.Skipf("no test mongo: %v", err)
 	}
 	fake := newFakeLLM()
