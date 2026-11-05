@@ -10,6 +10,9 @@ REPO=${REPO:-damonleelcx/ai-social-network}
 ROLE=synagent-github-deploy
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 PROVIDER=arn:aws:iam::$ACCOUNT:oidc-provider/token.actions.githubusercontent.com
+# GitHub may issue subjects with immutable owner and repository ids, so ask it for the prefix.
+SUB=$(gh api "repos/$REPO/actions/oidc/customization/sub" --jq '.sub_claim_prefix // empty')
+SUB=${SUB:-repo:$REPO}
 
 aws iam get-open-id-connect-provider --open-id-connect-provider-arn "$PROVIDER" >/dev/null 2>&1 ||
   aws iam create-open-id-connect-provider --url https://token.actions.githubusercontent.com \
@@ -17,7 +20,7 @@ aws iam get-open-id-connect-provider --open-id-connect-provider-arn "$PROVIDER" 
 echo "oidc provider ready"
 
 TRUST=$(cat <<JSON
-{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Federated":"$PROVIDER"},"Action":"sts:AssumeRoleWithWebIdentity","Condition":{"StringEquals":{"token.actions.githubusercontent.com:aud":"sts.amazonaws.com","token.actions.githubusercontent.com:sub":"repo:$REPO:ref:refs/heads/main"}}}]}
+{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Federated":"$PROVIDER"},"Action":"sts:AssumeRoleWithWebIdentity","Condition":{"StringEquals":{"token.actions.githubusercontent.com:aud":"sts.amazonaws.com","token.actions.githubusercontent.com:sub":"$SUB:ref:refs/heads/main"}}}]}
 JSON
 )
 if aws iam get-role --role-name "$ROLE" >/dev/null 2>&1; then
