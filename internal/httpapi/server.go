@@ -334,6 +334,8 @@ func (s *Server) Handler() http.Handler {
 	// Profile and photos
 	m.HandleFunc("GET /v1/profile", v(s.getProfile))
 	m.HandleFunc("PATCH /v1/profile", v(s.patchProfile))
+	// The same again for the mini program, because wx.request has no PATCH.
+	m.HandleFunc("POST /v1/profile", v(s.patchProfile))
 	m.HandleFunc("POST /v1/profile/city", v(lim("city", 20, time.Hour, s.setCity)))
 	m.HandleFunc("POST /v1/profile/pause", v(s.pause))
 	m.HandleFunc("POST /v1/profile/bio-draft/accept", v(s.acceptBio))
@@ -404,6 +406,8 @@ func (s *Server) Handler() http.Handler {
 	// Settings and memory
 	m.HandleFunc("GET /v1/settings", s.signedIn(s.getSettings))
 	m.HandleFunc("PATCH /v1/settings", s.signedIn(s.patchSettings))
+	// The same again for the mini program, because wx.request has no PATCH.
+	m.HandleFunc("POST /v1/settings", s.signedIn(s.patchSettings))
 	m.HandleFunc("GET /v1/memories", v(s.memories))
 	m.HandleFunc("DELETE /v1/memories/{id}", v(s.deleteMemory))
 	m.HandleFunc("POST /v1/memories/reset", v(s.resetMemories))

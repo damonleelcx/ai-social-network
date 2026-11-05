@@ -17,6 +17,19 @@ button.primary { background: #ff5c8a !important; color: #fff !important; }
 button.plain { background: rgba(255,255,255,.14) !important; color: #fff !important; }
 button.danger { background: rgba(255,92,120,.22) !important; color: #ff9db0 !important; }
 .empty { text-align: center; color: #a99fc4; padding: 80rpx 20rpx; }
+.hint { color: #a99fc4; font-size: 24rpx; margin-top: 6rpx; }
+.nav-row { display: flex; align-items: center; padding: 22rpx 24rpx; background: rgba(255,255,255,.08); border-radius: 20rpx; margin-bottom: 12rpx; }
+.nav-row .arrow { color: #a99fc4; margin-left: 12rpx; }
+.set-row { display: flex; align-items: center; padding: 20rpx 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+.set-row:last-child { border-bottom: none; }
+.set-row .grow { padding-right: 20rpx; }
+.options { display: flex; flex-wrap: wrap; margin-top: 12rpx; }
+.options .chip { margin: 0 12rpx 12rpx 0; }
+.chip.on { background: #ff5c8a; border-color: #ff5c8a; color: #fff; }
+.field-label { font-size: 26rpx; color: #a99fc4; margin-bottom: 8rpx; }
+.good { color: #7fe0a8; font-size: 26rpx; margin: 12rpx 0; }
+.fresh { background: rgba(255,92,138,.16); }
+.link { color: #d9c8ff; }
 
 .chat { height: 100vh; display: flex; flex-direction: column; }
 .chat-list { flex: 1; min-height: 0; padding: 20rpx 24rpx; box-sizing: border-box; }

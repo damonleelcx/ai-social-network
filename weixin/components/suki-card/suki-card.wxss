@@ -3,6 +3,7 @@
 .soft { color: #a99fc4; font-size: 26rpx; }
 .error { color: #ff8a9a; font-size: 26rpx; margin-top: 10rpx; }
 .done { color: #7fe0a8; font-size: 26rpx; margin-top: 10rpx; }
+.link { color: #d9c8ff; font-size: 26rpx; }
 .row { display: flex; align-items: center; }
 .grow { flex: 1; min-width: 0; }
 .avatar { width: 88rpx; height: 88rpx; border-radius: 50%; background: rgba(255,255,255,.12); margin-right: 20rpx; flex-shrink: 0; }

@@ -1,18 +1,38 @@
 const api = require('../../lib/api');
 const live = require('../../lib/live');
+const i18n = require('../../lib/i18n');
+const settings = require('../../lib/settings');
+const voice = require('../../lib/voice');
 const { showError } = require('../../lib/format');
 const share = require('../../lib/share');
 
 const POLL_MS = 3000;
 const POLL_FOR_MS = 180000;
 
+const COPY = {
+  hello: 'Say hi to Suki.',
+  thinking: 'Suki is thinking about this.',
+  placeholder: 'Tell Suki anything',
+  send: 'Send',
+  hear: 'Hear Suki say this',
+  stop: 'Stop',
+  cancelVoice: 'Getting Suki’s voice. Tap to cancel',
+};
+
 function shape(m) {
   const meta = m.meta || {};
   return { seq: m.seq, role: m.role, body: m.body, cards: meta.cards || [], replies: meta.replies || [] };
 }
 
+function newestSpeakable(messages) {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === 'assistant' && messages[i].body) return messages[i].seq;
+  }
+  return 0;
+}
+
 Page({
-  data: { messages: [], thinking: false, draft: '', replies: [], bottom: '', loaded: false },
+  data: { t: i18n.strings(COPY), messages: [], thinking: false, draft: '', replies: [], bottom: '', loaded: false, speaker: false, clip: null, phase: null },
   onLoad() {
     if (!api.getToken()) {
       wx.reLaunch({ url: '/pages/login/login' });
@@ -22,22 +42,61 @@ Page({
       if (topic === 'agent' || topic === 'reconnect') this.load();
       else if (topic === 'typing:agent') this.watch();
     });
+    this.offVoice = voice.on((s) => {
+      this.setData({ clip: s.clip, phase: s.phase });
+      this.showSpeaker();
+    });
   },
   onUnload() {
     if (this.off) this.off();
+    if (this.offVoice) this.offVoice();
     this.stopPolling();
   },
   onShow() {
+    i18n.apply(this, COPY);
+    i18n.tabs();
+    this.focused = true;
+    // Only what arrives from here on is new. Nothing she said while they were away gets read out.
+    this.spokenUpTo = null;
     if (api.getToken()) {
       this.load();
       share.prepare();
+      voice.refreshEnabled();
+      settings.load().then(() => this.showSpeaker(), () => {});
     }
   },
   onShareAppMessage() {
     return share.message();
   },
   onHide() {
+    this.focused = false;
+    voice.stop();
     this.stopPolling();
+  },
+  showSpeaker() {
+    const s = settings.current();
+    const speaker = voice.current().enabled && (s ? s.suki_voice : true);
+    // Autoplay needs the speakers too, or there'd be nothing on screen to stop it with.
+    this.autoplay = speaker && !!(s && s.suki_voice_auto);
+    if (speaker !== this.data.speaker) this.setData({ speaker });
+  },
+  readAloud(messages) {
+    const newest = newestSpeakable(messages);
+    if (this.spokenUpTo === null || this.spokenUpTo === undefined) {
+      this.spokenUpTo = newest;
+      return;
+    }
+    if (newest <= this.spokenUpTo) return;
+    this.spokenUpTo = newest;
+    // Never talk over a clip the person asked for.
+    if (!this.autoplay || !this.focused || voice.current().tapped) return;
+    // Autoplay fails quietly: running out of allowance shouldn't interrupt the chat.
+    voice.play(newest, { tapped: false }).catch(() => {});
+  },
+  onSpeak(e) {
+    const seq = e.currentTarget.dataset.seq;
+    if (this.data.clip === seq) voice.stop();
+    else voice.play(seq, { tapped: true }).catch(showError);
   },
   async load() {
     const last = this.data.messages[this.data.messages.length - 1];
@@ -54,6 +113,7 @@ Page({
         replies: tail && tail.role !== 'user' ? tail.replies : [],
         bottom: fresh.length ? 'end' : this.data.bottom,
       });
+      this.readAloud(messages);
       if (r.thinking) this.watch();
       else this.stopPolling();
     } catch (e) {

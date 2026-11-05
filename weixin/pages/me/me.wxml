@@ -1,42 +1,86 @@
 <view class="page">
   <view class="card">
-    <view class="title">{{user.name}}</view>
+    <view class="title">{{displayName}}</view>
     <view wx:if="{{user.has_password}}" class="soft">{{user.email}}</view>
-    <view class="soft gap">想改资料？直接告诉 Suki。</view>
   </view>
 
-  <view class="section">照片</view>
+  <view class="nav-row" data-screen="edit" bindtap="onOpen">
+    <view class="grow">
+      <view>{{t.editProfile}}</view>
+      <view class="hint">{{t.editHint}}</view>
+    </view>
+    <view class="arrow">›</view>
+  </view>
+  <view wx:if="{{canPause}}" class="nav-row">
+    <view class="grow">
+      <view>{{t.pause}}</view>
+      <view class="hint">{{t.pauseHint}}</view>
+    </view>
+    <switch color="#ff5c8a" checked="{{paused}}" disabled="{{pausing}}" bindchange="onPause" />
+  </view>
+
+  <view class="section">{{t.photos}}</view>
   <view class="photos">
-    <image wx:for="{{photos}}" wx:key="id" class="photo" src="{{item.path}}" mode="aspectFill" data-id="{{item.id}}" bindtap="onPhoto" />
+    <view wx:for="{{photos}}" wx:key="id" class="photo-wrap">
+      <image class="photo" src="{{item.path}}" mode="aspectFill" data-id="{{item.id}}" bindtap="onPhoto" />
+      <view class="photo-more" aria-role="button" aria-label="{{t.more}}" data-id="{{item.id}}" catchtap="onPhotoMore">···</view>
+    </view>
     <view wx:if="{{photos.length < 6}}" class="photo add" bindtap="onAddPhoto">+</view>
   </view>
+  <view wx:if="{{photos.length}}" class="hint">{{t.photosHint}}</view>
 
-  <view class="section">邀请朋友</view>
-  <view class="card" wx:if="{{invite}}">
-    <view class="soft">邀请码：<text selectable="true">{{invite.code}}</text></view>
-    <view class="soft gap" wx:if="{{invite.joined}}">已有 {{invite.joined}} 位朋友加入</view>
-    <button class="plain" open-type="share">发给微信朋友</button>
+  <view class="nav-row gap" data-screen="notifications" bindtap="onOpen">
+    <view class="grow">{{t.notifications}}</view>
+    <view wx:if="{{unread}}" class="badge">{{unread}}</view>
+    <view class="arrow">›</view>
   </view>
 
-  <view class="section">积分</view>
+  <view class="section">{{t.invite}}</view>
+  <view class="card" wx:if="{{invite}}">
+    <view class="soft">{{t.inviteCode}}: <text selectable="true">{{invite.code}}</text></view>
+    <view class="soft gap" wx:if="{{joinedText}}">{{joinedText}}</view>
+    <button class="plain" open-type="share">{{t.sendInvite}}</button>
+  </view>
+
+  <view class="section">{{t.credits}}</view>
   <view class="card" wx:if="{{credits}}">
-    <view class="title">还剩 {{credits.balance}} 积分</view>
-    <view class="soft" wx:if="{{credits.free}}">现在和 Suki 对话免费。{{credits.free_matches}} 次免费匹配已用 {{credits.matches_used}} 次。</view>
-    <view class="soft" wx:else>每条发给 Suki 的消息消耗 {{credits.cost_per_message}} 积分。和匹配对象聊天免费，涉及安全或账号的问题也免费。</view>
+    <view class="title">{{balanceText}}</view>
+    <view class="soft">{{creditsText}}</view>
     <block wx:if="{{credits.wechat_enabled && packs.length}}">
       <button wx:for="{{packs}}" wx:for-item="p" wx:key="id" class="plain" disabled="{{buying}}" data-id="{{p.id}}" bindtap="onBuy">{{p.label}}</button>
     </block>
-    <view wx:elif="{{credits.wechat_enabled}}" class="soft gap">iOS 暂不支持充值。</view>
+    <view wx:else class="soft gap">{{t.noBuying}}</view>
     <view wx:for="{{usage}}" wx:key="index" class="row gap">
       <view class="grow soft">{{item.text}} · {{item.when}}</view>
       <view>{{item.delta > 0 ? '+' : ''}}{{item.delta}}</view>
     </view>
   </view>
 
-  <view class="section">账号</view>
-  <button class="plain" data-page="terms" bindtap="onLegal">复制用户协议链接</button>
-  <button class="plain" data-page="privacy" bindtap="onLegal">复制隐私政策链接</button>
-  <button class="plain" data-page="contact" bindtap="onLegal">复制联系方式链接</button>
-  <button class="plain" bindtap="onSignOut">退出登录</button>
-  <button class="danger" bindtap="onDelete">删除账号</button>
+  <view class="section">{{t.settings}}</view>
+  <view class="nav-row" data-screen="app" bindtap="onOpen">
+    <view class="grow">{{t.app}}</view>
+    <view class="arrow">›</view>
+  </view>
+  <view class="nav-row" data-screen="suki" bindtap="onOpen">
+    <view class="grow">
+      <view>{{t.sukiSettings}}</view>
+      <view class="hint">{{t.sukiSettingsHint}}</view>
+    </view>
+    <view class="arrow">›</view>
+  </view>
+  <view class="nav-row" data-screen="memory" bindtap="onOpen">
+    <view class="grow">{{t.memory}}</view>
+    <view class="arrow">›</view>
+  </view>
+  <view class="nav-row" data-screen="blocked" bindtap="onOpen">
+    <view class="grow">{{t.blocked}}</view>
+    <view class="arrow">›</view>
+  </view>
+  <view class="nav-row" data-screen="account" bindtap="onOpen">
+    <view class="grow">
+      <view>{{t.account}}</view>
+      <view class="hint">{{t.accountHint}}</view>
+    </view>
+    <view class="arrow">›</view>
+  </view>
 </view>

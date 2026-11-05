@@ -1,24 +1,70 @@
 // The things Suki puts in the conversation. Same cards as the app, same API.
 const api = require('../../lib/api');
+const i18n = require('../../lib/i18n');
 const { showError, confirm } = require('../../lib/format');
 const pay = require('../../lib/pay');
 
+const { t } = i18n;
+
+const COPY = {
+  gone: 'This one has ended.',
+  posted: "Posted. I'll tell you when someone joins.",
+  post: 'Post it',
+  takeBack: 'Take back',
+  imIn: "I'm in",
+  picked: 'You picked someone for this one.',
+  pick: 'Pick them',
+  like: "I'd like to meet",
+  pass: 'Pass',
+  moment: 'One moment...',
+  answered: 'Answered.',
+  profile: 'View profile',
+  openChat: 'Open chat',
+  pickTime: 'Pick a time',
+  changePlan: 'Change the plan',
+  seePlan: 'See the plan',
+  tellFriend: "Tell a friend the plan. It's safer.",
+  copyPlan: 'Copy the plan',
+  updated: 'Done.',
+  useThis: 'Use this',
+  photoIn: "Got it. I'll take a look.",
+  addPhoto: 'Add a photo',
+  noBuying: "Credits can't be bought here right now. You can still use any you already have.",
+  done: 'Done.',
+};
 const CONFIRM = {
-  remove_photo: ['删除这张照片？', '会立刻从你的资料里移除。'],
-  unmatch: ['解除匹配？', '聊天会对双方结束，进行中的约会计划也会取消。'],
-  block: ['屏蔽这个人？', '你们将不再看到对方，匹配也会立刻结束。'],
-  reset_taste: ['重新开始？', '我会忘掉笔记和了解到的你的喜好。'],
-  buddy_close: ['撤下这条搭子？', '之后别人就不能报名了。'],
+  remove_photo: ['Remove this photo?', 'It comes off your profile right away.'],
+  unmatch: ['Unmatch?', 'The chat ends for both of you, and any open date plan is cancelled.'],
+  block: ['Block this person?', "You'll stop seeing each other, and any match ends at once."],
+  reset_taste: ['Start over?', 'I forget my notes and everything I learned about your taste.'],
+  buddy_close: ['Take this post down?', "People can't join it any more."],
 };
 
 const TABS = { matches: '/pages/matches/matches', dates: '/pages/dates/dates' };
+const PAGES = {
+  profile_edit: '/pages/profile/edit/edit',
+  settings_app: '/pages/settings/app/app',
+  settings_agent: '/pages/settings/suki/suki',
+  settings_account: '/pages/settings/account/account',
+  settings_memory: '/pages/settings/memory/memory',
+  settings_blocked: '/pages/settings/blocked/blocked',
+};
 
 Component({
   properties: { card: { type: Object, value: {} } },
-  data: { packs: [], item: null, photo: '', state: '', error: '', gone: false },
+  data: { t: i18n.strings(COPY), packs: [], item: null, photo: '', state: '', error: '', gone: false, offerLine: '', balanceText: '' },
   lifetimes: {
     attached() {
+      i18n.attach(this, COPY);
       this.load();
+    },
+    detached() {
+      i18n.detach(this);
+    },
+  },
+  pageLifetimes: {
+    show() {
+      i18n.apply(this, COPY);
     },
   },
   methods: {
@@ -36,10 +82,14 @@ Component({
         } else if (c.kind === 'buddy_offer') {
           const post = await api.buddies.get(c.request_id);
           const offer = (post.offers || []).find((o) => o.person.user_id === c.user_id);
-          this.setData({ item: Object.assign({}, post, { person: offer ? offer.person : null }) });
+          this.setData({
+            item: Object.assign({}, post, { person: offer ? offer.person : null }),
+            offerLine: offer ? t('{name} wants to go too', { name: offer.person.display_name }) : '',
+          });
           if (offer) this.photo(offer.person);
         } else if (c.kind === 'buy_credits') {
-          this.setData({ item: await api.credits.status(), packs: pay.packs() });
+          const item = await api.credits.status();
+          this.setData({ item, packs: pay.packs(), balanceText: t('{n} credits left', { n: item.balance }) });
         }
       } catch (e) {
         // A post that's over, or that this person can no longer see.
@@ -50,6 +100,13 @@ Component({
     async photo(person) {
       const ids = (person && person.photo_ids) || [];
       if (ids.length) this.setData({ photo: await api.media(ids[0]) });
+    },
+    onPreview() {
+      const person = this.data.item && this.data.item.person;
+      if (person) api.previewPhotos(person.photo_ids);
+    },
+    onProfile() {
+      wx.navigateTo({ url: '/pages/person/person?proposal=' + this.data.card.proposal_id });
     },
     async run(state, fn) {
       if (this.data.state === 'busy') return;
@@ -74,7 +131,8 @@ Component({
     onOpenScreen() {
       const screen = this.data.card.screen;
       if (screen === 'verify_email') return;
-      wx.switchTab({ url: TABS[screen] || '/pages/me/me' });
+      if (PAGES[screen]) wx.navigateTo({ url: PAGES[screen] });
+      else wx.switchTab({ url: TABS[screen] || '/pages/me/me' });
     },
     onDecide(e) {
       const decision = e.currentTarget.dataset.decision;
@@ -110,7 +168,7 @@ Component({
     onBuy(e) {
       this.run('', async () => {
         const bought = await pay.buy(e.currentTarget.dataset.id);
-        if (bought) this.setData({ item: bought });
+        if (bought) this.setData({ item: bought, balanceText: t('{n} credits left', { n: bought.balance }) });
       });
     },
     async onShare() {
@@ -122,8 +180,8 @@ Component({
     },
     async onConfirm() {
       const c = this.data.card;
-      const [title, body] = CONFIRM[c.action] || ['确定吗？', ''];
-      if (!(await confirm(title, body))) return;
+      const [title, body] = CONFIRM[c.action] || ['Are you sure?', ''];
+      if (!(await confirm(t(title), body ? t(body) : ''))) return;
       this.run('done', async () => {
         if (c.action === 'remove_photo') await api.photos.remove(c.photo_id);
         else if (c.action === 'unmatch') await api.matches.unmatch(c.match_id);
