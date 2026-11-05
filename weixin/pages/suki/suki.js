@@ -11,8 +11,12 @@ const POLL_FOR_MS = 180000;
 
 const COPY = {
   aiGenerated: 'AI-generated',
-  hello: 'Say hi to Suki.',
-  thinking: 'Suki is thinking about this.',
+  winggirl: 'Your winggirl. Openly an AI.',
+  thinkingHeader: 'Thinking about what you said...',
+  settings: "Suki's settings",
+  hi: "Hi, I'm Suki!",
+  hiBody: "I'm an AI matchmaker, and I'm on your side. Say hi and we'll get to know each other. No forms, I promise.",
+  loading: 'Finding our conversation...',
   placeholder: 'Tell Suki anything',
   send: 'Send',
   hear: 'Hear Suki say this',
@@ -22,7 +26,16 @@ const COPY = {
 
 function shape(m) {
   const meta = m.meta || {};
-  return { seq: m.seq, role: m.role, body: m.body, cards: meta.cards || [], replies: meta.replies || [] };
+  return { seq: m.seq, role: m.role, body: m.body, mood: meta.mood || '', cards: meta.cards || [], replies: meta.replies || [] };
+}
+
+// What her face in the header shows: what she last felt, or that she's thinking.
+function headerMood(messages, thinking) {
+  if (thinking) return 'thinking';
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === 'assistant' && messages[i].mood) return messages[i].mood;
+  }
+  return 'happy';
 }
 
 function newestSpeakable(messages) {
@@ -33,7 +46,7 @@ function newestSpeakable(messages) {
 }
 
 Page({
-  data: { t: i18n.strings(COPY), messages: [], thinking: false, draft: '', replies: [], bottom: '', loaded: false, speaker: false, clip: null, phase: null },
+  data: { t: i18n.strings(COPY), messages: [], thinking: false, draft: '', replies: [], bottom: '', loaded: false, speaker: false, clip: null, phase: null, moodAvatar: true, headerMood: 'happy' },
   onLoad() {
     if (!api.getToken()) {
       wx.reLaunch({ url: '/pages/login/login' });
@@ -80,6 +93,8 @@ Page({
     // Autoplay needs the speakers too, or there'd be nothing on screen to stop it with.
     this.autoplay = speaker && !!(s && s.suki_voice_auto);
     if (speaker !== this.data.speaker) this.setData({ speaker });
+    const moodAvatar = !s || s.mood_avatar !== false;
+    if (moodAvatar !== this.data.moodAvatar) this.setData({ moodAvatar });
   },
   readAloud(messages) {
     const newest = newestSpeakable(messages);
@@ -110,6 +125,7 @@ Page({
       this.setData({
         messages,
         thinking: r.thinking,
+        headerMood: headerMood(messages, r.thinking),
         loaded: true,
         replies: tail && tail.role !== 'user' ? tail.replies : [],
         bottom: fresh.length ? 'end' : this.data.bottom,
@@ -134,6 +150,9 @@ Page({
     clearInterval(this.poll);
     this.poll = null;
   },
+  onSettings() {
+    wx.navigateTo({ url: '/pages/settings/suki/suki' });
+  },
   onInput(e) {
     this.setData({ draft: e.detail.value });
   },
@@ -150,7 +169,7 @@ Page({
     this.setData({ replies: [] });
     try {
       await api.suki.send(text);
-      this.setData({ thinking: true });
+      this.setData({ thinking: true, headerMood: 'thinking' });
       this.watch();
       await this.load();
       this.watch();

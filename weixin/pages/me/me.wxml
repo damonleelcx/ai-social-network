@@ -1,7 +1,12 @@
 <view class="page">
-  <view class="card">
-    <view class="title">{{displayName}}</view>
-    <view wx:if="{{user.has_password}}" class="soft">{{user.email}}</view>
+  <view class="card row">
+    <image wx:if="{{photos.length}}" class="me-photo" src="{{mainPhoto}}" mode="aspectFill" />
+    <suki-avatar wx:else mood="pouty" size="144" ring="6" />
+    <view class="grow me-words">
+      <view class="title">{{displayName}}</view>
+      <view wx:if="{{user.has_password}}" class="soft">{{user.email}}</view>
+      <view wx:if="{{!photos.length}}" class="soft">{{t.noPhoto}}</view>
+    </view>
   </view>
 
   <view class="nav-row" data-screen="edit" bindtap="onOpen">

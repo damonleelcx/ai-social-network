@@ -1,7 +1,9 @@
 <view class="page">
   <view class="hero">
+    <suki-avatar class="hero-face" mood="{{mode === 'verify' ? 'happy' : mode === 'wechat' ? 'portrait' : 'playful'}}" size="{{mode === 'wechat' ? 240 : 192}}" ring="6" />
     <view class="brand">SynAgent</view>
     <view class="soft">{{t.tagline}}</view>
+    <view wx:if="{{mode === 'signin'}}" class="soft">{{t.welcomeBack}}</view>
     <view class="link" bindtap="onLanguage">{{t.language}}</view>
   </view>
 

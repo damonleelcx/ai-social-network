@@ -1,4 +1,5 @@
 <view class="page">
+  <suki-says wx:if="{{!loaded}}" face="thinking" size="144" dots body="{{t.loading}}" />
   <block wx:if="{{posts.length}}">
     <view class="section">{{t.posts}}</view>
     <view wx:for="{{posts}}" wx:key="id" wx:for-item="post" class="card">
@@ -22,5 +23,5 @@
     <view class="soft">{{item.statusText}}<text wx:if="{{item.whenText}}"> · {{item.whenText}}</text></view>
     <view wx:if="{{item.venue}}">{{item.venue.name}}</view>
   </view>
-  <view wx:if="{{loaded && !dates.length && !posts.length}}" class="empty">{{t.empty}}</view>
+  <suki-says wx:if="{{loaded && !dates.length && !posts.length}}" face="playful" size="264" title="{{t.emptyTitle}}" body="{{t.emptyBody}}" />
 </view>

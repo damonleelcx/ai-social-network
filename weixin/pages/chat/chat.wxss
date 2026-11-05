@@ -3,6 +3,11 @@
 .end { height: 2rpx; }
 .coach { margin: 12rpx 20rpx 0; padding: 18rpx 20rpx; border-radius: 20rpx; background: rgba(255,92,138,.14); border: 1px solid rgba(255,92,138,.4); font-size: 28rpx; max-height: 45vh; overflow-y: auto; }
 .coach-title { font-weight: 600; }
+.coach-head { margin-left: 14rpx; }
+.coach-line-words { margin-left: 12rpx; }
+.suki-note { display: flex; flex-direction: column; align-items: center; width: 88%; box-sizing: border-box; margin: 12rpx auto 20rpx; padding: 22rpx; border-radius: 24rpx; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); text-align: center; }
+.suki-note-who { font-size: 24rpx; font-weight: 700; color: #a99fc4; margin-top: 10rpx; }
+.suki-note-body { font-size: 28rpx; margin-top: 8rpx; }
 .coach-line { padding: 10rpx 24rpx; font-size: 24rpx; }
 .coach-close { width: 56rpx; height: 56rpx; line-height: 56rpx; text-align: center; font-size: 36rpx; color: #a99fc4; flex-shrink: 0; }
 .suggestion { margin-top: 12rpx; padding: 12rpx 18rpx; border-radius: 14rpx; background: rgba(255,92,138,.22); color: #ffd0dc; }

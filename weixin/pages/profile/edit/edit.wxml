@@ -1,9 +1,10 @@
-<view wx:if="{{!form}}" class="empty">
-  <view wx:if="{{error}}" class="error">{{error}}</view>
-  <block wx:else>{{t.loading}}</block>
-</view>
+<view wx:if="{{!form && error}}" class="empty"><view class="error">{{error}}</view></view>
+<suki-says wx:elif="{{!form}}" face="thinking" size="144" dots body="{{t.loading}}" />
 <view wx:else class="page">
-  <view class="card soft">{{t.intro}}</view>
+  <view class="card with-suki">
+    <suki-avatar mood="playful" size="88" />
+    <view class="grow soft">{{t.intro}}</view>
+  </view>
 
   <view class="section">{{t.about}}</view>
   <view class="card">

@@ -1,7 +1,8 @@
 <view class="page">
+  <suki-says wx:if="{{!loaded}}" face="thinking" size="144" dots body="{{t.loading}}" />
   <block wx:if="{{proposals.length}}">
     <view class="section">{{t.introductions}}</view>
-    <suki-card wx:for="{{proposals}}" wx:key="proposal_id" card="{{item}}" />
+    <suki-card wx:for="{{proposals}}" wx:key="proposal_id" card="{{item}}" intro="{{true}}" />
   </block>
   <view wx:if="{{matches.length}}" class="section">{{t.chats}}</view>
   <view wx:for="{{matches}}" wx:key="id" class="card row" data-id="{{item.id}}" bindtap="onOpen">
@@ -16,5 +17,5 @@
       <view class="soft ellipsis">{{item.last_preview || t.sayHi}}</view>
     </view>
   </view>
-  <view wx:if="{{loaded && !matches.length && !proposals.length}}" class="empty">{{t.empty}}</view>
+  <suki-says wx:if="{{loaded && !matches.length && !proposals.length}}" face="thinking" size="264" title="{{t.emptyTitle}}" body="{{t.emptyBody}}" />
 </view>

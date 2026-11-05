@@ -5,10 +5,14 @@
     <view class="chip" bindtap="onMore">{{t.more}}</view>
   </view>
   <block wx:if="{{hint || asking}}">
-    <view wx:if="{{typing}}" class="coach-line soft">{{hint ? t.noteWaiting : t.thinkingShort}}</view>
+    <view wx:if="{{typing}}" class="coach-line soft row">
+      <suki-avatar mood="{{hint ? 'playful' : 'thinking'}}" size="44" ring="3" />
+      <view class="grow coach-line-words">{{hint ? t.noteWaiting : t.thinkingShort}}</view>
+    </view>
     <view wx:else class="coach">
       <view class="row">
-        <view class="grow">
+        <suki-avatar mood="{{hint ? 'playful' : 'thinking'}}" size="60" />
+        <view class="grow coach-head">
           <view class="coach-title">{{t.justToYou}}</view>
           <view class="hint">{{t.onlyYou}}</view>
         </view>
@@ -25,8 +29,15 @@
     </view>
   </block>
   <scroll-view class="chat-list" scroll-y scroll-into-view="{{bottom}}">
+    <suki-says wx:if="{{!loaded}}" face="thinking" size="144" dots body="{{t.loading}}" />
+    <suki-says wx:elif="{{!messages.length && match.status === 'active'}}" face="playful" size="192" title="{{sayHi}}" body="{{t.sayHiBody}}" />
     <block wx:for="{{messages}}" wx:key="seq">
-      <view wx:if="{{item.role !== 'text'}}" class="note">{{item.body}}</view>
+      <view wx:if="{{item.role === 'system'}}" class="note">{{item.body}}</view>
+      <view wx:elif="{{item.role !== 'text'}}" class="suki-note">
+        <suki-avatar mood="{{item.role === 'prompt' ? 'playful' : 'happy'}}" size="68" />
+        <view class="suki-note-who">{{item.role === 'prompt' ? t.sukiAsks : t.fromSuki}}</view>
+        <view class="suki-note-body">{{item.body}}</view>
+      </view>
       <view wx:else class="bubble-row {{item.sender_id === me ? 'mine' : ''}}">
         <view class="bubble">{{item.body}}</view>
       </view>

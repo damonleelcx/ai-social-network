@@ -20,6 +20,10 @@ const COPY = {
   thinkingShort: 'Suki is thinking about this.',
   noteWaiting: 'Suki left you a note. Close the keyboard to see it.',
   tapSuggestion: 'Tap one to put it in your message box. Nothing sends until you do.',
+  loading: 'Opening your chat...',
+  sayHiBody: "First messages don't have to be clever. Ask about something on their profile. Stuck? Tap Ask Suki.",
+  fromSuki: 'From Suki',
+  sukiAsks: 'Suki asks you both',
 };
 const REASONS = [
   ['harassment', 'Harassment'],
@@ -34,7 +38,7 @@ const POLL_MS = 10000;
 const COACH_WAIT_MS = 45000;
 
 Page({
-  data: { t: i18n.strings(COPY), id: '', me: '', match: {}, messages: [], draft: '', bottom: '', barText: '', placeholder: '', hint: null, hintCount: 0, asking: false, typing: false, focusInput: false },
+  data: { t: i18n.strings(COPY), id: '', me: '', match: {}, messages: [], draft: '', bottom: '', barText: '', placeholder: '', sayHi: '', loaded: false, hint: null, hintCount: 0, asking: false, typing: false, focusInput: false },
   onLoad(q) {
     this.setData({ id: q.id });
     this.off = live.on((topic) => {
@@ -71,6 +75,7 @@ Page({
         match,
         barText: match.activity ? t('Buddy: {activity}', { activity: person.activity(match.activity) }) : (match.person.city_name || match.person.display_name),
         placeholder: t('Message {name}', { name: match.person.display_name }),
+        sayHi: t('Say hi to {name}', { name: match.person.display_name }),
       });
       wx.setNavigationBarTitle({ title: match.person.display_name });
     } catch (e) {
@@ -83,6 +88,7 @@ Page({
       const fresh = await api.matches.messages(this.data.id, last ? last.seq : 0);
       const seen = new Set(this.data.messages.map((m) => m.seq));
       const add = fresh.filter((m) => !seen.has(m.seq));
+      if (!this.data.loaded) this.setData({ loaded: true });
       if (!add.length) return;
       const messages = this.data.messages.concat(add);
       this.setData({ messages, bottom: 'end' });

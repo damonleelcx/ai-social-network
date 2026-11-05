@@ -1,15 +1,33 @@
 <view class="chat">
+  <view class="suki-header">
+    <suki-avatar mood="{{headerMood}}" mood-avatar="{{moodAvatar}}" size="108" ring="6" />
+    <view class="grow">
+      <view class="suki-name">Suki</view>
+      <view class="{{thinking ? 'suki-busy' : 'soft'}}">{{thinking ? t.thinkingHeader : t.winggirl}}</view>
+    </view>
+    <view class="suki-settings" aria-role="button" aria-label="{{t.settings}}" bindtap="onSettings">···</view>
+  </view>
   <scroll-view class="chat-list" scroll-y scroll-into-view="{{bottom}}" scroll-with-animation>
-    <view wx:if="{{loaded && !messages.length}}" class="empty">{{t.hello}}</view>
+    <suki-says wx:if="{{!loaded}}" face="thinking" size="144" dots body="{{t.loading}}" />
+    <suki-says wx:elif="{{!messages.length && !thinking}}" face="chibi" size="296" title="{{t.hi}}" body="{{t.hiBody}}" />
     <block wx:for="{{messages}}" wx:key="seq">
       <view wx:if="{{item.role === 'event'}}" class="note">{{item.body}}</view>
-      <view wx:elif="{{item.body}}" class="bubble-row {{item.role === 'user' ? 'mine' : ''}}">
-        <view class="bubble">{{item.body}}<view wx:if="{{item.role === 'assistant'}}" class="ai-label">{{t.aiGenerated}}</view></view>
-        <view wx:if="{{speaker && item.role === 'assistant'}}" class="speaker {{clip === item.seq ? 'on' : ''}}" aria-role="button" aria-label="{{clip === item.seq ? (phase === 'playing' ? t.stop : t.cancelVoice) : t.hear}}" data-seq="{{item.seq}}" bindtap="onSpeak">{{clip === item.seq ? (phase === 'playing' ? '■' : '…') : '▶'}}</view>
+      <view wx:elif="{{item.role === 'user'}}" class="bubble-row mine">
+        <view class="bubble">{{item.body}}</view>
       </view>
-      <suki-card wx:for="{{item.cards}}" wx:for-item="card" wx:for-index="i" wx:key="i" card="{{card}}" />
+      <view wx:else class="suki-row">
+        <suki-avatar class="suki-face" mood="{{item.mood}}" mood-avatar="{{moodAvatar}}" size="84" />
+        <view class="suki-col">
+          <view wx:if="{{item.body}}" class="bubble suki-bubble">{{item.body}}<view class="ai-label">{{t.aiGenerated}}</view></view>
+          <suki-card wx:for="{{item.cards}}" wx:for-item="card" wx:for-index="i" wx:key="i" card="{{card}}" />
+          <view wx:if="{{speaker && item.body}}" class="speaker {{clip === item.seq ? 'on' : ''}}" aria-role="button" aria-label="{{clip === item.seq ? (phase === 'playing' ? t.stop : t.cancelVoice) : t.hear}}" data-seq="{{item.seq}}" bindtap="onSpeak">{{clip === item.seq ? (phase === 'playing' ? '■' : '…') : '▶'}}</view>
+        </view>
+      </view>
     </block>
-    <view wx:if="{{thinking}}" class="note">{{t.thinking}}</view>
+    <view wx:if="{{thinking}}" class="suki-row suki-typing">
+      <suki-avatar mood="thinking" mood-avatar="{{moodAvatar}}" size="84" />
+      <view class="bubble typing-bubble"><view class="dot"></view><view class="dot d2"></view><view class="dot d3"></view></view>
+    </view>
     <view id="end" class="end"></view>
   </scroll-view>
   <view wx:if="{{replies.length && !thinking}}" class="chips">

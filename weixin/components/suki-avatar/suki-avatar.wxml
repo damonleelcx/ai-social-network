@@ -1,0 +1,3 @@
+<view class="ring" style="width: {{size}}rpx; height: {{size}}rpx; padding: {{ring}}rpx;">
+  <image class="face" src="{{src}}" mode="aspectFill" aria-label="Suki" />
+</view>
