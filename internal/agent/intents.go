@@ -59,7 +59,15 @@ For a first meet-up, remind them to pick somewhere public and never to send mone
 }
 
 // SystemIntents are timer and event driven: they never come from the router.
-var SystemIntents = []string{"sys_profile_ready", "sys_daily_search", "sys_photo_uploaded", "sys_proposal_created", "sys_match_created", "sys_chat_stalled", "sys_chat_ready", "sys_date_confirmed", "sys_date_reminder", "sys_safety_checkin", "sys_debrief_due", "sys_taste_refresh", "sys_reputation_recompute", "sys_message_flagged", "sys_inactive_user"}
+var SystemIntents = []string{"sys_profile_ready", "sys_daily_search", "sys_photo_uploaded", "sys_proposal_created", "sys_match_created", "sys_chat_stalled", "sys_chat_ready", "sys_date_confirmed", "sys_date_reminder", "sys_safety_checkin", "sys_debrief_due", "sys_taste_refresh", "sys_reputation_recompute", "sys_message_flagged", "sys_inactive_user", SuggestIntent}
+
+// SuggestIntent is Suki coming up with something for someone to do.
+const SuggestIntent = "sys_suggest_next"
+
+// suggest isn't in Domains because the router must never pick it. It can look and show, and
+// its tools change nothing: whatever happens next is the person's own answer.
+var suggest = Domain{Name: "suggest", Guide: `You're starting this, they didn't ask. Come up with one concrete thing for them to do today that gets them closer to meeting someone or doing something they'd enjoy: answer an introduction that's waiting, write to a match who's gone quiet, suggest a date, join or post a plan with a buddy, or improve their profile. Look at what's really there with proposal_list, match_list, buddy_board and buddy_mine, then pick what fits what you know about them. Show a post with buddy_show_post if that's the idea, or a button with app_open_screen. Never invent a person, a post, a place or an event. Don't repeat your last suggestion. Keep it to two or three short sentences, and offer quick replies that take it up or ask for something else.`,
+	Tools: []string{"proposal_list", "buddy_board", "buddy_mine", "buddy_show_post"}}
 
 func domainOf(intent string) *Domain {
 	for i := range Domains {

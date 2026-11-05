@@ -1,0 +1,152 @@
+# Every merge into main: test, then ship whatever changed since it last shipped.
+#
+#   server and web app -> built into one image and deployed
+#   native app         -> new version, Android and iOS packages, GitHub release
+#   mini program       -> uploaded to WeChat as a new version, ready for review
+#
+# See docs/release-pipeline.md, which also lists what each part needs before it can run.
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Which part of the app's version to raise
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+# One at a time. A merge that waits is covered by comparing with what last shipped, not with the
+# merge before it.
+concurrency:
+  group: release
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      server: ${{ steps.what.outputs.server }}
+      native: ${{ steps.what.outputs.native }}
+      weixin: ${{ steps.what.outputs.weixin }}
+      version: ${{ steps.what.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - id: what
+        env:
+          BUMP: ${{ inputs.bump || 'patch' }}
+        run: |
+          # The server image embeds the web app, so a change in mobile/ ships it too.
+          echo "server=$(deploy/ci/changed.sh shipped/server cmd internal go.mod go.sum Dockerfile deploy mobile)" >> "$GITHUB_OUTPUT"
+          echo "native=$(deploy/ci/changed.sh "$(deploy/ci/latest-app-tag.sh)" mobile)" >> "$GITHUB_OUTPUT"
+          echo "weixin=$(deploy/ci/changed.sh shipped/weixin weixin)" >> "$GITHUB_OUTPUT"
+          echo "version=$(deploy/ci/next-version.sh "$BUMP")" >> "$GITHUB_OUTPUT"
+          cat "$GITHUB_OUTPUT"
+
+  test:
+    uses: ./.github/workflows/test.yml
+
+  deploy:
+    needs: [changes, test]
+    if: needs.changes.outputs.server == 'true' && vars.AWS_DEPLOY_ROLE_ARN != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Build and deploy
+        env:
+          INSTANCE: ${{ vars.SYN_INSTANCE }}
+          REGION: us-east-1
+          AWS_PAGER: ""
+        run: deploy/release.sh
+      - name: Check it's up
+        run: deploy/ci/smoke.sh https://match.heros-agent.space
+      - name: Remember what shipped
+        run: deploy/ci/mark-shipped.sh shipped/server
+
+  native:
+    needs: [changes, test, deploy]
+    # always(), because a skipped deploy would otherwise skip this too. A failed one stops it: a
+    # new app shouldn't reach people before the server it talks to.
+    if: >-
+      always() && needs.test.result == 'success' && needs.changes.outputs.native == 'true' &&
+      (needs.deploy.result == 'success' || needs.deploy.result == 'skipped')
+    uses: ./.github/workflows/packages.yml
+    permissions:
+      contents: write
+    secrets: inherit
+    with:
+      version: ${{ needs.changes.outputs.version }}
+
+  weixin:
+    needs: [changes, test, deploy]
+    if: >-
+      always() && needs.test.result == 'success' && needs.changes.outputs.weixin == 'true' &&
+      (needs.deploy.result == 'success' || needs.deploy.result == 'skipped') && vars.WEIXIN_APPID != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Upload to WeChat
+        env:
+          WEIXIN_APPID: ${{ vars.WEIXIN_APPID }}
+          WEIXIN_API_URL: ${{ vars.WEIXIN_API_URL }}
+          WEIXIN_UPLOAD_KEY: ${{ secrets.WEIXIN_UPLOAD_KEY }}
+        run: deploy/ci/upload-weixin.sh "1.0.$GITHUB_RUN_NUMBER"
+      - name: Remember what shipped
+        run: |
+          git checkout -- weixin
+          deploy/ci/mark-shipped.sh shipped/weixin
+
+  summary:
+    needs: [changes, test, deploy, native, weixin]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say what happened
+        env:
+          SERVER: ${{ needs.changes.outputs.server }}
+          WEIXIN: ${{ needs.changes.outputs.weixin }}
+          DEPLOY: ${{ needs.deploy.result }}
+          NATIVE: ${{ needs.native.result }}
+          WEIXIN_RESULT: ${{ needs.weixin.result }}
+          VERSION: ${{ needs.changes.outputs.version }}
+          HAS_ROLE: ${{ vars.AWS_DEPLOY_ROLE_ARN != '' }}
+          HAS_WEIXIN: ${{ vars.WEIXIN_APPID != '' }}
+        run: |
+          {
+            echo "| Part | Result |"
+            echo "|---|---|"
+            echo "| Server and web app | $DEPLOY |"
+            echo "| Native app $VERSION | $NATIVE |"
+            echo "| Mini program | $WEIXIN_RESULT |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          # A part that couldn't ship shouldn't look the same as one with nothing to ship.
+          if [ "$SERVER" = true ] && [ "$HAS_ROLE" != true ]; then
+            echo "::warning::The server changed but wasn't deployed: AWS_DEPLOY_ROLE_ARN isn't set. See docs/release-pipeline.md."
+          fi
+          if [ "$WEIXIN" = true ] && [ "$HAS_WEIXIN" != true ]; then
+            echo "::warning::The mini program changed but wasn't uploaded: WEIXIN_APPID isn't set. See docs/release-pipeline.md."
+          fi

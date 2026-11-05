@@ -1,0 +1,57 @@
+# The checks every change has to pass: on each pull request, and again before a release.
+name: Test
+
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_USER: syn
+          POSTGRES_DB: syn
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 55870:5432
+        options: >-
+          --health-cmd "pg_isready -U syn" --health-interval 5s --health-timeout 5s --health-retries 20
+      mongo:
+        image: mongo:7.0
+        ports:
+          - 55871:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ping:1})'" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      SYN_TEST_DATABASE_URL: postgres://syn@127.0.0.1:55870/syn?sslmode=disable
+      SYN_TEST_MONGO_URL: mongodb://127.0.0.1:55871
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Server
+        run: |
+          go vet ./...
+          go test ./... -count=1 -timeout 20m
+      - name: App types
+        working-directory: mobile
+        run: |
+          npm ci --no-audit --no-fund
+          npx tsc --noEmit
+      - name: Mini program syntax
+        run: find weixin -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: Release scripts
+        run: |
+          for f in deploy/*.sh deploy/ci/*.sh; do bash -n "$f"; test -x "$f"; done
+          deploy/ci/test.sh
