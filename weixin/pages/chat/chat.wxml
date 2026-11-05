@@ -15,7 +15,7 @@
         <view wx:if="{{hint}}" class="coach-close" aria-role="button" aria-label="{{t.dismiss}}" bindtap="onDismissHint">×</view>
       </view>
       <block wx:if="{{hint}}">
-        <view class="gap">{{hint.body}}</view>
+        <view class="gap">{{hint.body}}<view class="ai-label">{{t.aiGenerated}}</view></view>
         <block wx:if="{{hint.suggestions.length}}">
           <view wx:for="{{hint.suggestions}}" wx:key="*this" class="suggestion" data-text="{{item}}" bindtap="onSuggestion">{{item}}</view>
           <view class="hint">{{t.tapSuggestion}}</view>
