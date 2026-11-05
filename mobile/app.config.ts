@@ -13,7 +13,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     slug: 'synagent',
     scheme: 'synagent',
     // Release builds get the next version from the pipeline. This is for local builds.
-    version: process.env.APP_VERSION || '1.3.3',
+    version: process.env.APP_VERSION || '1.3.4',
     orientation: 'portrait',
     icon: './assets/brand/icon.png',
     userInterfaceStyle: 'automatic',
