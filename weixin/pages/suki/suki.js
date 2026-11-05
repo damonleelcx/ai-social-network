@@ -10,6 +10,7 @@ const POLL_MS = 3000;
 const POLL_FOR_MS = 180000;
 
 const COPY = {
+  aiGenerated: 'AI-generated',
   hello: 'Say hi to Suki.',
   thinking: 'Suki is thinking about this.',
   placeholder: 'Tell Suki anything',

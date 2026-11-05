@@ -6,6 +6,7 @@ const { showError, confirm } = require('../../lib/format');
 const { t } = i18n;
 
 const COPY = {
+  aiGenerated: 'AI-generated',
   plan: 'Plan a date',
   more: 'More',
   ended: "This chat has ended. I'm sorry. There are more people to meet.",

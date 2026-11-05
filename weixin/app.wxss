@@ -4,6 +4,7 @@ page { background: #1b1033; color: #f3effa; font-size: 30rpx; line-height: 1.5; 
 .title { font-size: 34rpx; font-weight: 600; }
 .section { font-size: 28rpx; color: #a99fc4; margin: 28rpx 0 14rpx; }
 .soft { color: #a99fc4; font-size: 26rpx; }
+.ai-label { margin-top: 8rpx; color: #a99fc4; font-size: 22rpx; }
 .error { color: #ff8a9a; font-size: 26rpx; margin: 12rpx 0; }
 .row { display: flex; align-items: center; }
 .grow { flex: 1; min-width: 0; }
