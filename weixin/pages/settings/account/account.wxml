@@ -45,7 +45,7 @@
   <button class="plain" loading="{{signingOut}}" bindtap="onSignOut">{{t.signOut}}</button>
   <button class="danger" bindtap="onDeleteOpen">{{t.deleteAccount}}</button>
 
-  <view wx:if="{{deleteOpen && user}}" class="card gap">
+  <view wx:if="{{deleteOpen && user}}" id="delete-panel" class="card gap">
     <view class="title">{{t.deleteTitle}}</view>
     <block wx:if="{{user.has_password}}">
       <view class="soft gap">{{t.deleteWithPassword}}</view>
