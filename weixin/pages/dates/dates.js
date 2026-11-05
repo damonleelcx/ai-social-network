@@ -13,7 +13,9 @@ const COPY = {
   pick: 'Pick them',
   takeDown: 'Take it down',
   openChat: 'Open chat',
-  empty: 'Your date plans and buddy posts show up here. Want company for something? Just tell Suki.',
+  loading: 'Checking your calendar...',
+  emptyTitle: 'No dates yet',
+  emptyBody: "When a chat feels ready, tap Plan a date, or just ask me. I'll find a spot you'd both like.",
 };
 const STATUS = { searching: 'Looking for places', voting: 'Choosing a place', scheduling: 'Finding a time', confirmed: 'On!', completed: 'Finished', cancelled: 'Cancelled' };
 const POST = { open: 'Open to join', filled: 'Picked', closed: 'Taken down' };

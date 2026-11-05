@@ -1,5 +1,19 @@
 .end { height: 2rpx; }
-.bubble-row { align-items: flex-end; }
-.speaker { width: 52rpx; height: 52rpx; line-height: 52rpx; margin-left: 10rpx; text-align: center; font-size: 22rpx; color: #a99fc4; border-radius: 50%; flex-shrink: 0; }
+.suki-header { display: flex; align-items: center; padding: 16rpx 24rpx; background: #241644; }
+.suki-header .grow { margin-left: 20rpx; }
+.suki-name { font-size: 36rpx; font-weight: 700; }
+.suki-busy { font-size: 26rpx; font-weight: 600; color: #ff9db0; }
+.suki-settings { width: 72rpx; height: 72rpx; line-height: 72rpx; text-align: center; border-radius: 50%; background: rgba(255,255,255,.12); flex-shrink: 0; }
+.suki-row { display: flex; align-items: flex-start; margin-bottom: 18rpx; }
+.suki-col { flex: 1; min-width: 0; margin-left: 14rpx; display: flex; flex-direction: column; align-items: flex-start; }
+.suki-col suki-card { align-self: stretch; }
+.suki-bubble { max-width: 94%; border-top-left-radius: 10rpx; margin-bottom: 8rpx; }
+.suki-typing { align-items: center; }
+.typing-bubble { display: flex; align-items: center; margin-left: 14rpx; padding: 24rpx 28rpx; }
+.dot { width: 14rpx; height: 14rpx; margin: 0 5rpx; border-radius: 50%; background: #ff5c8a; opacity: .3; animation: pulse 1.2s infinite linear; }
+.d2 { animation-delay: .2s; }
+.d3 { animation-delay: .4s; }
+@keyframes pulse { 0%, 60%, 100% { opacity: .3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-6rpx); } }
+.speaker { width: 52rpx; height: 52rpx; line-height: 52rpx; margin-left: 2rpx; text-align: center; font-size: 22rpx; color: #a99fc4; border-radius: 50%; flex-shrink: 0; }
 .speaker.on { background: rgba(255,92,138,.22); color: #ff9db0; }
 .composer { padding-bottom: 14rpx; }

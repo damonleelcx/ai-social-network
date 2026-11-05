@@ -14,6 +14,8 @@ const COPY = {
   checksIn: 'How often she checks in',
   calls: 'What she calls you',
   callsPlaceholder: 'Your name, unless you say otherwise',
+  moods: 'Avatar moods',
+  moodsHint: "Her face changes with what she's saying.",
   herVoice: 'Her voice',
   speakers: 'Speaker buttons',
   speakersHint: 'Tap the speaker on a message to hear it.',
@@ -42,10 +44,12 @@ const TONES = [['playful', 'Playful'], ['warm', 'Warm'], ['direct', 'Direct'], [
 const EMOJI = [['none', 'None'], ['some', 'Some'], ['lots', 'Lots']];
 const PROACTIVE = [['low', 'Only when I ask'], ['normal', 'Now and then'], ['high', 'Keep me posted']];
 
+const MOOD_FACE = { playful: 'playful', warm: 'happy', direct: 'thinking', calm: 'portrait' };
+
 const options = (list) => list.map((o) => ({ value: o[0], label: t(o[1]) }));
 
 Page({
-  data: { t: i18n.strings(COPY), s: null, tones: [], emoji: [], proactive: [], voiceOn: false, clip: null, phase: null },
+  data: { t: i18n.strings(COPY), s: null, tones: [], emoji: [], proactive: [], faces: MOOD_FACE, voiceOn: false, clip: null, phase: null },
   onLoad() {
     this.off = voice.on((v) => this.setData({ voiceOn: v.enabled, clip: v.clip, phase: v.phase }));
   },

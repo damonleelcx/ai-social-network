@@ -43,7 +43,11 @@
       <view class="link">{{t.profile}} ›</view>
     </view>
   </view>
-  <view>{{item.pitch}}</view>
+  <view wx:if="{{intro}}" class="with-suki">
+    <suki-avatar mood="playful" size="64" />
+    <view class="grow pitch">{{item.pitch}}</view>
+  </view>
+  <view wx:else>{{item.pitch}}</view>
   <block wx:if="{{item.status === 'open' && !state}}">
     <button class="primary" data-decision="accept" bindtap="onDecide">{{t.like}}</button>
     <button class="plain" data-decision="pass" bindtap="onDecide">{{t.pass}}</button>

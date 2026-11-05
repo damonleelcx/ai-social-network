@@ -28,13 +28,17 @@
     "backgroundColor": "#1b1033",
     "borderStyle": "black",
     "list": [
-      { "pagePath": "pages/suki/suki", "text": "Suki" },
-      { "pagePath": "pages/matches/matches", "text": "配对" },
-      { "pagePath": "pages/dates/dates", "text": "约会" },
-      { "pagePath": "pages/me/me", "text": "我" }
+      { "pagePath": "pages/suki/suki", "text": "Suki", "iconPath": "assets/tabs/suki.png", "selectedIconPath": "assets/tabs/suki-on.png" },
+      { "pagePath": "pages/matches/matches", "text": "配对", "iconPath": "assets/tabs/matches.png", "selectedIconPath": "assets/tabs/matches-on.png" },
+      { "pagePath": "pages/dates/dates", "text": "约会", "iconPath": "assets/tabs/dates.png", "selectedIconPath": "assets/tabs/dates-on.png" },
+      { "pagePath": "pages/me/me", "text": "我", "iconPath": "assets/tabs/me.png", "selectedIconPath": "assets/tabs/me-on.png" }
     ]
   },
-  "usingComponents": { "suki-card": "/components/suki-card/suki-card" },
+  "usingComponents": {
+    "suki-card": "/components/suki-card/suki-card",
+    "suki-avatar": "/components/suki-avatar/suki-avatar",
+    "suki-says": "/components/suki-says/suki-says"
+  },
   "sitemapLocation": "sitemap.json",
   "style": "v2"
 }

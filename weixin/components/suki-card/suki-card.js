@@ -52,7 +52,7 @@ const PAGES = {
 };
 
 Component({
-  properties: { card: { type: Object, value: {} } },
+  properties: { card: { type: Object, value: {} }, intro: { type: Boolean, value: false } },
   data: { t: i18n.strings(COPY), packs: [], item: null, photo: '', state: '', error: '', gone: false, offerLine: '', activityText: '', balanceText: '' },
   lifetimes: {
     attached() {

@@ -11,6 +11,7 @@ const { t } = i18n;
 const COPY = {
   tagline: 'Suki introduces you to people, and finds you company for plans',
   language: 'Language',
+  welcomeBack: "There you are. I was hoping you'd come back.",
   wechat: 'Continue with WeChat',
   useEmail: 'Sign in with email',
   name: 'Name',

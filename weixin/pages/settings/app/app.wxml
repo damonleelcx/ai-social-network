@@ -1,4 +1,4 @@
-<view wx:if="{{!s}}" class="empty">{{t.loading}}</view>
+<suki-says wx:if="{{!s}}" face="thinking" size="144" dots body="{{t.loading}}" />
 <view wx:else class="page">
   <view class="section">{{t.language}}</view>
   <view class="card">

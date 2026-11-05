@@ -4,7 +4,7 @@ A native mini program that talks to the same server as the app. React Native can
 
 **In it:** WeChat sign-in, plus email sign-in, sign-up, verification and forgot password; Suki's conversation and cards, with her voice (speaker buttons and reading new messages aloud); matches and chat, with report, block and Suki's private coaching hints; a person's full profile, where tapping any photo shows all of it; date plans and your buddy posts; editing your profile and pausing introductions; photos, credits balance and history; a notifications list; settings for the app, your account (password, sessions, data export, legal, sign-out, deletion), blocked people, Suki and what she remembers. Chinese by default, plus English, Korean, Japanese and Spanish, following the account's language setting. Words live in `lib/catalog.js`, keyed by their English like the app's catalog.
 
-**Not in it yet:** push notifications (see "Push notifications" below), Suki's avatar moods and a light theme. The theme and avatar moods settings are left out because they'd change nothing here. Credits can be bought with WeChat Pay, except on iOS, and that needs a decision before release (see item 6 below).
+**Not in it yet:** push notifications (see "Push notifications" below) and a light theme. The theme setting is left out because it would change nothing here. Credits can be bought with WeChat Pay, except on iOS, and that needs a decision before release (see item 6 below).
 
 `wx.request` doesn't document PATCH, so the mini program saves settings and the profile with `POST /v1/settings` and `POST /v1/profile`, which the server handles exactly as it does PATCH.
 

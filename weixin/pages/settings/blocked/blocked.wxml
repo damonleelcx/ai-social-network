@@ -1,10 +1,7 @@
 <view class="page">
   <view wx:if="{{error}}" class="error">{{error}}</view>
-  <view wx:if="{{items === null && !error}}" class="empty">{{t.loading}}</view>
-  <view wx:elif="{{items && !items.length}}" class="empty">
-    <view class="title">{{t.nobody}}</view>
-    <view class="gap">{{t.nobodyBody}}</view>
-  </view>
+  <suki-says wx:if="{{items === null && !error}}" face="thinking" size="144" dots body="{{t.loading}}" />
+  <suki-says wx:elif="{{items && !items.length}}" face="happy" title="{{t.nobody}}" body="{{t.nobodyBody}}" />
   <view wx:for="{{items}}" wx:key="user_id" class="card row">
     <view class="grow title">{{item.display_name}}</view>
     <view class="chip unblock" data-id="{{item.user_id}}" data-name="{{item.display_name}}" bindtap="onUnblock">{{t.unblock}}</view>

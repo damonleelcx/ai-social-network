@@ -8,6 +8,7 @@ const share = require('../../lib/share');
 const { t } = i18n;
 
 const COPY = {
+  noPhoto: "No photo yet. That's my face, not yours.",
   editProfile: 'Edit profile',
   editHint: 'Or just tell Suki',
   pause: 'Pause introductions',
@@ -42,7 +43,7 @@ const SCREENS = {
 };
 
 Page({
-  data: { t: i18n.strings(COPY), user: {}, displayName: '', canPause: false, paused: false, pausing: false, photos: [], invite: null, joinedText: '', credits: null, balanceText: '', creditsText: '', usage: [], packs: [], buying: false, unread: 0 },
+  data: { t: i18n.strings(COPY), user: {}, displayName: '', canPause: false, paused: false, pausing: false, photos: [], mainPhoto: '', invite: null, joinedText: '', credits: null, balanceText: '', creditsText: '', usage: [], packs: [], buying: false, unread: 0 },
   onLoad() {
     this.off = live.on((topic) => {
       if (topic === 'credits' || topic === 'photos' || topic === 'notification' || topic === 'reconnect') this.load();
@@ -84,7 +85,7 @@ Page({
       const invite = await share.prepare();
       this.setData({ invite, joinedText: invite && invite.joined ? t('{count} people have joined', { count: invite.joined }) : '' });
       const shown = await Promise.all(photos.map(async (p) => ({ id: p.id, status: p.status, is_primary: p.is_primary, path: await api.media(p.id) })));
-      this.setData({ photos: shown });
+      this.setData({ photos: shown, mainPhoto: (shown.find((p) => p.is_primary) || shown[0] || {}).path || '' });
     } catch (e) {
       if (e.status !== 401 && e.status !== 403) showError(e);
     }

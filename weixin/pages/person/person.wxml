@@ -1,10 +1,5 @@
-<view wx:if="{{!person}}" class="empty">
-  <block wx:if="{{error}}">
-    <view class="title">{{t.cannotOpen}}</view>
-    <view class="soft gap">{{error}}</view>
-  </block>
-  <block wx:else>{{t.loading}}</block>
-</view>
+<suki-says wx:if="{{!person && error}}" face="pouty" title="{{t.cannotOpen}}" body="{{error}}" />
+<suki-says wx:elif="{{!person}}" face="thinking" size="144" dots body="{{t.loading}}" />
 
 <block wx:else>
   <swiper wx:if="{{photos.length}}" class="hero" indicator-dots="{{photos.length > 1}}" indicator-active-color="#ffffff" indicator-color="rgba(255,255,255,.45)">
@@ -19,7 +14,10 @@
     <view class="soft">{{line}}</view>
 
     <view wx:if="{{proposal && proposal.pitch}}" class="card gap">
-      <view>{{proposal.pitch}}</view>
+      <view class="with-suki">
+        <suki-avatar mood="playful" size="80" />
+        <view class="grow">{{proposal.pitch}}</view>
+      </view>
       <view wx:if="{{proposal.shared.length}}" class="chips-row">
         <view wx:for="{{proposal.shared}}" wx:key="*this" class="chip">{{item}}</view>
       </view>

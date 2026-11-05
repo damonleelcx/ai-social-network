@@ -6,7 +6,15 @@ const { time, pad, showError, confirm } = require('../../lib/format');
 const { t } = i18n;
 
 const COPY = {
-  searching: "I'm looking for a place you'd both enjoy.",
+  loading: 'Getting the plan...',
+  cannotOpen: "I can't open this date",
+  searchingTitle: 'Looking for places',
+  searching: "I'm searching for spots you'd both enjoy. I'll let you know the moment I have a few.",
+  tellSuki: 'Tell Suki',
+  cancelledBody: 'It happens. You can always plan another one from your chat, if the match is still open.',
+  failed: "I couldn't find a good place",
+  failedBody: "That's on me. You can try again from your chat, or pick somewhere yourselves.",
+  backToChat: 'Back to your chat',
   pickPlace: 'Pick your favorite place.',
   otherVoted: 'They already chose.',
   yourPick: 'Your pick',
@@ -26,7 +34,7 @@ const COPY = {
 };
 
 Page({
-  data: { t: i18n.strings(COPY), id: '', date: null, day: '', clock: '', today: '', proposedText: '', scheduledText: '', heading: '', otherSuggested: '', waiting: '' },
+  data: { t: i18n.strings(COPY), id: '', date: null, day: '', clock: '', today: '', proposedText: '', scheduledText: '', heading: '', askHow: '', error: '', otherSuggested: '', waiting: '' },
   onLoad(q) {
     const n = new Date();
     this.setData({ id: q.id, today: `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}` });
@@ -48,6 +56,7 @@ Page({
       proposedText: time(date.proposed_at),
       scheduledText: time(date.scheduled_at),
       heading: t('A date with {name}', { name }),
+      askHow: t('How did it go with {name}?', { name }),
       otherSuggested: t('{name} suggested', { name }),
       waiting: t('Waiting for {name} to say yes.', { name }),
     });
@@ -56,7 +65,8 @@ Page({
     try {
       this.show(await api.dates.get(this.data.id));
     } catch (e) {
-      showError(e);
+      if (this.data.date) showError(e);
+      else this.setData({ error: e.message });
     }
   },
   async act(fn) {
@@ -65,6 +75,12 @@ Page({
     } catch (e) {
       showError(e);
     }
+  },
+  onTellSuki() {
+    wx.switchTab({ url: '/pages/suki/suki' });
+  },
+  onBackToChat() {
+    wx.navigateTo({ url: '/pages/chat/chat?id=' + this.data.date.match_id });
   },
   onPerson() {
     wx.navigateTo({ url: '/pages/person/person?match=' + this.data.date.match_id });

@@ -10,7 +10,9 @@ const COPY = {
   introductions: "Suki's introductions",
   chats: 'Chats',
   sayHi: 'Say hi. I know you want to.',
-  empty: "No matches yet. Tell Suki who you'd like to meet.",
+  loading: 'Checking on your introductions...',
+  emptyTitle: 'Nobody here yet',
+  emptyBody: "I'm looking. When I find someone worth your time, I'll bring them right here. The more you tell me, the better I get.",
 };
 
 Page({
