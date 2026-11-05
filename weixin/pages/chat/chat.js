@@ -1,6 +1,7 @@
 const api = require('../../lib/api');
 const live = require('../../lib/live');
 const i18n = require('../../lib/i18n');
+const person = require('../../lib/person');
 const { showError, confirm } = require('../../lib/format');
 
 const { t } = i18n;
@@ -68,7 +69,7 @@ Page({
       const match = await api.matches.get(this.data.id);
       this.setData({
         match,
-        barText: match.activity ? t('Buddy: {activity}', { activity: match.activity }) : (match.person.city_name || match.person.display_name),
+        barText: match.activity ? t('Buddy: {activity}', { activity: person.activity(match.activity) }) : (match.person.city_name || match.person.display_name),
         placeholder: t('Message {name}', { name: match.person.display_name }),
       });
       wx.setNavigationBarTitle({ title: match.person.display_name });

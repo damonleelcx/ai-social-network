@@ -444,4 +444,12 @@ module.exports = {
   'Your name, unless you say otherwise': ['你的名字，除非你另有要求', '다르게 말하지 않으면 이름으로 불러요', '特に指定がなければ名前で呼びます', 'Tu nombre, a menos que digas otra cosa'],
   'Your old match won’t come back, but you could be introduced again.': ['之前的配对不会恢复，但你们可能会再次被介绍。', '예전 매치는 돌아오지 않지만, 다시 소개될 수는 있어요.', '以前のマッチは戻りませんが、また紹介されることはあります。', 'Tu match anterior no volverá, pero podrías recibir una nueva presentación.'],
   'Your pick': ['你的选择', '내 선택', 'あなたの選択', 'Tu elección'],
+  'Movie': ['看电影', '영화', '映画', 'Cine'],
+  'Meal': ['吃饭', '식사', 'ごはん', 'Comida'],
+  'Show': ['演出', '공연', 'ライブ', 'Espectáculo'],
+  'Travel': ['旅行', '여행', '旅行', 'Viaje'],
+  'Sports': ['运动', '운동', 'スポーツ', 'Deporte'],
+  'Games': ['游戏', '게임', 'ゲーム', 'Juegos'],
+  'Business': ['商务', '비즈니스', 'ビジネス', 'Negocios'],
+  'Study': ['学习', '공부', '勉強', 'Estudio'],
 };

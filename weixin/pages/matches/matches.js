@@ -1,6 +1,7 @@
 const api = require('../../lib/api');
 const live = require('../../lib/live');
 const i18n = require('../../lib/i18n');
+const person = require('../../lib/person');
 const { showError } = require('../../lib/format');
 
 const { t } = i18n;
@@ -35,7 +36,7 @@ Page({
     try {
       const [all, proposals] = await Promise.all([api.matches.list(), api.proposals.list()]);
       const matches = all.filter((m) => m.status === 'active').map((m) => Object.assign({}, m, {
-        activityText: m.activity ? t('Buddy: {activity}', { activity: m.activity }) : '',
+        activityText: m.activity ? t('Buddy: {activity}', { activity: person.activity(m.activity) }) : '',
       }));
       this.setData({
         loaded: true,

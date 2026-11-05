@@ -6,7 +6,12 @@ const HABITS = { no: 'No', sometimes: 'Sometimes', yes: 'Yes' };
 const KIDS = { none: "Don't have kids", have: 'Have kids' };
 const WANTS_KIDS = { yes: 'Want kids', no: "Don't want kids", open: 'Open to it' };
 
+const ACTIVITIES = { movie: 'Movie', meal: 'Meal', show: 'Show', travel: 'Travel', sports: 'Sports', games: 'Games', business: 'Business', study: 'Study', other: 'Other' };
+
 const label = (table, value) => (table[value] ? t(table[value]) : '');
+
+// The kind of a buddy plan, which the server sends as a code.
+const activity = (kind) => label(ACTIVITIES, kind) || kind || '';
 
 function line(p) {
   return [p.age ? String(p.age) : '', p.pronouns, p.city_name].filter(Boolean).join(' · ');
@@ -29,4 +34,4 @@ function details(p) {
 // For the forms that set these, in the order they're listed above.
 const options = (table) => Object.keys(table).map((value) => ({ value, label: t(table[value]) }));
 
-module.exports = { line, details, options, GOALS, HABITS, KIDS, WANTS_KIDS };
+module.exports = { activity, line, details, options, GOALS, HABITS, KIDS, WANTS_KIDS };
