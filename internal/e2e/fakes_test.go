@@ -210,6 +210,10 @@ func (f *fakeLLM) suki(w http.ResponseWriter, msgs []fakeMsg, has map[string]boo
 		reply(w, "Your score is 9/10, still. <<mood=happy>>", nil) // a stubborn model
 		return
 	}
+	if last.Role == "system" && strings.Contains(last.text(), "something for them to do") {
+		reply(w, "Why not say hi to someone today? <<mood=playful|replies=Good idea;Something else>>", nil)
+		return
+	}
 	if last.Role == "system" && strings.Contains(last.text(), "EVENT") {
 		reply(w, "So, how did it go? <<mood=playful|replies=Loved it;It was okay;Not for me>>", nil)
 		return

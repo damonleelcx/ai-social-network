@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/damonleelcx/ai-social-network/internal/agent"
 	"github.com/damonleelcx/ai-social-network/internal/dating"
 	"github.com/damonleelcx/ai-social-network/internal/hidden"
 	"github.com/damonleelcx/ai-social-network/internal/notify"
@@ -17,7 +18,7 @@ import (
 func Cron(ctx context.Context) {
 	for name, f := range map[string]func(context.Context) error{
 		"expire": d.Dating.ExpireProposals, "search": dailySearch, "dates": dateTimers, "debriefs-open": unfinishedDebriefs, "stuck": stuckGoals,
-		"debriefs": staleDebriefs, "stalled": stalledChats, "taste": tasteRefresh, "inactive": inactiveUsers,
+		"debriefs": staleDebriefs, "stalled": stalledChats, "taste": tasteRefresh, "inactive": inactiveUsers, "suggestions": suggestions,
 	} {
 		if err := f(ctx); err != nil && ctx.Err() == nil {
 			slog.Error("cron", "job", name, "err", err)
@@ -268,6 +269,37 @@ func stalledChats(ctx context.Context) error {
 			if err := StartCoach(ctx, x.id, u, "stalled"); err != nil {
 				return err
 			}
+		}
+	}
+	return nil
+}
+
+// suggestions has Suki come up with something to do: daily, or twice a day for someone who
+// set her proactivity to high, and never at low. It costs them nothing, because only what
+// they send is charged, but each one is a model call, so it stops a week after they were
+// last around. We don't know anyone's timezone, so it goes out at the hour they were last
+// active, which keeps it out of the night. Someone talking to her isn't interrupted.
+func suggestions(ctx context.Context) error {
+	ids, err := userIDs(ctx, `SELECT p.user_id FROM profiles p JOIN users u ON u.id=p.user_id
+		LEFT JOIN user_preferences x ON x.user_id=p.user_id
+		CROSS JOIN LATERAL (SELECT coalesce(x.data->>'suki_proactive','normal') AS level,
+			mod(extract(hour FROM now())::int - extract(hour FROM p.last_active_at)::int + 24, 24) AS hours) s
+		WHERE p.status='active' AND u.deleted_at IS NULL AND p.last_active_at > now()-interval '7 days'
+		AND ((s.level='normal' AND s.hours=0) OR (s.level='high' AND s.hours IN (0,6)))
+		AND NOT EXISTS (SELECT 1 FROM agent_turns t WHERE t.user_id=p.user_id AND t.created_at > now()-interval '1 hour')
+		AND NOT EXISTS (SELECT 1 FROM agent_turns t WHERE t.user_id=p.user_id AND t.intent=$1
+			AND t.created_at > now() - CASE WHEN s.level='high' THEN interval '5 hours' ELSE interval '20 hours' END)
+		LIMIT 20`, agent.SuggestIntent)
+	if err != nil {
+		return err
+	}
+	for _, id := range ids {
+		key := "suggest:" + id + ":" + time.Now().UTC().Format("2006010215")
+		if err := EnqueueSystemTurn(ctx, id, agent.SuggestIntent, "Come up with something for them to do today.", key); err != nil {
+			return err
+		}
+		if err := notify.Send(ctx, d.Pool, id, "hint", "Suki has an idea", "Something you could do today.", map[string]any{"screen": "agent"}, key); err != nil {
+			return err
 		}
 	}
 	return nil
