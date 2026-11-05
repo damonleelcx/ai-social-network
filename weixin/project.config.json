@@ -4,5 +4,6 @@
   "projectname": "synagent",
   "compileType": "miniprogram",
   "setting": { "es6": true, "enhance": true, "minified": true, "postcss": true, "urlCheck": true },
+  "packOptions": { "ignore": [{ "type": "folder", "value": "e2e" }] },
   "libVersion": "3.0.0"
 }

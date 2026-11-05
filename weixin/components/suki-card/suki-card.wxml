@@ -1,7 +1,7 @@
 <view wx:if="{{gone}}" class="card"><view class="soft">{{t.gone}}</view></view>
 
 <view wx:elif="{{card.kind === 'buddy_post'}}" class="card">
-  <view class="title">{{card.activity}}</view>
+  <view class="title">{{activityText}}</view>
   <view class="soft">{{card.when}}</view>
   <view wx:if="{{card.note}}">{{card.note}}</view>
   <view wx:if="{{state === 'done'}}" class="done">{{t.posted}}</view>
@@ -12,7 +12,7 @@
   <view class="row">
     <image wx:if="{{photo}}" class="avatar" src="{{photo}}" mode="aspectFill" bindtap="onPreview" />
     <view class="grow">
-      <view class="title">{{item.kind}}</view>
+      <view class="title">{{activityText}}</view>
       <view class="soft">{{item.person.display_name}} · {{item.when}}</view>
     </view>
   </view>
@@ -27,7 +27,7 @@
     <image wx:if="{{photo}}" class="avatar" src="{{photo}}" mode="aspectFill" bindtap="onPreview" />
     <view class="grow">
       <view class="title">{{offerLine}}</view>
-      <view class="soft">{{item.kind}} · {{item.when}}</view>
+      <view class="soft">{{activityText}} · {{item.when}}</view>
     </view>
   </view>
   <view wx:if="{{state === 'done' || item.status !== 'open'}}" class="done">{{t.picked}}</view>

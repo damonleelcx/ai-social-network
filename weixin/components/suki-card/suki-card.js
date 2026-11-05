@@ -1,6 +1,7 @@
 // The things Suki puts in the conversation. Same cards as the app, same API.
 const api = require('../../lib/api');
 const i18n = require('../../lib/i18n');
+const person = require('../../lib/person');
 const { showError, confirm } = require('../../lib/format');
 const pay = require('../../lib/pay');
 
@@ -52,7 +53,7 @@ const PAGES = {
 
 Component({
   properties: { card: { type: Object, value: {} } },
-  data: { t: i18n.strings(COPY), packs: [], item: null, photo: '', state: '', error: '', gone: false, offerLine: '', balanceText: '' },
+  data: { t: i18n.strings(COPY), packs: [], item: null, photo: '', state: '', error: '', gone: false, offerLine: '', activityText: '', balanceText: '' },
   lifetimes: {
     attached() {
       i18n.attach(this, COPY);
@@ -77,13 +78,19 @@ Component({
           this.photo(item.person);
         } else if (c.kind === 'buddy_request') {
           const item = await api.buddies.get(c.request_id);
-          this.setData({ item });
+          this.setData({ item, activityText: person.activity(item.kind) });
           this.photo(item.person);
+        } else if (c.kind === 'buddy_post') {
+          this.setData({ activityText: person.activity(c.activity) });
+          // The card comes back with the conversation, and must not offer to post twice.
+          const mine = await api.buddies.mine();
+          if (mine.some((p) => p.kind === c.activity && p.when === c.when)) this.setData({ state: 'done' });
         } else if (c.kind === 'buddy_offer') {
           const post = await api.buddies.get(c.request_id);
           const offer = (post.offers || []).find((o) => o.person.user_id === c.user_id);
           this.setData({
             item: Object.assign({}, post, { person: offer ? offer.person : null }),
+            activityText: person.activity(post.kind),
             offerLine: offer ? t('{name} wants to go too', { name: offer.person.display_name }) : '',
           });
           if (offer) this.photo(offer.person);

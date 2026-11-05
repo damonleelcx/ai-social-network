@@ -167,7 +167,8 @@ module.exports = {
     get: () => get('/v1/profile'),
     // The server takes POST as well as PATCH here, because wx.request has no PATCH.
     save: async (b) => (await post('/v1/profile', b)).profile,
-    setCity: (query) => post('/v1/profile/city', { query }),
+    // Longer than the server's own wait on the map service, so its answer gets here.
+    setCity: (query) => post('/v1/profile/city', { query }, 60000),
     pause: (paused) => post('/v1/profile/pause', { paused }),
     acceptBio: () => post('/v1/profile/bio-draft/accept'),
   },

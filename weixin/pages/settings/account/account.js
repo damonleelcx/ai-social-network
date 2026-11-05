@@ -181,7 +181,11 @@ Page({
     this.leave();
   },
   onDeleteOpen() {
-    this.setData({ deleteOpen: !this.data.deleteOpen, deletePassword: '', deleteError: '' });
+    const deleteOpen = !this.data.deleteOpen;
+    // The panel opens below the fold, where tapping would seem to do nothing.
+    this.setData({ deleteOpen, deletePassword: '', deleteError: '' }, () => {
+      if (deleteOpen) wx.pageScrollTo({ selector: '#delete-panel', duration: 200 });
+    });
   },
   async onDelete() {
     this.setData({ deleteBusy: true, deleteError: '' });

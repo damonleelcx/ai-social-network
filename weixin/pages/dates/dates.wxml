@@ -2,7 +2,7 @@
   <block wx:if="{{posts.length}}">
     <view class="section">{{t.posts}}</view>
     <view wx:for="{{posts}}" wx:key="id" wx:for-item="post" class="card">
-      <view class="title">{{post.kind}}</view>
+      <view class="title">{{post.kindText}}</view>
       <view class="soft">{{post.when}} · {{post.statusText}}</view>
       <view wx:if="{{post.note}}">{{post.note}}</view>
       <block wx:if="{{post.status === 'open'}}">
