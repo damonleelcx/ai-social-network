@@ -580,11 +580,18 @@ type Publishable struct {
 	Shared         []string
 	PitchViewer    string
 	PitchCandidate string
+	// Close marks a weaker fit, introduced because nobody better turned up. Its
+	// pitches may not hold up, so the Publisher writes plain ones instead.
+	Close bool
 }
+
+// closeFits is how many weaker fits one search may introduce.
+const closeFits = 1
 
 // Selected picks what this search may publish: approved, over the threshold, and
 // still eligible now (someone may have blocked or paused since the search began),
-// best first, up to limit.
+// best first, up to limit. If none qualify, it falls back to the closest fit that
+// the Critic didn't reject. Eligibility stays hard either way.
 func Selected(ctx context.Context, pool *pgxpool.Pool, goalID, viewerID string, limit int) ([]Publishable, error) {
 	cs, err := Compats(ctx, pool, goalID)
 	if err != nil {
@@ -596,11 +603,13 @@ func Selected(ctx context.Context, pool *pgxpool.Pool, goalID, viewerID string, 
 	}
 	sort.SliceStable(cs, func(i, j int) bool { return FinalScore(cs[i].Score, cs[i].Prior) > FinalScore(cs[j].Score, cs[j].Prior) })
 	out := []Publishable{}
+	close := []Publishable{}
 	for _, c := range cs {
 		if len(out) >= limit {
 			break
 		}
-		if c.Verdict != "approved" || FinalScore(c.Score, c.Prior) < PublishThreshold {
+		strong := c.Verdict == "approved" && FinalScore(c.Score, c.Prior) >= PublishThreshold
+		if !strong && c.Verdict != "approved" && c.Verdict != "close_fit" {
 			continue
 		}
 		var ok bool
@@ -608,11 +617,22 @@ func Selected(ctx context.Context, pool *pgxpool.Pool, goalID, viewerID string, 
 		if err != nil {
 			return nil, err
 		}
-		if ok {
-			out = append(out, Publishable{c.CandidateID, c.Shared, c.PitchViewer, c.PitchCandidate})
+		if ok && strong {
+			out = append(out, Publishable{c.CandidateID, c.Shared, c.PitchViewer, c.PitchCandidate, false})
+		} else if ok {
+			close = append(close, Publishable{c.CandidateID, c.Shared, "", "", true})
 		}
 	}
-	return out, nil
+	if len(out) > 0 {
+		return out, nil
+	}
+	if len(close) > closeFits {
+		close = close[:closeFits]
+	}
+	if len(close) > limit {
+		close = close[:limit]
+	}
+	return close, nil
 }
 
 // ── After a date ────────────────────────────────────────────────────────────

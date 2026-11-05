@@ -18,6 +18,7 @@ type fakeLLM struct {
 	down       atomic.Bool
 	holdMain   atomic.Bool
 	visionNude atomic.Bool
+	verdict    atomic.Value // what the Critic rules, when set
 }
 
 func newFakeLLM() *fakeLLM { return &fakeLLM{} }
@@ -151,7 +152,11 @@ func (f *fakeLLM) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		for _, m := range reAlias.FindAllStringSubmatch(user, -1) {
 			if !seen[m[1]] {
 				seen[m[1]] = true
-				calls = append(calls, call(m[1], "critic_verdict", map[string]any{"alias": m[1], "verdict": "approved", "notes": "fine"}))
+				verdict, _ := f.verdict.Load().(string)
+				if verdict == "" {
+					verdict = "approved"
+				}
+				calls = append(calls, call(m[1], "critic_verdict", map[string]any{"alias": m[1], "verdict": verdict, "notes": "fine"}))
 			}
 		}
 		reply(w, "", calls)
