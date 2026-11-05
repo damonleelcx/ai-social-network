@@ -8,7 +8,7 @@ A native mini program that talks to the same server as the app. React Native can
 
 `wx.request` doesn't document PATCH, so the mini program saves settings and the profile with `POST /v1/settings` and `POST /v1/profile`, which the server handles exactly as it does PATCH.
 
-Nothing here has been run in WeChat DevTools or on a phone yet. Try data export there in particular, because it uses `wx.shareFileMessage`.
+It has been run end to end in WeChat DevTools (see `e2e/README.md`), but not on a phone yet. On a phone, try sending the data export, the photo picker, the keyboard with the coaching panel, and hearing Suki's voice.
 
 ## Running it
 
