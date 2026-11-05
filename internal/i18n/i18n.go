@@ -221,6 +221,8 @@ var catalog = map[string][4]string{
 	"It's almost time.":                             {"时间快到了。", "거의 시간이 됐어요.", "もうすぐ時間です。", "Ya casi es la hora."},
 	"Everything okay?":                              {"一切还好吗？", "괜찮으세요?", "大丈夫ですか？", "¿Todo bien?"},
 	"Just checking in. If anything feels off, open SynAgent and tell Suki.": {"来问候一下。如果有什么不对劲，打开 SynAgent 告诉 Suki。", "잘 지내는지 확인해요. 뭔가 이상하다면 SynAgent를 열어 Suki에게 말해 주세요.", "様子を聞きに来ました。何か変だと感じたら、SynAgent を開いて Suki に伝えてください。", "Solo quería saber cómo estás. Si algo no va bien, abre SynAgent y cuéntaselo a Suki."},
+	"Suki has an idea":              {"Suki 有个主意", "Suki에게 아이디어가 있어요", "Suki にアイデアがあります", "Suki tiene una idea"},
+	"Something you could do today.": {"今天可以做点这个。", "오늘 해볼 만한 일이 있어요.", "今日できることがあります。", "Algo que podrías hacer hoy."},
 	"How did it go?":                    {"约会怎么样？", "어땠어요?", "どうでしたか？", "¿Qué tal fue?"},
 	"Suki would love to hear about it.": {"Suki 很想听听。", "Suki가 듣고 싶어 해요.", "Suki が聞きたがっています。", "A Suki le encantaría saberlo."},
 

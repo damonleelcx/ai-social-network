@@ -298,6 +298,9 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 		return "account_held", r.say(ctx, t, "Your account is paused until someone on our team has taken a look. I can't help with introductions in the meantime. If this seems wrong, write to support@heros-agent.space.", "thinking", nil, nil)
 	}
 	intent, dom := t.Intent, domainOf(t.Intent)
+	if intent == SuggestIntent {
+		dom = &suggest
+	}
 	if t.Kind == "message" {
 		// A short answer means nothing without the question it answers.
 		var lastSuki string

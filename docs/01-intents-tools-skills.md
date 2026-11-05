@@ -192,6 +192,7 @@ These run on a deterministic filter first, so a model outage cannot stop them.
 | `sys_reputation_recompute` | new evaluation | `date-debrief` |
 | `sys_message_flagged` | Sentinel flags a chat | `safety-review` |
 | `sys_inactive_user` | 30 days away | stop proposing them |
+| `sys_suggest_next` | daily, or twice a day at high proactivity; not at low | Suki suggests something to do, free |
 
 ### 1.12 What is never said
 
