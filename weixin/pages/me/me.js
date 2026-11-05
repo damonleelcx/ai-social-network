@@ -75,7 +75,7 @@ Page({
         credits,
         balanceText: t('{n} credits left', { n: credits.balance }),
         creditsText: credits.free
-          ? t('Messages to Suki are free right now. You have used {used} of your {free} free match.', { used: credits.matches_used, free: credits.free_matches })
+          ? t('Messages to Suki are free right now. You have used {used} of your {free} free match.', { used: Math.min(credits.matches_used, credits.free_matches), free: credits.free_matches })
           : t('Each message to Suki uses {n} credit. Chatting with your matches is free, and so is anything about your safety or your account.', { n: credits.cost_per_message }),
         packs: pay.packs(),
         usage: usage.slice(0, 20).map((u) => ({ delta: u.delta, text: REASON[u.reason] ? t(REASON[u.reason]) : u.reason, when: time(u.created_at) })),
