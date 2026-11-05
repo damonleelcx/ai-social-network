@@ -53,5 +53,5 @@ jobs:
         run: find weixin -name '*.js' -print0 | xargs -0 -n1 node --check
       - name: Release scripts
         run: |
-          for f in deploy/*.sh deploy/ci/*.sh; do bash -n "$f"; done
+          for f in deploy/*.sh deploy/ci/*.sh; do bash -n "$f"; test -x "$f"; done
           deploy/ci/test.sh
