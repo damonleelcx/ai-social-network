@@ -8,14 +8,17 @@ const share = require('../../lib/share');
 const { t } = i18n;
 
 const COPY = {
-  profileHint: "Wrong? Just tell Suki and she'll fix it.",
+  editProfile: 'Edit profile',
+  editHint: 'Or just tell Suki',
+  pause: 'Pause introductions',
+  pauseHint: 'You keep your matches and chats. I just stop looking.',
   photos: 'Photos',
   photosHint: 'Tap a photo to see all of it. Use ··· to make it your main one or remove it.',
   invite: 'Invite friends',
   inviteCode: 'Your invite code',
   sendInvite: 'Send to WeChat friends',
   credits: 'Credits',
-  noIos: "Top-ups aren't available on iOS yet.",
+  noBuying: "Credits can't be bought here right now. You can still use any you already have.",
   more: 'More',
   notifications: 'Notifications',
   settings: 'Settings',
@@ -29,6 +32,7 @@ const COPY = {
 };
 const REASON = { purchase: 'Bought credits', turn: 'Message to Suki', referral: 'A friend joined', refund: "Refund: Suki couldn't answer", grant: 'Added by SynAgent' };
 const SCREENS = {
+  edit: '/pages/profile/edit/edit',
   notifications: '/pages/notifications/notifications',
   app: '/pages/settings/app/app',
   suki: '/pages/settings/suki/suki',
@@ -38,7 +42,7 @@ const SCREENS = {
 };
 
 Page({
-  data: { t: i18n.strings(COPY), user: {}, photos: [], invite: null, joinedText: '', credits: null, balanceText: '', creditsText: '', usage: [], packs: [], buying: false, unread: 0 },
+  data: { t: i18n.strings(COPY), user: {}, displayName: '', canPause: false, paused: false, pausing: false, photos: [], invite: null, joinedText: '', credits: null, balanceText: '', creditsText: '', usage: [], packs: [], buying: false, unread: 0 },
   onLoad() {
     this.off = live.on((topic) => {
       if (topic === 'credits' || topic === 'photos' || topic === 'notification' || topic === 'reconnect') this.load();
@@ -62,8 +66,12 @@ Page({
   async load() {
     try {
       const [me, photos, credits, usage, notifications] = await Promise.all([api.auth.me(), api.photos.list(), api.credits.status(), api.credits.usage(), api.notifications.list()]);
+      const profile = me.profile || {};
       this.setData({
         user: me.user,
+        displayName: profile.display_name || me.user.name,
+        canPause: profile.status === 'active' || profile.status === 'paused',
+        paused: profile.status === 'paused',
         credits,
         balanceText: t('{n} credits left', { n: credits.balance }),
         creditsText: credits.free
@@ -80,6 +88,17 @@ Page({
     } catch (e) {
       if (e.status !== 401 && e.status !== 403) showError(e);
     }
+  },
+  async onPause(e) {
+    const paused = e.detail.value;
+    this.setData({ paused, pausing: true });
+    try {
+      await api.profile.pause(paused);
+    } catch (err) {
+      this.setData({ paused: !paused });
+      showError(err);
+    }
+    this.setData({ pausing: false });
   },
   onOpen(e) {
     wx.navigateTo({ url: SCREENS[e.currentTarget.dataset.screen] });

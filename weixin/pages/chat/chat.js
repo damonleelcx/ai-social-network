@@ -5,7 +5,20 @@ const { showError, confirm } = require('../../lib/format');
 
 const { t } = i18n;
 
-const COPY = { plan: 'Plan a date', more: 'More', ended: "This chat has ended. I'm sorry. There are more people to meet.", send: 'Send' };
+const COPY = {
+  plan: 'Plan a date',
+  more: 'More',
+  ended: "This chat has ended. I'm sorry. There are more people to meet.",
+  send: 'Send',
+  ask: 'Ask Suki',
+  justToYou: 'Suki, just to you',
+  onlyYou: 'Only you can see this.',
+  dismiss: 'Dismiss this hint',
+  thinking: 'Let me think about this.',
+  thinkingShort: 'Suki is thinking about this.',
+  noteWaiting: 'Suki left you a note. Close the keyboard to see it.',
+  tapSuggestion: 'Tap one to put it in your message box. Nothing sends until you do.',
+};
 const REASONS = [
   ['harassment', 'Harassment'],
   ['fake_profile', 'Fake profile'],
@@ -15,14 +28,18 @@ const REASONS = [
   ['other', 'Something else'],
 ];
 const POLL_MS = 10000;
+// If her answer gets lost, don't leave "thinking" on screen forever.
+const COACH_WAIT_MS = 45000;
 
 Page({
-  data: { t: i18n.strings(COPY), id: '', me: '', match: {}, messages: [], draft: '', bottom: '', barText: '', placeholder: '' },
+  data: { t: i18n.strings(COPY), id: '', me: '', match: {}, messages: [], draft: '', bottom: '', barText: '', placeholder: '', hint: null, hintCount: 0, asking: false, typing: false, focusInput: false },
   onLoad(q) {
     this.setData({ id: q.id });
     this.off = live.on((topic) => {
-      if (topic === 'chat:' + q.id || topic === 'reconnect') this.load();
-      else if (topic === 'matches') this.loadMatch();
+      if (topic === 'chat:' + q.id || topic === 'reconnect') {
+        this.load();
+        this.loadHints();
+      } else if (topic === 'matches') this.loadMatch();
     });
     api.auth.me().then((r) => this.setData({ me: r.user.id }), showError);
     this.loadMatch();
@@ -30,12 +47,17 @@ Page({
   onUnload() {
     if (this.off) this.off();
     clearInterval(this.poll);
+    clearTimeout(this.askTimer);
   },
   onShow() {
     i18n.apply(this, COPY, 'Chats');
     this.load();
+    this.loadHints();
     clearInterval(this.poll);
-    this.poll = setInterval(() => this.load(), POLL_MS);
+    this.poll = setInterval(() => {
+      this.load();
+      if (this.data.asking) this.loadHints();
+    }, POLL_MS);
   },
   onHide() {
     clearInterval(this.poll);
@@ -66,6 +88,50 @@ Page({
     } catch (e) {
       if (e.status !== 401 && e.status !== 403) showError(e);
     }
+  },
+  async loadHints() {
+    try {
+      const hints = await api.matches.hints(this.data.id);
+      const change = { hint: hints[0] || null, hintCount: hints.length };
+      if (hints.length > this.data.hintCount) change.asking = false;
+      this.setData(change);
+    } catch (_) {
+      // The panel just stays as it was.
+    }
+  },
+  async onAsk() {
+    if (this.data.asking) return;
+    this.setData({ asking: true });
+    clearTimeout(this.askTimer);
+    this.askTimer = setTimeout(() => this.setData({ asking: false }), COACH_WAIT_MS);
+    try {
+      await api.matches.coach(this.data.id);
+    } catch (e) {
+      this.setData({ asking: false });
+      showError(e);
+    }
+  },
+  async onDismissHint() {
+    const hint = this.data.hint;
+    if (!hint) return;
+    this.setData({ hint: null, hintCount: Math.max(0, this.data.hintCount - 1) });
+    // Any note behind this one comes up next.
+    try {
+      await api.matches.dismissHint(hint.id);
+    } catch (_) {
+      // It comes back below.
+    }
+    await this.loadHints();
+  },
+  onSuggestion(e) {
+    this.setData({ draft: e.currentTarget.dataset.text, focusInput: true });
+  },
+  // With the keyboard up the panel would cover the whole conversation, so it steps aside.
+  onFocus() {
+    this.setData({ typing: true });
+  },
+  onBlur() {
+    this.setData({ typing: false, focusInput: false });
   },
   onInput(e) {
     this.setData({ draft: e.detail.value });

@@ -26,4 +26,7 @@ function details(p) {
   ].filter((d) => d[1]).map((d) => ({ key: t(d[0]), value: d[1] }));
 }
 
-module.exports = { line, details };
+// For the forms that set these, in the order they're listed above.
+const options = (table) => Object.keys(table).map((value) => ({ value, label: t(table[value]) }));
+
+module.exports = { line, details, options, GOALS, HABITS, KIDS, WANTS_KIDS };

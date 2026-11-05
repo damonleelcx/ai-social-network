@@ -8,6 +8,7 @@
     "pages/chat/chat",
     "pages/date/date",
     "pages/person/person",
+    "pages/profile/edit/edit",
     "pages/notifications/notifications",
     "pages/settings/app/app",
     "pages/settings/account/account",

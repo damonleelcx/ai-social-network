@@ -64,18 +64,6 @@ const get = (p, timeout) => request(p, 'GET', undefined, timeout);
 const post = (p, b, timeout) => request(p, 'POST', b === undefined ? {} : b, timeout);
 const del = (p) => request(p, 'DELETE');
 
-// PATCH is the one method here that WeChat's wx.request docs don't list, and /v1/settings has
-// no other route. If a phone refuses it, the request never gets an HTTP status: that's what
-// this catches, so people get a reason instead of being told their network is down.
-async function patch(p, b) {
-  try {
-    return await request(p, 'PATCH', b);
-  } catch (e) {
-    if (e.status) throw e;
-    throw new Error(t("I couldn't save that here. Check your connection, or change it in the SynAgent app."));
-  }
-}
-
 function clientId() {
   return 'wx-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
 }
@@ -175,7 +163,14 @@ module.exports = {
     setPrimary: (id) => post(`/v1/photos/${id}/primary`),
     remove: (id) => del(`/v1/photos/${id}`),
   },
-  profile: { acceptBio: () => post('/v1/profile/bio-draft/accept') },
+  profile: {
+    get: () => get('/v1/profile'),
+    // The server takes POST as well as PATCH here, because wx.request has no PATCH.
+    save: async (b) => (await post('/v1/profile', b)).profile,
+    setCity: (query) => post('/v1/profile/city', { query }),
+    pause: (paused) => post('/v1/profile/pause', { paused }),
+    acceptBio: () => post('/v1/profile/bio-draft/accept'),
+  },
   suki: {
     messages: (after) => get('/v1/agent/messages' + (after > 0 ? `?after=${after}` : '')),
     send: (text) => post('/v1/agent/messages', { text, client_id: clientId() }),
@@ -194,6 +189,9 @@ module.exports = {
     send: async (id, text) => (await post(`/v1/matches/${id}/messages`, { text, client_id: clientId() })).message,
     read: (id, seq) => post(`/v1/matches/${id}/read`, { seq }),
     startDate: async (id) => (await post(`/v1/matches/${id}/date`, { constraints: [] })).date_id,
+    hints: async (id) => (await get(`/v1/matches/${id}/hints`)).hints || [],
+    coach: (id) => post(`/v1/matches/${id}/coach`),
+    dismissHint: (hintId) => post(`/v1/hints/${hintId}/dismiss`),
   },
   dates: {
     list: async () => (await get('/v1/dates')).dates || [],
@@ -229,7 +227,8 @@ module.exports = {
   },
   settings: {
     get: async () => (await get('/v1/settings')).settings,
-    patch: async (b) => (await patch('/v1/settings', b)).settings,
+    // The server takes POST as well as PATCH here, because wx.request has no PATCH.
+    patch: async (b) => (await post('/v1/settings', b)).settings,
   },
   memories: {
     list: async () => (await get('/v1/memories')).memories || [],

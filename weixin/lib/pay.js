@@ -1,5 +1,6 @@
-// Buying credits with WeChat Pay. WeChat doesn't allow selling virtual goods in a mini
-// program on iOS, so there it offers nothing, and doesn't point anywhere else to pay.
+// Buying credits with WeChat Pay. On iOS it offers nothing, and it never points anywhere
+// else to pay: WeChat forbids that. The README's WeChat Pay section has an open question
+// about whether this needs to become WeChat's virtual payment.
 const api = require('./api');
 const { t } = require('./i18n');
 

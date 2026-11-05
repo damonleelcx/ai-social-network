@@ -29,8 +29,7 @@ const COPY = {
   useThis: 'Use this',
   photoIn: "Got it. I'll take a look.",
   addPhoto: 'Add a photo',
-  noIos: "Top-ups aren't available on iOS yet.",
-  noBuying: "Buying credits isn't open yet.",
+  noBuying: "Credits can't be bought here right now. You can still use any you already have.",
   done: 'Done.',
 };
 const CONFIRM = {
@@ -43,6 +42,7 @@ const CONFIRM = {
 
 const TABS = { matches: '/pages/matches/matches', dates: '/pages/dates/dates' };
 const PAGES = {
+  profile_edit: '/pages/profile/edit/edit',
   settings_app: '/pages/settings/app/app',
   settings_agent: '/pages/settings/suki/suki',
   settings_account: '/pages/settings/account/account',

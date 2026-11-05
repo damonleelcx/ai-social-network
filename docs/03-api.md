@@ -51,7 +51,7 @@ Public pages (open in a browser): `/`, `/legal/terms`, `/legal/privacy`, `/legal
 
 ## Profile and photos
 
-`GET /v1/profile` returns `{profile, missing:[...]}`. `PATCH /v1/profile` with any subset returns `{profile}`:
+`GET /v1/profile` returns `{profile, missing:[...]}`. `PATCH /v1/profile` with any subset returns `{profile}`. `POST /v1/profile` does the same, for clients with no PATCH (WeChat's `wx.request`):
 
 | Field | Values |
 |---|---|
@@ -166,7 +166,7 @@ Reasons: `harassment`, `fake_profile`, `inappropriate_content`, `scam`, `underag
 
 ## Settings and memory
 
-`GET /v1/settings` returns `{settings}`. `PATCH /v1/settings` with any subset returns `{settings}`.
+`GET /v1/settings` returns `{settings}`. `PATCH /v1/settings` with any subset returns `{settings}`. `POST /v1/settings` does the same, for clients with no PATCH (WeChat's `wx.request`).
 
 | Key | Values | Default |
 |---|---|---|

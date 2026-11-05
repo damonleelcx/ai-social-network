@@ -85,7 +85,7 @@
   <block wx:if="{{item.wechat_enabled && packs.length}}">
     <button wx:for="{{packs}}" wx:for-item="p" wx:key="id" class="plain" disabled="{{state === 'busy'}}" data-id="{{p.id}}" bindtap="onBuy">{{p.label}}</button>
   </block>
-  <view wx:else class="soft">{{item.wechat_enabled ? t.noIos : t.noBuying}}</view>
+  <view wx:else class="soft">{{t.noBuying}}</view>
 </view>
 
 <view wx:elif="{{card.kind === 'confirm'}}" class="card">

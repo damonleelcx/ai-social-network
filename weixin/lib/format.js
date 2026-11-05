@@ -24,6 +24,22 @@ function time(iso) {
   }
 }
 
+// A date with no time, from "1995-03-08".
+function day(ymd) {
+  const [y, m, d] = String(ymd).split('-').map(Number);
+  if (!y || !m || !d) return ymd || '';
+  switch (i18n.current()) {
+    case 'en':
+      return `${EN_MONTHS[m - 1]} ${d}, ${y}`;
+    case 'es':
+      return `${d} ${ES_MONTHS[m - 1]} ${y}`;
+    case 'ko':
+      return `${y}년 ${m}월 ${d}일`;
+    default:
+      return `${y}年${m}月${d}日`;
+  }
+}
+
 function showError(e) {
   wx.showToast({ title: (e && e.message) || i18n.t('Something went wrong. Please try again.'), icon: 'none', duration: 3000 });
 }
@@ -34,4 +50,4 @@ function confirm(title, content) {
   });
 }
 
-module.exports = { time, pad, showError, confirm };
+module.exports = { time, day, pad, showError, confirm };

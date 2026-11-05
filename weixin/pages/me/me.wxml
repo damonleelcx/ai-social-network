@@ -1,8 +1,22 @@
 <view class="page">
   <view class="card">
-    <view class="title">{{user.name}}</view>
+    <view class="title">{{displayName}}</view>
     <view wx:if="{{user.has_password}}" class="soft">{{user.email}}</view>
-    <view class="soft gap">{{t.profileHint}}</view>
+  </view>
+
+  <view class="nav-row" data-screen="edit" bindtap="onOpen">
+    <view class="grow">
+      <view>{{t.editProfile}}</view>
+      <view class="hint">{{t.editHint}}</view>
+    </view>
+    <view class="arrow">›</view>
+  </view>
+  <view wx:if="{{canPause}}" class="nav-row">
+    <view class="grow">
+      <view>{{t.pause}}</view>
+      <view class="hint">{{t.pauseHint}}</view>
+    </view>
+    <switch color="#ff5c8a" checked="{{paused}}" disabled="{{pausing}}" bindchange="onPause" />
   </view>
 
   <view class="section">{{t.photos}}</view>
@@ -35,7 +49,7 @@
     <block wx:if="{{credits.wechat_enabled && packs.length}}">
       <button wx:for="{{packs}}" wx:for-item="p" wx:key="id" class="plain" disabled="{{buying}}" data-id="{{p.id}}" bindtap="onBuy">{{p.label}}</button>
     </block>
-    <view wx:elif="{{credits.wechat_enabled}}" class="soft gap">{{t.noIos}}</view>
+    <view wx:else class="soft gap">{{t.noBuying}}</view>
     <view wx:for="{{usage}}" wx:key="index" class="row gap">
       <view class="grow soft">{{item.text}} · {{item.when}}</view>
       <view>{{item.delta > 0 ? '+' : ''}}{{item.delta}}</view>
