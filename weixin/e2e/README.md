@@ -40,4 +40,7 @@ Flows build on each other: 02 makes the main account, 04 sets up its profile, an
 
 - `restoreWxMethod` on a method that isn't mocked wipes the real one until the next compile, so only restore what you mocked. A run that stops early can leave a mock behind; recompile in DevTools to clear it.
 - A mock answers by returning or resolving. Wrap the original with `this.origin`, as flow 09 does.
-- Custom components are found with `wx-suki-card`, not `suki-card`.
+- Custom components are found with `wx-suki-card`, not `suki-card`. A component inside another one can't be selected from the page, but it's in the outer one's `wxml()`.
+- A real `wx.previewImage` stays over the page, and later screenshots show the photo instead. Flow 12 opens one on purpose, so recompile after it. Check a screenshot shows the page you think it does.
+
+`make_assets.py` makes `weixin/assets` from the app's images. `internal/archtest` checks that every mood has a face, every Suki message has an avatar, and the package fits WeChat's limits.
