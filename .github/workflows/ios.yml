@@ -25,6 +25,15 @@ jobs:
       CI: "1"
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Build as the latest release. A build older than it opens with the update sheet, which
+      # covers the screens the flows look for.
+      - name: Set the version
+        run: |
+          v=$(../deploy/ci/latest-app-tag.sh)
+          echo "APP_VERSION=${v#app-v}" >> "$GITHUB_ENV"
+          echo "building as ${v#app-v}"
       - uses: actions/setup-node@v4
         with:
           node-version: 22
