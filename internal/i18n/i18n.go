@@ -188,6 +188,18 @@ var catalog = map[string][4]string{
 	"a plan": {"一起玩", "함께할 일", "おでかけ", "un plan"},
 	"Someone nearby wants company": {"附近有人在找搭子", "근처에서 함께할 사람을 찾고 있어요", "近くで仲間を探している人がいます", "Alguien cerca busca compañía"},
 	"{name} is looking for company for {plan}: {when}.": {"{name} 想找人一起{plan}：{when}。", "{name}님이 {plan} 함께할 사람을 찾아요: {when}.", "{name}さんが{plan}の仲間を探しています：{when}。", "{name} busca compañía para {plan}: {when}."},
+	// Group plans
+	"{name} is getting a group together for {plan}: {when}.": {"{name} 在组局{plan}：{when}。", "{name}님이 {plan} 함께할 그룹을 모으고 있어요: {when}.", "{name}さんが{plan}のグループを集めています：{when}。", "{name} está reuniendo un grupo para {plan}: {when}."},
+	"You're in! The group chat for {plan} is open: say hi and sort out the details together. For a first meet-up, pick somewhere public and tell a friend.": {
+		"你加入啦！{plan}的群聊已经开好：打个招呼，一起商量细节吧。第一次见面请选公共场所，并告诉朋友一声。",
+		"참여했어요! {plan} 그룹 채팅이 열렸어요. 인사하고 함께 자세한 걸 정해 보세요. 처음 만날 땐 공공장소를 고르고 친구에게 알려 주세요.",
+		"参加しました！{plan}のグループチャットが開いています。挨拶して、みんなで詳細を決めましょう。初めて会うときは人の多い場所を選び、友だちに伝えておいてください。",
+		"¡Ya estás dentro! El chat de grupo para {plan} está abierto: saluda y concretad los detalles juntos. Para quedar la primera vez, elige un sitio público y avisa a alguien."},
+	"{name} joined your group for {plan}. {n} going so far.": {"{name} 加入了你的{plan}局，目前共 {n} 人参加。", "{name}님이 {plan} 그룹에 참여했어요. 지금까지 {n}명이 함께해요.", "{name}さんが{plan}のグループに参加しました。現在 {n} 人が参加予定です。", "{name} se unió a tu grupo para {plan}. Ya vais {n}."},
+	"Someone joined your group": {"有人加入了你的局", "누군가 그룹에 참여했어요", "グループに参加者が来ました", "Alguien se unió a tu grupo"},
+	"{name} called off the group plan for {plan}. Want me to look for something else?": {"{name} 取消了{plan}的局。要不要我帮你找找别的？", "{name}님이 {plan} 그룹 약속을 취소했어요. 다른 걸 찾아볼까요?", "{name}さんが{plan}のグループの予定を取りやめました。ほかを探しましょうか？", "{name} canceló el plan de grupo para {plan}. ¿Busco otra cosa?"},
+	"New message in your group": {"群里有新消息", "그룹에 새 메시지가 있어요", "グループに新しいメッセージ", "Mensaje nuevo en tu grupo"},
+	"There are new messages in your group chat.": {"你的群聊里有新消息。", "그룹 채팅에 새 메시지가 있어요.", "グループチャットに新しいメッセージがあります。", "Hay mensajes nuevos en tu chat de grupo."},
 	"Someone's in": {"有人想加入", "함께하고 싶대요", "参加したい人がいます", "Alguien se apunta"},
 	"{name} wants to join you for {plan}.": {"{name} 想和你一起{plan}。", "{name}님이 {plan} 함께하고 싶대요.", "{name}さんが{plan}に参加したいそうです。", "{name} quiere unirse a ti para {plan}."},
 	"You've got company": {"找到搭子了", "함께할 사람을 찾았어요", "仲間が見つかりました", "Ya tienes compañía"},

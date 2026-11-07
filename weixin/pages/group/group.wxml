@@ -1,0 +1,28 @@
+<view class="chat">
+  <view class="row bar">
+    <view class="grow soft ellipsis">{{barText}}</view>
+    <view wx:if="{{!gone}}" class="chip" bindtap="onMore">{{t.more}}</view>
+  </view>
+  <scroll-view class="chat-list" scroll-y scroll-into-view="{{bottom}}">
+    <suki-says wx:if="{{!loaded}}" face="thinking" size="144" dots body="{{t.loading}}" />
+    <suki-says wx:elif="{{gone}}" face="pouty" size="144" body="{{t.gone}}" />
+    <block wx:for="{{messages}}" wx:key="seq">
+      <view wx:if="{{item.role !== 'text'}}" class="note">{{item.line}}</view>
+      <view wx:elif="{{item.sender_id === me}}" class="bubble-row mine">
+        <view class="bubble">{{item.body}}</view>
+      </view>
+      <view wx:else class="bubble-row">
+        <view>
+          <view class="who">{{item.meta.name}}</view>
+          <view class="bubble">{{item.body}}</view>
+        </view>
+      </view>
+    </block>
+    <view wx:if="{{loaded && !gone && !open}}" class="note">{{t.closed}}</view>
+    <view id="end" class="end"></view>
+  </scroll-view>
+  <view wx:if="{{loaded && !gone && open}}" class="composer">
+    <input class="input" placeholder="{{t.placeholder}}" value="{{draft}}" confirm-type="send" adjust-position bindinput="onInput" bindconfirm="onSend" />
+    <view class="send" bindtap="onSend">{{t.send}}</view>
+  </view>
+</view>

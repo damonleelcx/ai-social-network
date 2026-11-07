@@ -300,5 +300,10 @@ func fakeGeo(w http.ResponseWriter, r *http.Request) {
 			{"type":"node","id":5,"lat":1,"lon":2,"tags":{"amenity":"cafe","name":"Private Cafe","access":"private"}}]}`))
 		return
 	}
-	_, _ = w.Write([]byte(`[{"lat":"1.0","lon":"2.0","address":{"city":"Testville","state":"Test","country":"Testland","country_code":"tt"}}]`))
+	// Trips need a second city; everything else lives in Testville.
+	city := "Testville"
+	if strings.Contains(strings.ToLower(r.URL.Query().Get("q")), "farport") {
+		city = "Farport"
+	}
+	_, _ = w.Write([]byte(`[{"lat":"1.0","lon":"2.0","address":{"city":"` + city + `","state":"Test","country":"Testland","country_code":"tt"}}]`))
 }

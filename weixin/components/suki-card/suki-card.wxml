@@ -2,8 +2,10 @@
 
 <view wx:elif="{{card.kind === 'buddy_post'}}" class="card">
   <view class="title">{{activityText}}</view>
-  <view class="soft">{{card.when}}</view>
+  <view class="soft">{{card.when}}<text wx:if="{{groupText}}"> · {{groupText}}</text></view>
+  <view wx:if="{{placeText}}" class="soft">{{placeText}}</view>
   <view wx:if="{{card.note}}">{{card.note}}</view>
+  <view wx:if="{{groupText}}" class="soft">{{t.groupHint}}</view>
   <view wx:if="{{state === 'done'}}" class="done">{{t.posted}}</view>
   <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onPost">{{t.post}}</button>
 </view>
@@ -14,12 +16,47 @@
     <view class="grow">
       <view class="title">{{activityText}}</view>
       <view class="soft">{{item.person.display_name}} · {{item.when}}</view>
+      <view wx:if="{{groupText}}" class="soft">{{groupText}}</view>
     </view>
   </view>
+  <view wx:if="{{placeText}}" class="soft">{{placeText}}</view>
   <view wx:if="{{item.note}}">{{item.note}}</view>
-  <view wx:if="{{item.status !== 'open'}}" class="soft">{{t.gone}}</view>
+  <block wx:if="{{item.spots > 1}}">
+    <block wx:if="{{item.offered || item.joined}}">
+      <button class="primary" bindtap="onOpenGroup">{{t.openGroup}}</button>
+      <button wx:if="{{item.offered}}" class="plain" loading="{{state === 'busy'}}" bindtap="onOffer">{{t.leaveGroup}}</button>
+    </block>
+    <view wx:elif="{{item.status !== 'open'}}" class="soft">{{t.gone}}</view>
+    <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onOffer">{{t.joinGroup}}</button>
+  </block>
+  <view wx:elif="{{item.status !== 'open'}}" class="soft">{{t.gone}}</view>
   <button wx:elif="{{item.offered}}" class="plain" loading="{{state === 'busy'}}" bindtap="onOffer">{{t.takeBack}}</button>
   <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onOffer">{{t.imIn}}</button>
+</view>
+
+<view wx:elif="{{card.kind === 'group' && item}}" class="card">
+  <view class="title">{{activityText}}</view>
+  <view class="soft">{{item.when}}<text wx:if="{{groupText}}"> · {{groupText}}</text></view>
+  <view wx:if="{{placeText}}" class="soft">{{placeText}}</view>
+  <button class="primary" bindtap="onOpenGroup">{{t.openGroup}}</button>
+</view>
+
+<view wx:elif="{{card.kind === 'trip_post'}}" class="card">
+  <view class="title">✈ {{state === 'done' && item ? item.city_name : card.city}}</view>
+  <view class="soft">{{datesText}}</view>
+  <view wx:if="{{card.note}}">{{card.note}}</view>
+  <view wx:if="{{state === 'done'}}" class="done">{{tripText}}</view>
+  <block wx:else>
+    <view class="soft">{{t.tripHint}}</view>
+    <button class="primary" loading="{{state === 'busy'}}" bindtap="onAddTrip">{{t.addTrip}}</button>
+  </block>
+</view>
+
+<view wx:elif="{{card.kind === 'trip' && item}}" class="card">
+  <view class="title">✈ {{item.city_name}}</view>
+  <view class="soft">{{datesText}}</view>
+  <view wx:if="{{item.note}}">{{item.note}}</view>
+  <view class="soft">{{tripText}}</view>
 </view>
 
 <view wx:elif="{{card.kind === 'buddy_offer' && item && item.person}}" class="card">
@@ -94,7 +131,7 @@
 
 <view wx:elif="{{card.kind === 'confirm'}}" class="card">
   <view wx:if="{{state === 'done'}}" class="done">{{t.done}}</view>
-  <button wx:else class="danger" loading="{{state === 'busy'}}" bindtap="onConfirm">{{card.label}}</button>
+  <button wx:else class="danger" loading="{{state === 'busy'}}" bindtap="onConfirm">{{confirmLabel}}</button>
 </view>
 
 <view wx:if="{{error}}" class="error">{{error}}</view>

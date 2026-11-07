@@ -4,7 +4,7 @@ import { Linking, Pressable, View } from 'react-native';
 import { Alert, Share } from '@/lib/dialogs';
 import * as api from '@/api/endpoints';
 import type { Card, CreditStatus, Proposal } from '@/api/types';
-import { BuddyOfferCard, BuddyPostCard, BuddyRequestCard } from './BuddyCards';
+import { BuddyOfferCard, BuddyPostCard, BuddyRequestCard, GroupCard, TripCard, TripPostCard } from './BuddyCards';
 import { openNamedScreen, openPayment } from '@/lib/links';
 import { buyOnPlay, isPlayBuild, playPrices, unfinishedPlayPurchases } from '@/lib/playBilling';
 import { pickAndUploadPhoto } from '@/lib/photos';
@@ -207,6 +207,7 @@ function ConfirmCard({ card }: { card: Extract<Card, { kind: 'confirm' }> }) {
     block: [tr('Block this person?'), tr("You'll stop seeing each other, and any match ends at once.")],
     reset_taste: [tr('Start over?'), tr('I forget my notes and everything I learned about your taste.')],
     buddy_close: [tr('Take this post down?'), tr("People can't join it any more.")],
+    trip_remove: [tr('Remove this trip?'), tr("Plans there stop reaching you. Plans you posted for it stay up.")],
   };
   const [title, body] = copy[card.action] ?? [tr('Are you sure?'), ''];
 
@@ -238,6 +239,10 @@ function ConfirmCard({ card }: { card: Extract<Card, { kind: 'confirm' }> }) {
         if (!card.request_id) return;
         await api.buddies.close(card.request_id);
         break;
+      case 'trip_remove':
+        if (!card.trip_id) return;
+        await api.trips.remove(card.trip_id);
+        break;
       default:
         return;
     }
@@ -246,11 +251,11 @@ function ConfirmCard({ card }: { card: Extract<Card, { kind: 'confirm' }> }) {
 
   return (
     <ActionCard
-      label={card.label}
+      label={tr(card.label)}
       icon="alert-circle-outline"
       kind="danger"
       onPress={async () => {
-        if (await confirm(title, body, card.label, true)) await run();
+        if (await confirm(title, body, tr(card.label), true)) await run();
       }}
     />
   );
@@ -398,6 +403,12 @@ export function SukiCard({ card }: { card: Card }) {
       return <BuddyRequestCard id={card.request_id} />;
     case 'buddy_offer':
       return <BuddyOfferCard id={card.request_id} userId={card.user_id} />;
+    case 'group':
+      return <GroupCard id={card.request_id} />;
+    case 'trip_post':
+      return <TripPostCard card={card} />;
+    case 'trip':
+      return <TripCard id={card.trip_id} />;
     case 'bio_draft':
       return <BioDraftCard text={card.text} />;
     case 'proposal':

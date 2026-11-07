@@ -452,8 +452,8 @@ func registerSukiTools() {
 			return card("open_screen", "screen", objStr(a, "screen"), "label", objStr(a, "label")), nil
 		})
 
-	add("buddy_prepare_post", "Show a card with a buddy post for this person to check. Only their tap posts it. Nothing goes out until then.",
-		`{"type":"object","required":["kind","when","expires_in_hours"],"additionalProperties":false,"properties":{"kind":{"type":"string","enum":["movie","meal","show","travel","sports","games","business","study","other"]},"when":{"type":"string","minLength":1,"maxLength":60,"description":"When, in their own words"},"note":{"type":"string","maxLength":200,"description":"What they want to do, in their voice"},"expires_in_hours":{"type":"integer","minimum":1,"maximum":336,"description":"How long until the plan has passed"},"same_gender":{"type":"boolean"}}}`, tools.Read,
+	add("buddy_prepare_post", "Show a card with a buddy post for this person to check. Only their tap posts it. Nothing goes out until then. With spots above 1 it's a group: people join at once and share a group chat.",
+		`{"type":"object","required":["kind","when","expires_in_hours"],"additionalProperties":false,"properties":{"kind":{"type":"string","enum":["movie","meal","show","travel","sports","games","business","study","other"]},"when":{"type":"string","minLength":1,"maxLength":60,"description":"When, in their own words"},"note":{"type":"string","maxLength":200,"description":"What they want to do, in their voice"},"expires_in_hours":{"type":"integer","minimum":1,"maximum":336,"description":"How long until the plan has passed"},"same_gender":{"type":"boolean"},"spots":{"type":"integer","minimum":1,"maximum":20,"description":"How many people can join. 1: they pick one person. More: a group anyone can join"},"place":{"type":"string","maxLength":80,"description":"Where, if they chose a place. From place_ideas or their own words, never invented"},"trip_id":{"type":"string","description":"Post it in the city of this trip of theirs, from trip_mine"}}}`, tools.Read,
 		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
 			missing, err := d.Dating.BuddyMissing(ctx, env.UserID)
 			if err != nil {
@@ -464,10 +464,26 @@ func registerSukiTools() {
 			}
 			same, _ := a["same_gender"].(bool)
 			hours, _ := a["expires_in_hours"].(float64)
-			return card("buddy_post", "activity", objStr(a, "kind"), "when", objStr(a, "when"), "note", objStr(a, "note"), "expires_in_hours", int(hours), "same_gender", same), nil
+			spots, _ := a["spots"].(float64)
+			c := card("buddy_post", "activity", objStr(a, "kind"), "when", objStr(a, "when"), "note", objStr(a, "note"), "expires_in_hours", int(hours), "same_gender", same)
+			cd := c["card"].(map[string]any)
+			if spots > 1 {
+				cd["spots"] = int(spots)
+			}
+			if p := strings.TrimSpace(objStr(a, "place")); p != "" {
+				cd["place"] = p
+			}
+			if id := objStr(a, "trip_id"); id != "" {
+				t, err := d.Dating.TripView(ctx, id, env.UserID)
+				if err != nil {
+					return nil, userError(err)
+				}
+				cd["trip_id"], cd["city_name"] = t.ID, t.CityName
+			}
+			return c, nil
 		})
 
-	add("buddy_board", "Buddy posts in this person's city that they could join.", noArgs, tools.Read,
+	add("buddy_board", "Buddy posts they could join: in their city, and in cities they have a trip to. Groups show how many are going and how many spots there are.", noArgs, tools.Read,
 		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
 			list, missing, err := d.Dating.BuddyBoard(ctx, env.UserID)
 			if err != nil {
@@ -475,7 +491,14 @@ func registerSukiTools() {
 			}
 			out := []map[string]any{}
 			for _, b := range list {
-				out = append(out, map[string]any{"request_id": b.ID, "kind": b.Kind, "when": b.When, "note": b.Note, "name": b.Person.DisplayName, "already_in": b.Offered})
+				post := map[string]any{"request_id": b.ID, "kind": b.Kind, "when": b.When, "note": b.Note, "name": b.Person.DisplayName, "already_in": b.Offered, "city": b.CityName}
+				if b.Group() {
+					post["group"], post["going"], post["spots"] = true, b.Going, b.Spots
+				}
+				if b.Place != "" {
+					post["place"] = b.Place
+				}
+				out = append(out, post)
 			}
 			return map[string]any{"posts": out, "missing": missing}, nil
 		})
@@ -492,7 +515,18 @@ func registerSukiTools() {
 				for _, o := range b.Offers {
 					in = append(in, map[string]any{"user_id": o.Person.UserID, "name": o.Person.DisplayName})
 				}
-				out = append(out, map[string]any{"request_id": b.ID, "kind": b.Kind, "when": b.When, "status": b.Status, "in": in})
+				post := map[string]any{"request_id": b.ID, "kind": b.Kind, "when": b.When, "status": b.Status, "in": in, "city": b.CityName}
+				if b.Group() {
+					// In a group nobody waits to be picked: everyone listed here has joined.
+					in = []map[string]any{}
+					for _, m := range b.Members {
+						if m.UserID != env.UserID {
+							in = append(in, map[string]any{"name": m.DisplayName})
+						}
+					}
+					post["in"], post["group"], post["going"], post["spots"] = in, true, b.Going, b.Spots
+				}
+				out = append(out, post)
 			}
 			return map[string]any{"posts": out}, nil
 		})
@@ -541,6 +575,9 @@ func registerSukiTools() {
 					if err := d.Dating.OfferBuddy(ctx, b.ID, env.UserID); err != nil {
 						return nil, userError(err)
 					}
+					if b.Group() {
+						return map[string]any{"joined": true, "group": true, "kind": b.Kind, "when": b.When, "note": "They're in the group now. I've posted the button to its group chat in their conversation; show it again with group_show if they ask."}, nil
+					}
 					return map[string]any{"joined": true, "kind": b.Kind, "when": b.When, "note": "They've said they're in. The poster picks, so it isn't a sure thing yet."}, nil
 				}
 			}
@@ -581,6 +618,138 @@ func registerSukiTools() {
 	add("buddy_prepare_close", "Show a confirm button to take this person's own post down.", buddyInput, tools.Read,
 		func(_ context.Context, _ *tools.Env, a map[string]any) (map[string]any, error) {
 			return card("confirm", "action", "buddy_close", "label", "Take it down", "request_id", objStr(a, "request_id")), nil
+		})
+
+	// ext registers a tool that calls an outside service, keyed by its arguments so a retry
+	// reuses the first answer.
+	ext := func(name, desc, input string, run func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error)) {
+		t := worker(name, desc, input, tools.External, run)
+		t.IdemKey = func(env *tools.Env, a map[string]any) string { return tools.Key(env, name, a) }
+		tools.Register(t)
+	}
+
+	// ── Group plans ──
+	add("group_mine", "The group plans this person is in, their own or someone else's, with who's going.", noArgs, tools.Read,
+		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
+			list, err := d.Dating.MyGroups(ctx, env.UserID)
+			if err != nil {
+				return nil, err
+			}
+			out := []map[string]any{}
+			for _, b := range list {
+				names := []string{}
+				for _, m := range b.Members {
+					names = append(names, m.DisplayName)
+				}
+				g := map[string]any{"request_id": b.ID, "kind": b.Kind, "when": b.When, "city": b.CityName, "going": names, "spots": b.Spots, "status": b.Status,
+					"yours": b.Person == nil || b.Person.UserID == env.UserID}
+				if b.Place != "" {
+					g["place"] = b.Place
+				}
+				out = append(out, g)
+			}
+			return map[string]any{"groups": out}, nil
+		})
+
+	add("group_show", "Show the button that opens a group plan's group chat. Only for a group this person is in.", buddyInput, tools.Read,
+		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
+			b, err := d.Dating.BuddyView(ctx, objStr(a, "request_id"), env.UserID)
+			if err != nil {
+				return nil, userError(err)
+			}
+			if !b.Group() || !b.Joined {
+				return map[string]any{"error": "they aren't in that group"}, nil
+			}
+			return card("group", "request_id", b.ID), nil
+		})
+
+	ext("place_ideas", "Real public places for a plan, near where it'll be: their city, or a trip's city with trip_id. Use it when they ask where to go. Never invent a place.",
+		`{"type":"object","required":["interests"],"additionalProperties":false,"properties":{"interests":{"type":"array","minItems":1,"maxItems":5,"items":{"type":"string","maxLength":40},"description":"What the plan is, in English words such as coffee, bar, museum, park, hiking, food"},"trip_id":{"type":"string"}}}`,
+		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
+			var city *places.City
+			if id := objStr(a, "trip_id"); id != "" {
+				c, err := d.Dating.TripCityOf(ctx, id, env.UserID)
+				if err != nil {
+					return nil, userError(err)
+				}
+				city = c
+			} else {
+				c, err := d.Dating.HomeCity(ctx, env.UserID)
+				if err != nil {
+					return nil, err
+				}
+				if c == nil {
+					return map[string]any{"found": false, "note": "They haven't set their city."}, nil
+				}
+				city = c
+			}
+			var interests []string
+			if xs, ok := a["interests"].([]any); ok {
+				for _, x := range xs {
+					if v, ok := x.(string); ok {
+						interests = append(interests, v)
+					}
+				}
+			}
+			vs, err := d.Places.Search(ctx, *city, interests, 6)
+			if err != nil {
+				return nil, err
+			}
+			out := []map[string]any{}
+			for _, v := range vs {
+				out = append(out, map[string]any{"name": v.Name, "kind": v.Kind, "address": v.Address})
+			}
+			return map[string]any{"city": city.Name, "places": out}, nil
+		})
+
+	// ── Trips ──
+	ext("trip_prepare_add", "Show a card with a trip for this person to check: a city they'll visit and the dates. Only their tap adds it. Dates are yyyy-mm-dd.",
+		`{"type":"object","required":["city","starts_on","ends_on"],"additionalProperties":false,"properties":{"city":{"type":"string","minLength":2,"maxLength":120,"description":"City and country, as they said it"},"starts_on":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},"ends_on":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},"note":{"type":"string","maxLength":200,"description":"What they'd like to do there, in their voice"}}}`,
+		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
+			in := dating.TripInput{City: objStr(a, "city"), StartsOn: objStr(a, "starts_on"), EndsOn: objStr(a, "ends_on"), Note: objStr(a, "note")}
+			if err := dating.CheckTrip(in); err != nil {
+				return nil, userError(err)
+			}
+			c, err := d.Places.ResolveCity(ctx, in.City)
+			if errors.Is(err, places.ErrNoCity) {
+				return map[string]any{"found": false, "note": "No such city. Ask them for the city and country."}, nil
+			}
+			if err != nil {
+				return nil, err
+			}
+			return card("trip_post", "city", c.Name, "starts_on", in.StartsOn, "ends_on", in.EndsOn, "note", in.Note), nil
+		})
+
+	add("trip_mine", "This person's trips that aren't over, with how many others are going there at the same time and how many plans they could join there.", noArgs, tools.Read,
+		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
+			list, err := d.Dating.MyTrips(ctx, env.UserID)
+			if err != nil {
+				return nil, err
+			}
+			return map[string]any{"trips": list}, nil
+		})
+
+	const tripInput = `{"type":"object","required":["trip_id"],"additionalProperties":false,"properties":{"trip_id":{"type":"string"}}}`
+	add("trip_show", "Show one of this person's trips as a card, with how many are going.", tripInput, tools.Read,
+		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
+			if _, err := d.Dating.TripView(ctx, objStr(a, "trip_id"), env.UserID); err != nil {
+				return nil, userError(err)
+			}
+			return card("trip", "trip_id", objStr(a, "trip_id")), nil
+		})
+
+	add("trip_trending", "Where people on the app are travelling in the next few weeks, busiest first, with how many are going.", noArgs, tools.Read,
+		func(ctx context.Context, _ *tools.Env, _ map[string]any) (map[string]any, error) {
+			list, err := d.Dating.TrendingTrips(ctx)
+			if err != nil {
+				return nil, err
+			}
+			return map[string]any{"cities": list}, nil
+		})
+
+	add("trip_prepare_remove", "Show a confirm button to remove one of this person's trips.", tripInput, tools.Read,
+		func(_ context.Context, _ *tools.Env, a map[string]any) (map[string]any, error) {
+			return card("confirm", "action", "trip_remove", "label", "Remove the trip", "trip_id", objStr(a, "trip_id")), nil
 		})
 
 	add("credits_status", "This person's credits: their balance, how many of their free matches are used, and whether messages are free right now.", noArgs, tools.Read,

@@ -32,6 +32,13 @@ const COPY = {
   addPhoto: 'Add a photo',
   noBuying: "Credits can't be bought here right now. You can still use any you already have.",
   done: 'Done.',
+  groupHint: 'A group: people who join are in at once, and you all share a group chat.',
+  joinGroup: 'Join the group',
+  leaveGroup: 'Leave the group',
+  openGroup: 'Open the group chat',
+  addTrip: 'Add the trip',
+  tripHint: "While you're there, plans in this city reach you, and you can post your own.",
+  tripGone: 'This trip was removed.',
 };
 const CONFIRM = {
   remove_photo: ['Remove this photo?', 'It comes off your profile right away.'],
@@ -39,7 +46,27 @@ const CONFIRM = {
   block: ['Block this person?', "You'll stop seeing each other, and any match ends at once."],
   reset_taste: ['Start over?', 'I forget my notes and everything I learned about your taste.'],
   buddy_close: ['Take this post down?', "People can't join it any more."],
+  trip_remove: ['Remove this trip?', 'Plans there stop reaching you. Plans you posted for it stay up.'],
 };
+
+// How full a group is: going counts the poster, spots count only who can join.
+function groupLine(going, spots) {
+  const left = Math.max(0, spots - (going - 1));
+  return left > 0 ? t('{n} going · {left} spots left', { n: going, left }) : t('{n} going · full', { n: going });
+}
+
+function day(d) {
+  const [, m, dd] = d.split('-').map(Number);
+  return m + '/' + dd;
+}
+const dates = (from, to) => (from === to ? day(from) : day(from) + ' – ' + day(to));
+
+function tripLine(trip) {
+  return [
+    trip.going === 1 ? t('1 other person is going then') : t('{n} other people are going then', { n: trip.going }),
+    trip.plans === 1 ? t('1 plan to join there') : t('{n} plans to join there', { n: trip.plans }),
+  ].join(' · ');
+}
 
 const TABS = { matches: '/pages/matches/matches', dates: '/pages/dates/dates' };
 const PAGES = {
@@ -53,7 +80,7 @@ const PAGES = {
 
 Component({
   properties: { card: { type: Object, value: {} }, intro: { type: Boolean, value: false } },
-  data: { t: i18n.strings(COPY), packs: [], item: null, photo: '', state: '', error: '', gone: false, offerLine: '', activityText: '', balanceText: '' },
+  data: { t: i18n.strings(COPY), packs: [], item: null, photo: '', state: '', error: '', gone: false, offerLine: '', activityText: '', balanceText: '', groupText: '', placeText: '', datesText: '', tripText: '' },
   lifetimes: {
     attached() {
       i18n.attach(this, COPY);
@@ -76,12 +103,26 @@ Component({
           const item = await api.proposals.get(c.proposal_id);
           this.setData({ item, state: item.my_decision || '' });
           this.photo(item.person);
-        } else if (c.kind === 'buddy_request') {
+        } else if (c.kind === 'buddy_request' || c.kind === 'group') {
           const item = await api.buddies.get(c.request_id);
-          this.setData({ item, activityText: person.activity(item.kind) });
+          this.setData({
+            item,
+            activityText: person.activity(item.kind),
+            groupText: item.spots > 1 ? groupLine(item.going, item.spots) : '',
+            placeText: [item.place, item.city_name].filter(Boolean).join(' · '),
+          });
           this.photo(item.person);
+        } else if (c.kind === 'trip_post') {
+          this.setData({ datesText: dates(c.starts_on, c.ends_on) });
+        } else if (c.kind === 'trip') {
+          const item = await api.trips.get(c.trip_id);
+          this.setData({ item, datesText: dates(item.starts_on, item.ends_on), tripText: tripLine(item) });
         } else if (c.kind === 'buddy_post') {
-          this.setData({ activityText: person.activity(c.activity) });
+          this.setData({
+            activityText: person.activity(c.activity),
+            groupText: c.spots > 1 ? groupLine(1, c.spots) : '',
+            placeText: [c.place, c.city_name].filter(Boolean).join(' · '),
+          });
           // The card comes back with the conversation, and must not offer to post twice.
           const mine = await api.buddies.mine();
           if (mine.some((p) => p.kind === c.activity && p.when === c.when)) this.setData({ state: 'done' });
@@ -94,6 +135,8 @@ Component({
             offerLine: offer ? t('{name} wants to go too', { name: offer.person.display_name }) : '',
           });
           if (offer) this.photo(offer.person);
+        } else if (c.kind === 'confirm') {
+          this.setData({ confirmLabel: t(c.label) });
         } else if (c.kind === 'buy_credits') {
           const item = await api.credits.status();
           this.setData({ item, packs: pay.packs(), balanceText: t('{n} credits left', { n: item.balance }) });
@@ -150,14 +193,41 @@ Component({
     },
     onPost() {
       const c = this.data.card;
-      this.run('done', () => api.buddies.post({ kind: c.activity, when: c.when, note: c.note || '', expires_in_hours: c.expires_in_hours, same_gender: !!c.same_gender }));
+      this.run('done', () =>
+        api.buddies.post({
+          kind: c.activity,
+          when: c.when,
+          note: c.note || '',
+          expires_in_hours: c.expires_in_hours,
+          same_gender: !!c.same_gender,
+          spots: c.spots,
+          place: c.place,
+          trip_id: c.trip_id,
+        }),
+      );
     },
-    onOffer() {
+    async onOffer() {
       const id = this.data.card.request_id;
+      const offered = this.data.item.offered;
+      const group = this.data.item.spots > 1;
+      if (offered && group && !(await confirm(t('Leave the group?'), t("You'll leave its group chat too.")))) return;
       this.run('', async () => {
-        const offered = this.data.item.offered;
         await (offered ? api.buddies.withdraw(id) : api.buddies.offer(id));
-        this.setData({ 'item.offered': !offered });
+        if (group) {
+          const item = await api.buddies.get(id);
+          this.setData({ item, groupText: groupLine(item.going, item.spots) });
+          if (!offered) this.onOpenGroup();
+        } else this.setData({ 'item.offered': !offered });
+      });
+    },
+    onOpenGroup() {
+      wx.navigateTo({ url: '/pages/group/group?id=' + this.data.card.request_id });
+    },
+    onAddTrip() {
+      const c = this.data.card;
+      this.run('done', async () => {
+        const item = await api.trips.add({ city: c.city, starts_on: c.starts_on, ends_on: c.ends_on, note: c.note || '' });
+        this.setData({ item, tripText: tripLine(item) });
       });
     },
     onPick() {
@@ -195,6 +265,7 @@ Component({
         else if (c.action === 'block') await api.safety.block(c.user_id);
         else if (c.action === 'reset_taste') await api.memories.reset();
         else if (c.action === 'buddy_close') await api.buddies.close(c.request_id);
+        else if (c.action === 'trip_remove') await api.trips.remove(c.trip_id);
       });
     },
   },
