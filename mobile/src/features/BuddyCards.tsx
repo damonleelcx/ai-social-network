@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Alert } from '@/lib/dialogs';
 import * as api from '@/api/endpoints';
-import type { BuddyRequest, Card, Person } from '@/api/types';
+import type { BuddyRequest, Card, Person, Trip } from '@/api/types';
 import { useLive } from '@/state/live';
 import { space } from '@/theme/tokens';
 import { PersonAvatar } from '@/ui/person';
@@ -12,7 +12,7 @@ import { confirm, Sheet, SheetAction, showError } from '@/ui/sheet';
 import { tr } from '@/i18n';
 import { ReportSheet } from './ReportSheet';
 
-const KINDS: Record<string, string> = {
+export const KINDS: Record<string, string> = {
   movie: 'Movie',
   meal: 'Meal',
   show: 'Show',
@@ -24,24 +24,60 @@ const KINDS: Record<string, string> = {
   other: 'Something else',
 };
 
-const meetSafely = () => tr('For a first meet-up, pick somewhere public and tell a friend. Never send money to someone you met here.');
+export const meetSafely = () => tr('For a first meet-up, pick somewhere public and tell a friend. Never send money to someone you met here.');
 
-function Plan({ kind, when, note }: { kind: string; when: string; note?: string }) {
+/** How full a group is: everyone going counts the poster, spots count only who can join. */
+export function groupLine(going: number, spots: number) {
+  const left = Math.max(0, spots - (going - 1));
+  return left > 0 ? tr('{n} going · {left} spots left', { n: String(going), left: String(left) }) : tr('{n} going · full', { n: String(going) });
+}
+
+export function Plan({
+  kind,
+  when,
+  note,
+  place,
+  city,
+  group,
+}: {
+  kind: string;
+  when: string;
+  note?: string;
+  place?: string;
+  city?: string;
+  group?: { going: number; spots: number };
+}) {
   return (
     <View style={{ gap: 6 }}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
         <Pill tone="accent" label={tr(KINDS[kind] ?? 'Something else')} />
+        {group ? <Pill tone="plain" icon="people-outline" label={groupLine(group.going, group.spots)} /> : null}
         <T v="small" style={{ fontWeight: '700', flexShrink: 1 }}>
           {when}
         </T>
       </View>
+      {place || city ? (
+        <T v="small" soft>
+          {[place, city].filter(Boolean).join(' · ')}
+        </T>
+      ) : null}
       {note ? <T>{note}</T> : null}
     </View>
   );
 }
 
+/** The plan's details, from a post. */
+export const planOf = (r: BuddyRequest, city?: boolean) => ({
+  kind: r.kind,
+  when: r.when,
+  note: r.note,
+  place: r.place,
+  city: city ? r.city_name : undefined,
+  group: r.spots > 1 ? { going: r.going, spots: r.spots } : undefined,
+});
+
 /** Who they are, with the report and block everyone in the app can always reach. */
-function PersonRow({ person, onBlocked }: { person: Person; onBlocked: () => void }) {
+export function PersonRow({ person, onBlocked }: { person: Person; onBlocked: () => void }) {
   const live = useLive();
   const [menu, setMenu] = useState(false);
   const [reporting, setReporting] = useState(false);
@@ -134,7 +170,11 @@ export function MyBuddyPost({ request, onChange }: { request: BuddyRequest; onCh
     }
   };
   const close = async () => {
-    if (!(await confirm(tr('Take this post down?'), tr("People can't join it any more."), tr('Take it down'), true))) return;
+    const group = request.spots > 1;
+    const ok = group
+      ? await confirm(tr('Call off this plan?'), tr("Everyone who joined is told, and the group chat closes."), tr('Call it off'), true)
+      : await confirm(tr('Take this post down?'), tr("People can't join it any more."), tr('Take it down'), true);
+    if (!ok) return;
     setBusy(true);
     try {
       await api.buddies.close(request.id);
@@ -145,9 +185,28 @@ export function MyBuddyPost({ request, onChange }: { request: BuddyRequest; onCh
       setBusy(false);
     }
   };
+  if (request.spots > 1) {
+    const others = (request.members ?? []).slice(1);
+    return (
+      <Glass style={{ gap: space.md }}>
+        <Plan {...planOf(request, true)} />
+        {others.length ? (
+          others.map((m) => <PersonRow key={m.user_id} person={m} onBlocked={onChange} />)
+        ) : (
+          <T v="small" soft>{tr("Nobody's joined yet. I'll let you know when someone does.")}</T>
+        )}
+        {request.status !== 'closed' ? (
+          <>
+            <Button label={tr('Open the group chat')} icon="chatbubbles" kind="secondary" small onPress={() => router.push(`/group/${request.id}`)} />
+            <Button label={tr('Call it off')} kind="secondary" small loading={busy} onPress={close} />
+          </>
+        ) : null}
+      </Glass>
+    );
+  }
   return (
     <Glass style={{ gap: space.md }}>
-      <Plan kind={request.kind} when={request.when} note={request.note} />
+      <Plan {...planOf(request, true)} />
       {request.status === 'filled' && request.match_id ? (
         <Button label={tr('Open the chat')} icon="chatbubbles" kind="secondary" small onPress={() => router.push(`/chat/${request.match_id}`)} />
       ) : (
@@ -176,7 +235,15 @@ export function BuddyPostCard({ card }: { card: Extract<Card, { kind: 'buddy_pos
   if (state === 'done') return <Pill tone="good" icon="checkmark-circle" label={tr('Posted.')} />;
   return (
     <Glass style={{ gap: space.sm }}>
-      <Plan kind={card.activity} when={card.when} note={card.note} />
+      <Plan
+        kind={card.activity}
+        when={card.when}
+        note={card.note}
+        place={card.place}
+        city={card.city_name}
+        group={card.spots && card.spots > 1 ? { going: 1, spots: card.spots } : undefined}
+      />
+      {card.spots && card.spots > 1 ? <T v="small" soft>{tr('A group: people who join are in at once, and you all share a group chat.')}</T> : null}
       {card.same_gender ? <T v="small" soft>{tr('Only people of my gender')}</T> : null}
       <ErrorText message={error} />
       <Button
@@ -194,6 +261,9 @@ export function BuddyPostCard({ card }: { card: Extract<Card, { kind: 'buddy_pos
               note: card.note ?? '',
               expires_in_hours: card.expires_in_hours,
               same_gender: !!card.same_gender,
+              spots: card.spots,
+              place: card.place,
+              trip_id: card.trip_id,
             });
             setState('done');
           } catch (e: any) {
@@ -213,8 +283,12 @@ export function BuddyRequestCard({ id }: { id: string }) {
   if (gone) return <Closed label={tr('This plan has closed.')} />;
   if (!request?.person) return null;
   const person = request.person;
+  const group = request.spots > 1;
+  // Their own group: in it, but never offered to join it.
+  if (group && request.joined && !request.offered) return <GroupCard id={id} />;
   const toggle = async () => {
-    if (!request.offered && !(await confirm(tr('Join {name}?', { name: person.display_name }), meetSafely(), tr("I'm in")))) return;
+    if (!request.offered && !(await confirm(group ? tr("Join {name}'s group?", { name: person.display_name }) : tr('Join {name}?', { name: person.display_name }), meetSafely(), tr("I'm in")))) return;
+    if (request.offered && group && !(await confirm(tr('Leave the group?'), tr("You'll leave its group chat too."), tr('Leave'), true))) return;
     setBusy(true);
     try {
       if (request.offered) await api.buddies.withdraw(id);
@@ -229,10 +303,13 @@ export function BuddyRequestCard({ id }: { id: string }) {
   return (
     <Glass style={{ gap: space.md }}>
       <PersonRow person={person} onBlocked={() => setGone(true)} />
-      <Plan kind={request.kind} when={request.when} note={request.note} />
-      {request.offered ? <T v="small" soft>{tr("{name} will see you're in, and picks who to go with.", { name: person.display_name })}</T> : null}
+      <Plan {...planOf(request, true)} />
+      {request.offered && !group ? <T v="small" soft>{tr("{name} will see you're in, and picks who to go with.", { name: person.display_name })}</T> : null}
+      {request.offered && group ? (
+        <Button label={tr('Open the group chat')} icon="chatbubbles" small onPress={() => router.push(`/group/${id}`)} />
+      ) : null}
       <Button
-        label={request.offered ? tr('Take back') : tr("I'm in")}
+        label={request.offered ? (group ? tr('Leave the group') : tr('Take back')) : group ? tr('Join the group') : tr("I'm in")}
         icon={request.offered ? 'close' : 'hand-right-outline'}
         kind={request.offered ? 'secondary' : 'primary'}
         small
@@ -257,7 +334,7 @@ export function BuddyOfferCard({ id, userId }: { id: string; userId: string }) {
   return (
     <Glass style={{ gap: space.md }}>
       <PersonRow person={person} onBlocked={() => setGone(true)} />
-      <Plan kind={request.kind} when={request.when} note={request.note} />
+      <Plan {...planOf(request)} />
       <Button
         label={tr('Pick them')}
         icon="checkmark"
@@ -280,4 +357,89 @@ export function BuddyOfferCard({ id, userId }: { id: string; userId: string }) {
       />
     </Glass>
   );
+}
+
+/** Suki's button to a group chat this person is in. */
+export function GroupCard({ id }: { id: string }) {
+  const { request, gone } = useBuddyRequest(id);
+  if (gone) return <Closed label={tr('This plan has closed.')} />;
+  if (!request) return null;
+  return (
+    <Glass style={{ gap: space.md }}>
+      <Plan {...planOf(request, true)} />
+      <Button label={tr('Open the group chat')} icon="chatbubbles" small onPress={() => router.push(`/group/${id}`)} />
+    </Glass>
+  );
+}
+
+const dayLabel = (d: string) => {
+  const [y, m, day] = d.split('-').map(Number);
+  return new Date(y, m - 1, day).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+};
+export const tripDates = (from: string, to: string) => (from === to ? dayLabel(from) : `${dayLabel(from)} – ${dayLabel(to)}`);
+
+/** Suki found the city; the tap adds the trip. */
+export function TripPostCard({ card }: { card: Extract<Card, { kind: 'trip_post' }> }) {
+  const [trip, setTrip] = useState<Trip | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  if (trip) return <TripView trip={trip} />;
+  return (
+    <Glass style={{ gap: space.sm }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+        <Pill tone="accent" icon="airplane-outline" label={card.city} />
+        <T v="small" style={{ fontWeight: '700' }}>{tripDates(card.starts_on, card.ends_on)}</T>
+      </View>
+      {card.note ? <T>{card.note}</T> : null}
+      <T v="small" soft>{tr("While you're there, plans in this city reach you, and you can post your own.")}</T>
+      <ErrorText message={error} />
+      <Button
+        label={tr('Add the trip')}
+        icon="checkmark"
+        small
+        loading={busy}
+        onPress={async () => {
+          setBusy(true);
+          setError(null);
+          try {
+            setTrip(await api.trips.add({ city: card.city, starts_on: card.starts_on, ends_on: card.ends_on, note: card.note }));
+          } catch (e: any) {
+            setError(e.message);
+          } finally {
+            setBusy(false);
+          }
+        }}
+      />
+    </Glass>
+  );
+}
+
+function TripView({ trip }: { trip: Trip }) {
+  return (
+    <Glass style={{ gap: space.sm }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+        <Pill tone="accent" icon="airplane-outline" label={trip.city_name} />
+        <T v="small" style={{ fontWeight: '700' }}>{tripDates(trip.starts_on, trip.ends_on)}</T>
+      </View>
+      {trip.note ? <T>{trip.note}</T> : null}
+      <T v="small" soft>
+        {[
+          trip.going === 1 ? tr('1 other person is going then') : tr('{n} other people are going then', { n: String(trip.going) }),
+          trip.plans === 1 ? tr('1 plan to join there') : tr('{n} plans to join there', { n: String(trip.plans) }),
+        ].join(' · ')}
+      </T>
+    </Glass>
+  );
+}
+
+/** One of this person's trips. */
+export function TripCard({ id }: { id: string }) {
+  const [trip, setTrip] = useState<Trip | null>(null);
+  const [gone, setGone] = useState(false);
+  useEffect(() => {
+    api.trips.get(id).then(setTrip, (e: any) => e?.status === 404 && setGone(true));
+  }, [id]);
+  if (gone) return <Closed label={tr('This trip was removed.')} />;
+  if (!trip) return null;
+  return <TripView trip={trip} />;
 }

@@ -6,6 +6,7 @@
     "pages/me/me",
     "pages/login/login",
     "pages/chat/chat",
+    "pages/group/group",
     "pages/date/date",
     "pages/person/person",
     "pages/profile/edit/edit",

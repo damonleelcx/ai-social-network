@@ -69,18 +69,33 @@ export type Card =
   | { kind: 'date'; date_id: string; focus?: 'time' | 'change' }
   | { kind: 'share_plan'; date_id: string }
   | { kind: 'open_screen'; screen: string; label: string }
-  | { kind: 'buddy_post'; activity: string; when: string; note?: string; expires_in_hours: number; same_gender?: boolean }
+  | {
+      kind: 'buddy_post';
+      activity: string;
+      when: string;
+      note?: string;
+      expires_in_hours: number;
+      same_gender?: boolean;
+      spots?: number;
+      place?: string;
+      trip_id?: string;
+      city_name?: string;
+    }
+  | { kind: 'group'; request_id: string }
+  | { kind: 'trip_post'; city: string; starts_on: string; ends_on: string; note?: string }
+  | { kind: 'trip'; trip_id: string }
   | { kind: 'buddy_request'; request_id: string }
   | { kind: 'buy_credits' }
   | { kind: 'buddy_offer'; request_id: string; user_id: string }
   | {
       kind: 'confirm';
-      action: 'remove_photo' | 'unmatch' | 'block' | 'reset_taste' | 'buddy_close';
+      action: 'remove_photo' | 'unmatch' | 'block' | 'reset_taste' | 'buddy_close' | 'trip_remove';
       label: string;
       photo_id?: string;
       match_id?: string;
       user_id?: string;
       request_id?: string;
+      trip_id?: string;
     };
 
 export type MessageMeta = {
@@ -191,6 +206,37 @@ export type BuddyRequest = {
   offered: boolean;
   person?: Person;
   offers?: { person: Person; created_at: string }[];
+  /** More than 1 makes it a group: people join at once, up to this many. */
+  spots: number;
+  place?: string;
+  /** Everyone going, the poster included. */
+  going: number;
+  joined?: boolean;
+  members?: Person[];
+};
+
+export type GroupMessage = {
+  thread_id: string;
+  seq: number;
+  sender_id?: string;
+  role: 'text' | 'system';
+  body: string;
+  meta?: { name?: string; event?: 'joined' | 'left' | 'called_off' };
+  created_at: string;
+};
+
+export type GroupChat = { request: BuddyRequest; messages: GroupMessage[] | null; open: boolean };
+
+export type Trip = {
+  id: string;
+  city_name: string;
+  starts_on: string;
+  ends_on: string;
+  note?: string;
+  /** Other people with a trip there at the same time. A count only. */
+  going: number;
+  /** Open plans there they could join. */
+  plans: number;
 };
 
 export type Hint = { id: string; body: string; suggestions: string[] | null; created_at: string };
@@ -261,7 +307,7 @@ export type Session = {
 export type Memory = { id: string; note: string; created_at: string };
 export type Blocked = { user_id: string; display_name: string };
 
-export type NotificationData = { screen?: 'agent' | 'proposal' | 'chat' | 'date'; id?: string };
+export type NotificationData = { screen?: 'agent' | 'proposal' | 'chat' | 'date' | 'group'; id?: string };
 export type AppNotification = {
   id: number;
   kind: string;

@@ -278,6 +278,15 @@ func (s *Store) DeleteThreads(ctx context.Context, convIDs, matchIDs []string) e
 	return del(collChat, matchIDs)
 }
 
+// DeleteSent removes one person's messages from these threads and leaves everyone else's.
+func (s *Store) DeleteSent(ctx context.Context, threads []string, senderID string) error {
+	if len(threads) == 0 {
+		return nil
+	}
+	_, err := s.db.Collection(collChat).DeleteMany(ctx, bson.D{{Key: "thread", Value: bson.D{{Key: "$in", Value: threads}}}, {Key: "sender_id", Value: senderID}})
+	return err
+}
+
 // Export returns one person's own words, for the data export: all of their
 // conversation with Suki, and only messages they sent in chats with others.
 func (s *Store) Export(ctx context.Context, userID, convID string, matchIDs []string) (agent, chats []Message, err error) {

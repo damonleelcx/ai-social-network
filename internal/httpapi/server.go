@@ -382,6 +382,14 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("DELETE /v1/buddies/{id}/offer", v(s.buddyWithdraw))
 	m.HandleFunc("POST /v1/buddies/{id}/pick", v(lim("buddy_pick", 30, time.Hour, s.buddyPick)))
 	m.HandleFunc("POST /v1/buddies/{id}/close", v(s.buddyClose))
+	m.HandleFunc("GET /v1/groups", v(s.groupsMine))
+	m.HandleFunc("GET /v1/groups/{id}/messages", v(s.groupMessages))
+	m.HandleFunc("POST /v1/groups/{id}/messages", v(lim("group_chat", 60, time.Minute, s.groupSend)))
+	m.HandleFunc("GET /v1/trips", v(s.tripsMine))
+	m.HandleFunc("GET /v1/trips/trending", v(s.tripsTrending))
+	m.HandleFunc("GET /v1/trips/{id}", v(s.tripGet))
+	m.HandleFunc("POST /v1/trips", v(lim("trip_add", 10, time.Hour, s.tripAdd)))
+	m.HandleFunc("DELETE /v1/trips/{id}", v(s.tripRemove))
 
 	// Introductions and matches
 	m.HandleFunc("GET /v1/proposals", v(s.proposals))
@@ -811,7 +819,20 @@ func (s *Server) BeforeDelete(ctx context.Context, userID string) error {
 	if err != nil {
 		return err
 	}
-	return s.Chats.DeleteThreads(ctx, convs, matches)
+	// A group they started goes with them, chat and all. In anyone else's group, only what
+	// they wrote goes: the others' conversation is theirs.
+	owned, err := ids(ctx, s.Pool, `SELECT 'group:' || id::text FROM buddy_requests WHERE user_id=$1 AND spots>1`, userID)
+	if err != nil {
+		return err
+	}
+	joined, err := ids(ctx, s.Pool, `SELECT 'group:' || request_id::text FROM buddy_members WHERE user_id=$1`, userID)
+	if err != nil {
+		return err
+	}
+	if err := s.Chats.DeleteSent(ctx, joined, userID); err != nil {
+		return err
+	}
+	return s.Chats.DeleteThreads(ctx, convs, append(matches, owned...))
 }
 
 func ids(ctx context.Context, pool *pgxpool.Pool, q string, a ...any) ([]string, error) {
@@ -1380,6 +1401,108 @@ func (s *Server) buddyPick(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) buddyClose(w http.ResponseWriter, r *http.Request) {
 	if err := s.Dating.CloseBuddy(r.Context(), r.PathValue("id"), userOf(r).ID); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"ok": true})
+}
+
+// ── Group plans and trips ──
+
+func (s *Server) groupsMine(w http.ResponseWriter, r *http.Request) {
+	list, err := s.Dating.MyGroups(r.Context(), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"requests": list})
+}
+
+func (s *Server) groupMessages(w http.ResponseWriter, r *http.Request) {
+	after := afterParam(r)
+	if after > 0 {
+		after = max(after-seqOverlap, 1)
+	}
+	c, err := s.Dating.GroupMessages(r.Context(), r.PathValue("id"), userOf(r).ID, after)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, c)
+}
+
+func (s *Server) groupSend(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		Text     string `json:"text"`
+		ClientID string `json:"client_id"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	m, err := s.Dating.SendGroupMessage(r.Context(), r.PathValue("id"), userOf(r).ID, b.Text, b.ClientID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 201, map[string]any{"message": m})
+}
+
+func (s *Server) tripsMine(w http.ResponseWriter, r *http.Request) {
+	list, err := s.Dating.MyTrips(r.Context(), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"trips": list})
+}
+
+func (s *Server) tripsTrending(w http.ResponseWriter, r *http.Request) {
+	list, err := s.Dating.TrendingTrips(r.Context())
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"cities": list})
+}
+
+func (s *Server) tripGet(w http.ResponseWriter, r *http.Request) {
+	t, err := s.Dating.TripView(r.Context(), r.PathValue("id"), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"trip": t})
+}
+
+// tripAdd finds the city on the server, so a trip's city is always a real one.
+func (s *Server) tripAdd(w http.ResponseWriter, r *http.Request) {
+	var in dating.TripInput
+	if !read(w, r, &in) {
+		return
+	}
+	if err := dating.CheckTrip(in); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	c, err := s.Places.ResolveCity(r.Context(), in.City)
+	if errors.Is(err, places.ErrNoCity) {
+		fail(w, 422, "I couldn't find that city. Try adding the country.")
+		return
+	}
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	t, err := s.Dating.AddTrip(r.Context(), userOf(r).ID, c, in)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 201, map[string]any{"trip": t})
+}
+
+func (s *Server) tripRemove(w http.ResponseWriter, r *http.Request) {
+	if err := s.Dating.RemoveTrip(r.Context(), r.PathValue("id"), userOf(r).ID); err != nil {
 		handleErr(w, r, err)
 		return
 	}
@@ -2035,7 +2158,14 @@ func (s *Server) export(w http.ResponseWriter, r *http.Request) {
 		handleErr(w, r, err)
 		return
 	}
-	matches, err := ids(r.Context(), s.Pool, `SELECT id FROM matches WHERE user_a=$1 OR user_b=$1`, u.ID)
+	matches, err := ids(r.Context(), s.Pool, `SELECT id::text FROM matches WHERE user_a=$1 OR user_b=$1
+		UNION ALL SELECT 'group:' || id::text FROM buddy_requests WHERE user_id=$1 AND spots>1
+		UNION ALL SELECT 'group:' || request_id::text FROM buddy_members WHERE user_id=$1`, u.ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	trips, err := s.Dating.MyTrips(r.Context(), u.ID)
 	if err != nil {
 		handleErr(w, r, err)
 		return
@@ -2061,5 +2191,5 @@ func (s *Server) export(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, map[string]any{"account": map[string]any{"email": u.Email, "created_at": u.CreatedAt}, "profile": p, "photos": photos,
-		"settings": dating.GetSettings(r.Context(), s.Pool, u.ID), "buddy_posts": buddies, "credit_history": credits, "suki_conversation": agentMsgs, "messages_you_sent": chats, "suki_notes": notes})
+		"settings": dating.GetSettings(r.Context(), s.Pool, u.ID), "buddy_posts": buddies, "trips": trips, "credit_history": credits, "suki_conversation": agentMsgs, "messages_you_sent": chats, "suki_notes": notes})
 }
