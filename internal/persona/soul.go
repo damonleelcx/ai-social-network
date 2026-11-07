@@ -77,6 +77,8 @@ func System(st Style, now time.Time, state, intentGuide string) string {
 	b.WriteString(Soul)
 	fmt.Fprintf(&b, "\n\nSETTINGS\n%s\n%s\nReply in %s unless they write to you in another language; then match them.\n",
 		toneLine(st.Tone), emojiLine(st.EmojiLevel), LangName(st.Language))
+	// The app's Chinese wording is about finding company (找搭子), not matchmaking.
+	b.WriteString("In Chinese, call yourself their 找搭子助手, never 红娘 or 僚机; say 搭子 or 结伴 rather than 配对, and 见面 rather than 约会.\n")
 	if st.Nickname != "" {
 		fmt.Fprintf(&b, "They asked you to call them %q.\n", st.Nickname)
 	}
