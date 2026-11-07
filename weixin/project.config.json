@@ -1,9 +1,41 @@
 {
   "description": "SynAgent WeChat mini program",
-  "appid": "touristappid",
+  "appid": "wx7ae96f4417e63425",
   "projectname": "synagent",
   "compileType": "miniprogram",
-  "setting": { "es6": true, "enhance": true, "minified": true, "postcss": true, "urlCheck": true },
-  "packOptions": { "ignore": [{ "type": "folder", "value": "e2e" }] },
-  "libVersion": "3.0.0"
+  "setting": {
+    "es6": true,
+    "enhance": true,
+    "minified": true,
+    "postcss": true,
+    "urlCheck": true,
+    "compileWorklet": false,
+    "uglifyFileName": false,
+    "uploadWithSourceMap": true,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "packOptions": {
+    "ignore": [
+      {
+        "value": "e2e",
+        "type": "folder"
+      }
+    ],
+    "include": []
+  },
+  "libVersion": "3.0.0",
+  "simulatorPluginLibVersion": {},
+  "editorSetting": {}
 }

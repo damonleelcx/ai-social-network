@@ -1,0 +1,112 @@
+# China copy of deploy/k8s/40-app.yaml: no mail relay, photos on a local volume.
+# Two deployments from one image. The web tier holds no work and the workers hold
+# no HTTP. Scaling either is a replica count: the queues' leases and fencing tokens
+# are what make more than one worker safe.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: synagent-web
+  namespace: synagent
+  labels: { app.kubernetes.io/name: synagent-web, app.kubernetes.io/part-of: synagent }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app.kubernetes.io/name: synagent-web } }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: synagent-web, app.kubernetes.io/part-of: synagent }
+    spec:
+      securityContext:
+        fsGroup: 65532
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile: { type: RuntimeDefault }
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: web
+          image: SYN_IMAGE
+          args: ["web"]
+          ports: [{ name: http, containerPort: 8080 }]
+          envFrom:
+            - configMapRef: { name: synagent-config }
+            - secretRef: { name: synagent }
+            - secretRef: { name: synagent-voice, optional: true }
+            - secretRef: { name: synagent-wechat-pay, optional: true }
+            - secretRef: { name: synagent-wechat-app, optional: true }
+          startupProbe:
+            httpGet: { path: /readyz, port: http }
+            failureThreshold: 45
+            periodSeconds: 2
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 20
+            failureThreshold: 3
+          resources:
+            requests: { cpu: 50m, memory: 96Mi }
+            limits: { cpu: "1", memory: 384Mi }
+          volumeMounts:
+            - { name: photos, mountPath: /photos }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+      volumes:
+        - name: photos
+          persistentVolumeClaim: { claimName: photos }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: synagent-worker
+  namespace: synagent
+  labels: { app.kubernetes.io/name: synagent-worker, app.kubernetes.io/part-of: synagent }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app.kubernetes.io/name: synagent-worker } }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: synagent-worker, app.kubernetes.io/part-of: synagent }
+    spec:
+      securityContext:
+        fsGroup: 65532
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile: { type: RuntimeDefault }
+      # A worker told to stop finishes its current step, checkpoints and releases
+      # its lease; anything slower is resumed by the next worker when the lease expires.
+      terminationGracePeriodSeconds: 40
+      containers:
+        - name: worker
+          image: SYN_IMAGE
+          args: ["worker"]
+          envFrom:
+            - configMapRef: { name: synagent-config }
+            - secretRef: { name: synagent }
+            - secretRef: { name: synagent-voice, optional: true }
+            - secretRef: { name: synagent-wechat-pay, optional: true }
+            - secretRef: { name: synagent-wechat-app, optional: true }
+          resources:
+            requests: { cpu: 50m, memory: 96Mi }
+            limits: { cpu: "1", memory: 384Mi }
+          volumeMounts:
+            - { name: photos, mountPath: /photos }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+      volumes:
+        - name: photos
+          persistentVolumeClaim: { claimName: photos }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: synagent-web
+  namespace: synagent
+spec:
+  selector: { app.kubernetes.io/name: synagent-web }
+  ports: [{ name: http, port: 80, targetPort: http }]

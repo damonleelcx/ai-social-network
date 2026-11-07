@@ -28,7 +28,7 @@ func T(lang, english string, vars ...string) string {
 var catalog = map[string][4]string{
 	// Suki, in her own conversation.
 	"Hi, I'm Suki! I'm an AI matchmaker, and I'm going to help you meet people you actually click with: someone to date, or just company for a movie or a trip. No endless swiping, just good introductions. Let's get to know each other. What should I call you?": {
-		"嗨，我是 Suki！我是一位 AI 红娘，会帮你遇见真正合拍的人：可以是约会对象，也可以只是一起看电影、一起旅行的搭子。不用没完没了地滑卡片，只有用心的介绍。我们先认识一下吧，我该怎么称呼你？",
+		"嗨，我是 Suki！我是你的找搭子助手，会帮你遇见真正合拍的人：一起看电影、一起旅行、一起吃饭的搭子，或者更多。不用没完没了地滑卡片，只有用心的介绍。我们先认识一下吧，我该怎么称呼你？",
 		"안녕하세요, 저는 Suki예요! AI 매치메이커로서 정말 잘 맞는 사람을 만나도록 도와드릴게요. 데이트 상대든, 영화나 여행을 함께할 사람이든요. 끝없는 스와이프 없이, 좋은 소개만요. 우리 먼저 서로 알아가요. 뭐라고 불러 드릴까요?",
 		"こんにちは、Suki です！AI の仲人として、本当に気の合う人との出会いをお手伝いします。恋人でも、映画や旅行を一緒に楽しむ仲間でも。延々とスワイプしなくても大丈夫、いい紹介だけ。まずはお互いを知りましょう。なんて呼べばいいですか？",
 		"¡Hola, soy Suki! Soy una casamentera con IA y voy a ayudarte a conocer a gente con la que de verdad conectes: alguien con quien salir, o compañía para ir al cine o de viaje. Nada de deslizar sin fin, solo buenas presentaciones. Vamos a conocernos. ¿Cómo te llamo?"},

@@ -479,6 +479,6 @@ module.exports = {
   'Your winggirl. Openly an AI.': ['你的僚机。坦白说，是个 AI。', '당신의 윙걸. 대놓고 AI예요.', 'あなたのウィングガール。堂々と AI です。', 'Tu cómplice. Una IA, y sin esconderlo.'],
   'Thinking about what you said...': ['正在想你说的话...', '당신의 말을 생각하는 중...', 'あなたの言葉を考えています...', 'Pensando en lo que dijiste...'],
   "Hi, I'm Suki!": ['嗨，我是 Suki！', '안녕하세요, 저는 Suki예요!', 'こんにちは、Suki です！', '¡Hola, soy Suki!'],
-  "I'm an AI matchmaker, and I'm on your side. Say hi and we'll get to know each other. No forms, I promise.": ['我是 AI 红娘，站在你这边。打个招呼，我们就开始互相了解。保证不用填表。', '저는 AI 매치메이커이고, 당신 편이에요. 인사하면 서로 알아가요. 양식 작성은 없어요, 약속해요.', '私は AI マッチメイカーで、あなたの味方です。あいさつして、お互いを知りましょう。フォーム入力はなし、約束します。', 'Soy una casamentera de IA y estoy de tu lado. Salúdame y nos vamos conociendo. Sin formularios, lo prometo.'],
+  "I'm an AI matchmaker, and I'm on your side. Say hi and we'll get to know each other. No forms, I promise.": ['我是你的找搭子助手，站在你这边。打个招呼，我们就开始互相了解。保证不用填表。', '저는 AI 매치메이커이고, 당신 편이에요. 인사하면 서로 알아가요. 양식 작성은 없어요, 약속해요.', '私は AI マッチメイカーで、あなたの味方です。あいさつして、お互いを知りましょう。フォーム入力はなし、約束します。', 'Soy una casamentera de IA y estoy de tu lado. Salúdame y nos vamos conociendo. Sin formularios, lo prometo.'],
   'Finding our conversation...': ['正在找我们的对话...', '우리 대화를 찾는 중...', '会話を探しています...', 'Buscando nuestra conversación...'],
 };
