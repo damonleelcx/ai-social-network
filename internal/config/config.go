@@ -86,6 +86,11 @@ type Config struct {
 	// shown in the home page footer. Set only on the China copy.
 	ICPBeian   string
 	ICPLicence string
+	// Region is this copy ("us" or "cn"); PeerURL and PeerSecret link it to the other one,
+	// so an account works from both. Empty PeerURL runs this copy alone.
+	Region     string
+	PeerURL    string
+	PeerSecret string
 
 	// DateMinLead is the soonest a date can be set; DebriefDelay is how long after
 	// its start Suki asks how it went. Both shorten for demos and tests.
@@ -149,6 +154,9 @@ func Load() (Config, error) {
 		ExpoPushURL:           env("SYN_EXPO_PUSH_URL", "https://exp.host/--/api/v2/push/send"),
 		ICPBeian:              os.Getenv("SYN_ICP_BEIAN"),
 		ICPLicence:            os.Getenv("SYN_ICP_LICENCE"),
+		Region:                env("SYN_REGION", "us"),
+		PeerURL:               os.Getenv("SYN_PEER_URL"),
+		PeerSecret:            os.Getenv("SYN_PEER_SECRET"),
 		DateMinLead:           envDur("SYN_DATE_MIN_LEAD", time.Hour),
 		DebriefDelay:          envDur("SYN_DEBRIEF_DELAY", 14*time.Hour),
 	}

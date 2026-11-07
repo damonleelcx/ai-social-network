@@ -128,7 +128,7 @@ func run(mode string) error {
 	}
 	if mode == "serve" || mode == "web" {
 		hub := httpapi.NewHub()
-		a := &auth.Service{Pool: pool, Mailer: mailer, PublicOrigin: cfg.PublicOrigin, SessionTTL: cfg.SessionTTL, AdminEmails: cfg.AdminEmails}
+		a := &auth.Service{Pool: pool, Mailer: mailer, PublicOrigin: cfg.PublicOrigin, SessionTTL: cfg.SessionTTL, AdminEmails: cfg.AdminEmails, TokenPrefix: httpapi.TokenPrefix(cfg.Region)}
 		srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill,
 			ICPFooter: httpapi.ICPFooter(cfg.ICPBeian, cfg.ICPLicence)}
 		if cfg.GoogleClientID != "" {
@@ -136,6 +136,13 @@ func run(mode string) error {
 		}
 		if cfg.WeChat.AppID != "" && cfg.WeChat.AppSecret != "" {
 			srv.WeChatLogin = &externalauth.WeChat{AppID: cfg.WeChat.AppID, AppSecret: cfg.WeChat.AppSecret}
+		}
+		if cfg.PeerURL != "" {
+			peer, err := httpapi.NewPeer(cfg.Region, cfg.PeerURL, cfg.PeerSecret)
+			if err != nil {
+				return err
+			}
+			srv.Peer = peer
 		}
 		a.BeforeDelete = srv.BeforeDelete
 		srv.SpeechDailyChars = cfg.TTSDailyChars

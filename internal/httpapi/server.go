@@ -55,6 +55,8 @@ type Server struct {
 	// ICPFooter is the China filing notice for the home page (see ICPFooter). Empty
 	// outside China.
 	ICPFooter string
+	// Peer is the other region's copy (see peer.go). Nil runs this copy alone.
+	Peer *Peer
 	limit            limiter
 	mapCache         userMapCache
 }
@@ -434,7 +436,9 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /v1/admin/users/{id}/credits", s.moderator(s.adminGrantCredits))
 	m.HandleFunc("GET /v1/admin/goals/{id}/timeline", s.moderator(s.adminTimeline))
 
-	return logRequests(m)
+	m.HandleFunc("POST /internal/peer/email", s.peerOnly(s.peerEmail))
+	m.HandleFunc("POST /internal/peer/session", s.peerOnly(s.peerSession))
+	return logRequests(s.route(m))
 }
 
 func logRequests(next http.Handler) http.Handler {
@@ -542,6 +546,9 @@ func (s *Server) googleSignIn(w http.ResponseWriter, r *http.Request) {
 	if b.Language == "" {
 		b.Language = "en"
 	}
+	if s.externalSession(w, r, "google", g.Subject) {
+		return
+	}
 	u, created, err := s.Auth.SignInExternal(r.Context(), auth.External{Provider: "google", Subject: g.Subject, Email: g.Email, Name: g.Name, Lang: b.Language, AcceptTerms: b.AcceptTerms})
 	if err != nil {
 		handleErr(w, r, err)
@@ -593,6 +600,9 @@ func (s *Server) wechatSignIn(w http.ResponseWriter, r *http.Request) {
 	if b.Language == "" {
 		b.Language = "zh"
 	}
+	if s.externalSession(w, r, "wechat", openid) {
+		return
+	}
 	u, created, err := s.Auth.SignInExternal(r.Context(), auth.External{Provider: "wechat", Subject: openid, Lang: b.Language, AcceptTerms: b.AcceptTerms})
 	if err != nil {
 		handleErr(w, r, err)
@@ -632,6 +642,16 @@ func (s *Server) signup(w http.ResponseWriter, r *http.Request) {
 	}
 	if b.Language == "" {
 		b.Language = "en"
+	}
+	if s.Peer != nil && !fromPeer(r) {
+		taken, err := s.Peer.EmailTaken(r.Context(), b.Email)
+		if err != nil {
+			slog.Warn("peer email check", "err", err) // sign up here; the address is checked again at sign-in
+		}
+		if taken {
+			handleErr(w, r, auth.ErrEmailTaken)
+			return
+		}
 	}
 	u, err := s.Auth.SignUp(r.Context(), b.Email, b.Password, b.Name, b.Language, b.AcceptTerms)
 	if err != nil {
