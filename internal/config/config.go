@@ -176,6 +176,10 @@ func Load() (Config, error) {
 	if c.MongoURL == "" {
 		return c, fmt.Errorf("SYN_MONGO_URL is required")
 	}
+	// "off" turns push off (the China copy, where Expo isn't used).
+	if c.ExpoPushURL == "off" {
+		c.ExpoPushURL = ""
+	}
 	if c.S3Bucket == "" && c.PhotoDir == "" {
 		return c, fmt.Errorf("SYN_S3_BUCKET is required")
 	}

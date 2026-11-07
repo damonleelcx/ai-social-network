@@ -57,6 +57,8 @@ type Server struct {
 	ICPFooter string
 	// Peer is the other region's copy (see peer.go). Nil runs this copy alone.
 	Peer *Peer
+	// Region is this copy: "us" (default) or "cn", which serves the China site.
+	Region string
 	limit            limiter
 	mapCache         userMapCache
 }
@@ -305,19 +307,19 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { writeJSON(w, 200, map[string]bool{"ok": true}) })
 	m.HandleFunc("GET /readyz", s.ready)
 	site := landing
-	if s.ICPFooter != "" {
-		site = newLanding(s.ICPFooter)
+	if s.ICPFooter != "" || s.Region == "cn" {
+		site = newLanding(s.ICPFooter, s.Region == "cn")
 	}
 	m.Handle("GET /{$}", site)
 	m.Handle("GET /landing/", site)
 	m.Handle("GET /app", webapp)
 	m.Handle("GET /app/", webapp)
-	m.HandleFunc("GET /legal/terms", legalPage("terms"))
-	m.HandleFunc("GET /legal/privacy", legalPage("privacy"))
-	m.HandleFunc("GET /legal/contact", legalPage("contact"))
-	m.HandleFunc("GET /legal/delete-account", legalPage("delete-account"))
-	m.HandleFunc("GET /legal/child-safety", legalPage("child-safety"))
-	m.HandleFunc("GET /open", legalPage("open"))
+	m.HandleFunc("GET /legal/terms", legalPage("terms", s.Region == "cn"))
+	m.HandleFunc("GET /legal/privacy", legalPage("privacy", s.Region == "cn"))
+	m.HandleFunc("GET /legal/contact", legalPage("contact", s.Region == "cn"))
+	m.HandleFunc("GET /legal/delete-account", legalPage("delete-account", s.Region == "cn"))
+	m.HandleFunc("GET /legal/child-safety", legalPage("child-safety", s.Region == "cn"))
+	m.HandleFunc("GET /open", legalPage("open", s.Region == "cn"))
 
 	m.HandleFunc("GET /v1/public/user-map", lim("user-map", 60, time.Minute, s.userMap))
 

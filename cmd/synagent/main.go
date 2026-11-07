@@ -130,7 +130,7 @@ func run(mode string) error {
 		hub := httpapi.NewHub()
 		a := &auth.Service{Pool: pool, Mailer: mailer, PublicOrigin: cfg.PublicOrigin, SessionTTL: cfg.SessionTTL, AdminEmails: cfg.AdminEmails, TokenPrefix: httpapi.TokenPrefix(cfg.Region)}
 		srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill,
-			ICPFooter: httpapi.ICPFooter(cfg.ICPBeian, cfg.ICPLicence)}
+			ICPFooter: httpapi.ICPFooter(cfg.ICPBeian, cfg.ICPLicence), Region: cfg.Region}
 		if cfg.GoogleClientID != "" {
 			srv.GoogleLogin = &externalauth.Google{ClientID: cfg.GoogleClientID}
 		}

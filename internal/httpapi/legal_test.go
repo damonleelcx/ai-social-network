@@ -16,7 +16,7 @@ func TestPublicPages(t *testing.T) {
 		{"child-safety", "Child safety standards", "National Center for Missing &amp; Exploited Children"},
 	} {
 		w := httptest.NewRecorder()
-		legalPage(tc.page)(w, httptest.NewRequest("GET", "/", nil))
+		legalPage(tc.page, false)(w, httptest.NewRequest("GET", "/", nil))
 		page := w.Body.String()
 		if w.Code != 200 || !strings.Contains(page, "<title>"+tc.title+"</title>") || !strings.Contains(page, tc.want) {
 			t.Errorf("%s: %d, want %q in the page", tc.page, w.Code, tc.want)
@@ -39,7 +39,7 @@ func TestLegalLanguagePicked(t *testing.T) {
 		r := httptest.NewRequest("GET", "/"+tc.query, nil)
 		r.Header.Set("Accept-Language", tc.accept)
 		w := httptest.NewRecorder()
-		legalPage("terms")(w, r)
+		legalPage("terms", false)(w, r)
 		if !strings.Contains(w.Body.String(), `<html lang="`+tc.want+`">`) {
 			t.Errorf("%q %q: want %s", tc.query, tc.accept, tc.want)
 		}
@@ -73,7 +73,7 @@ func TestLegalTranslationsMatchEnglish(t *testing.T) {
 				t.Errorf("%s %s: the links differ from English", l.code, page)
 			}
 			w := httptest.NewRecorder()
-			legalPage(page)(w, httptest.NewRequest("GET", "/?lang="+l.code, nil))
+			legalPage(page, false)(w, httptest.NewRequest("GET", "/?lang="+l.code, nil))
 			if !strings.Contains(w.Body.String(), l.note) {
 				t.Errorf("%s %s: no note that English controls", l.code, page)
 			}

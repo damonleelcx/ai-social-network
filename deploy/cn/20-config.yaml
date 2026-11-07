@@ -31,6 +31,11 @@ data:
   # Shown in the home page footer, as mainland rules require. Add SYN_ICP_BEIAN
   # (苏ICP备…号) once known.
   SYN_ICP_LICENCE: "苏B2-20262623"
+  # This copy is China's: accounts made here live here. The link to the US copy
+  # (SYN_PEER_URL and SYN_PEER_SECRET) is in the synagent secret, set once both sides have it.
+  SYN_REGION: "cn"
+  # No push through Expo from China; the mini program doesn't use it.
+  SYN_EXPO_PUSH_URL: "off"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
