@@ -91,6 +91,27 @@ func (c *Client) ResolveCity(ctx context.Context, q string) (*City, error) {
 	if c.cached(ctx, cacheKey, 90*24*time.Hour, &city) {
 		return &city, nil
 	}
+	got, err := c.nominatimCity(ctx, q)
+	if err != nil && err != ErrNoCity || got == nil && c.NominatimURL == "" {
+		// Nominatim is off or unreachable (it is blocked from mainland China): try Photon.
+		if alt, perr := c.photonCity(ctx, q); perr == nil {
+			got, err = alt, nil
+		} else if err == nil {
+			err = perr
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	c.store(ctx, cacheKey, *got)
+	return got, nil
+}
+
+func (c *Client) nominatimCity(ctx context.Context, q string) (*City, error) {
+	if c.NominatimURL == "" {
+		return nil, nil
+	}
+	var city City
 	u := c.NominatimURL + "/search?format=jsonv2&addressdetails=1&limit=5&accept-language=en&featureType=settlement&q=" + url.QueryEscape(q)
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	req.Header.Set("User-Agent", userAgent)
@@ -129,7 +150,6 @@ func (c *Client) ResolveCity(ctx context.Context, q string) (*City, error) {
 			display += ", " + h.Address.Country
 		}
 		city = City{Key: slug(h.Address.CountryCode + "-" + h.Address.State + "-" + name), Name: display, Lat: lat, Lon: lon}
-		c.store(ctx, cacheKey, city)
 		return &city, nil
 	}
 	return nil, ErrNoCity

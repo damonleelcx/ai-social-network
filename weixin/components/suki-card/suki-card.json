@@ -1,1 +1,1 @@
-{ "component": true, "usingComponents": {} }
+{ "component": true, "usingComponents": { "suki-avatar": "/components/suki-avatar/suki-avatar" } }

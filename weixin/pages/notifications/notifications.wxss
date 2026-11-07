@@ -1,0 +1,2 @@
+.title-line { font-weight: 600; padding-right: 16rpx; }
+.when { flex-shrink: 0; font-size: 22rpx; }

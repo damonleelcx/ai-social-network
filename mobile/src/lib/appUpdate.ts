@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import { isPlayBuild } from './playBilling';
 
 const LATEST_RELEASE = 'https://api.github.com/repos/damonleelcx/ai-social-network/releases/latest';
 export const DOWNLOAD_PAGE = 'https://match.heros-agent.space/#download';
@@ -19,10 +20,14 @@ export function isNewer(candidate: string, installed: string) {
   return false;
 }
 
-/** The newer release, if there is one. Any failure means no prompt: this must never get in the way. */
+/**
+ * The newer release, if there is one. Any failure means no prompt: this must never get in the way.
+ * Google Play updates its own build. Our APK carries a different signature, so Android wouldn't
+ * install it over that build, and Play doesn't allow updates from anywhere else.
+ */
 export async function findUpdate(): Promise<AppRelease | null> {
   const installed = Constants.expoConfig?.version;
-  if (__DEV__ || !installed) return null;
+  if (__DEV__ || !installed || isPlayBuild) return null;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8000);
   try {

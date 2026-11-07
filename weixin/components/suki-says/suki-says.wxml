@@ -1,0 +1,7 @@
+<view class="says">
+  <suki-avatar mood="{{face}}" size="{{size}}" ring="6" />
+  <view wx:if="{{dots}}" class="dots"><view class="dot"></view><view class="dot d2"></view><view class="dot d3"></view></view>
+  <view wx:if="{{title}}" class="title">{{title}}</view>
+  <view wx:if="{{body}}" class="body">{{body}}</view>
+  <slot></slot>
+</view>

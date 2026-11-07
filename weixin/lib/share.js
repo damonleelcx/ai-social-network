@@ -1,4 +1,5 @@
 const api = require('./api');
+const { t } = require('./i18n');
 
 const PENDING = 'pending_ref';
 let mine = '';
@@ -35,7 +36,7 @@ async function prepare() {
 // allow offering one for sharing.
 function message() {
   return {
-    title: '来和我一起用 SynAgent，Suki 帮你认识值得见的人',
+    title: t('Come try SynAgent with me. Suki introduces you to people worth meeting.'),
     path: mine ? `/pages/suki/suki?ref=${mine}` : '/pages/suki/suki',
   };
 }

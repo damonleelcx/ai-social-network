@@ -1,0 +1,11 @@
+<view class="page">
+  <suki-says wx:if="{{!loaded}}" face="thinking" size="144" dots body="{{t.checking}}" />
+  <suki-says wx:elif="{{!items.length}}" face="happy" title="{{t.quiet}}" body="{{t.quietBody}}" />
+  <view wx:for="{{items}}" wx:key="id" class="card {{item.fresh ? 'fresh' : ''}}" data-screen="{{item.data.screen}}" data-id="{{item.data.id}}" bindtap="onOpen">
+    <view class="row">
+      <view class="grow title-line">{{item.title}}</view>
+      <view class="soft when">{{item.when}}</view>
+    </view>
+    <view class="soft">{{item.body}}</view>
+  </view>
+</view>

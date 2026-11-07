@@ -1,0 +1,85 @@
+<suki-says wx:if="{{!s}}" face="thinking" size="144" dots body="{{t.loading}}" />
+<view wx:else class="page">
+  <view class="card with-suki">
+    <suki-avatar mood="{{faces[s.suki_tone]}}" size="128" ring="6" />
+    <view class="grow soft">{{t.intro}}</view>
+  </view>
+
+  <view class="section">{{t.howSheTalks}}</view>
+  <view class="card">
+    <view class="field-label">{{t.tone}}</view>
+    <view class="options">
+      <view wx:for="{{tones}}" wx:key="value" class="chip {{s.suki_tone === item.value ? 'on' : ''}}" data-f="suki_tone" data-v="{{item.value}}" bindtap="onPick">{{item.label}}</view>
+    </view>
+    <view class="field-label gap">{{t.emoji}}</view>
+    <view class="options">
+      <view wx:for="{{emoji}}" wx:key="value" class="chip {{s.suki_emoji === item.value ? 'on' : ''}}" data-f="suki_emoji" data-v="{{item.value}}" bindtap="onPick">{{item.label}}</view>
+    </view>
+    <view class="field-label gap">{{t.checksIn}}</view>
+    <view class="options">
+      <view wx:for="{{proactive}}" wx:key="value" class="chip {{s.suki_proactive === item.value ? 'on' : ''}}" data-f="suki_proactive" data-v="{{item.value}}" bindtap="onPick">{{item.label}}</view>
+    </view>
+    <view class="field-label gap">{{t.calls}}</view>
+    <input class="input" maxlength="30" placeholder="{{t.callsPlaceholder}}" value="{{s.suki_nickname}}" bindblur="onNickname" />
+  </view>
+
+  <view class="card">
+    <view class="set-row">
+      <view class="grow"><view>{{t.moods}}</view><view class="hint">{{t.moodsHint}}</view></view>
+      <switch color="#ff5c8a" checked="{{s.mood_avatar}}" data-f="mood_avatar" bindchange="onToggle" />
+    </view>
+  </view>
+
+  <block wx:if="{{voiceOn}}">
+    <view class="section">{{t.herVoice}}</view>
+    <view class="card">
+      <view class="set-row">
+        <view class="grow"><view>{{t.speakers}}</view><view class="hint">{{t.speakersHint}}</view></view>
+        <switch color="#ff5c8a" checked="{{s.suki_voice}}" data-f="suki_voice" bindchange="onToggle" />
+      </view>
+      <view class="set-row">
+        <view class="grow"><view>{{t.aloud}}</view><view class="hint">{{t.aloudHint}}</view></view>
+        <switch color="#ff5c8a" checked="{{s.suki_voice && s.suki_voice_auto}}" disabled="{{!s.suki_voice}}" data-f="suki_voice_auto" bindchange="onToggle" />
+      </view>
+      <button class="plain" loading="{{clip === 'sample' && phase === 'loading'}}" bindtap="onHear">{{clip === 'sample' && phase === 'playing' ? t.stop : t.hear}}</button>
+    </view>
+  </block>
+
+  <view class="section">{{t.yourChats}}</view>
+  <view class="card">
+    <view class="set-row">
+      <view class="grow"><view>{{t.coaching}}</view><view class="hint">{{t.coachingHint}}</view></view>
+      <switch color="#ff5c8a" checked="{{s.chat_coach}}" data-f="chat_coach" bindchange="onToggle" />
+    </view>
+    <view class="set-row">
+      <view class="grow"><view>{{t.coachRead}}</view><view class="hint">{{t.coachReadHint}}</view></view>
+      <switch color="#ff5c8a" checked="{{s.chat_coach_read}}" data-f="chat_coach_read" bindchange="onToggle" />
+    </view>
+    <view class="set-row">
+      <view class="grow"><view>{{t.prompts}}</view><view class="hint">{{t.promptsHint}}</view></view>
+      <switch color="#ff5c8a" checked="{{s.chat_prompts}}" data-f="chat_prompts" bindchange="onToggle" />
+    </view>
+  </view>
+
+  <view class="section">{{t.memory}}</view>
+  <view class="card">
+    <view class="set-row">
+      <view class="grow"><view>{{t.longTerm}}</view><view class="hint">{{t.longTermHint}}</view></view>
+      <switch color="#ff5c8a" checked="{{s.memory_enabled}}" data-f="memory_enabled" bindchange="onToggle" />
+    </view>
+    <view class="set-row">
+      <view class="grow"><view>{{t.debriefs}}</view><view class="hint">{{t.debriefsHint}}</view></view>
+      <switch color="#ff5c8a" checked="{{s.debrief_enabled}}" data-f="debrief_enabled" bindchange="onToggle" />
+    </view>
+  </view>
+  <view class="nav-row" data-url="/pages/settings/memory/memory" bindtap="onOpen">
+    <view class="grow"><view>{{t.remembers}}</view><view class="hint">{{t.remembersHint}}</view></view>
+    <view class="arrow">›</view>
+  </view>
+
+  <view class="section">{{t.safety}}</view>
+  <view class="nav-row" data-url="/pages/settings/blocked/blocked" bindtap="onOpen">
+    <view class="grow">{{t.blocked}}</view>
+    <view class="arrow">›</view>
+  </view>
+</view>

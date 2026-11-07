@@ -289,6 +289,7 @@ h1 .lit { color: var(--accent); }
 .foot p { max-width: 42em; color: var(--soft); font-size: 20px; line-height: 1.1; }
 .foot nav { display: flex; flex-wrap: wrap; gap: 18px; font: 400 13px/1 var(--label); text-transform: uppercase; }
 .foot a:hover { color: var(--heart); }
+.foot .icp { flex-basis: 100%; max-width: none; font: 400 13px/1.6 system-ui, sans-serif; color: var(--soft); }
 
 /* The flat terminal: small screens, no WebGL, or reduced motion. */
 .flat-crt .forge { height: auto; padding: 60px 16px; }

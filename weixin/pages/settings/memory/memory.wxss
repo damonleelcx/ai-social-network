@@ -1,0 +1,2 @@
+.note-text { padding-right: 16rpx; font-size: 28rpx; }
+.remove { margin: 0; flex-shrink: 0; }

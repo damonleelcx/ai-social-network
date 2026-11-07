@@ -1,20 +1,21 @@
 <view class="page">
+  <suki-says wx:if="{{!loaded}}" face="thinking" size="144" dots body="{{t.loading}}" />
   <block wx:if="{{proposals.length}}">
-    <view class="section">Suki 的介绍</view>
-    <suki-card wx:for="{{proposals}}" wx:key="proposal_id" card="{{item}}" />
+    <view class="section">{{t.introductions}}</view>
+    <suki-card wx:for="{{proposals}}" wx:key="proposal_id" card="{{item}}" intro="{{true}}" />
   </block>
-  <view wx:if="{{matches.length}}" class="section">聊天</view>
+  <view wx:if="{{matches.length}}" class="section">{{t.chats}}</view>
   <view wx:for="{{matches}}" wx:key="id" class="card row" data-id="{{item.id}}" bindtap="onOpen">
-    <image wx:if="{{item.photo}}" class="avatar" src="{{item.photo}}" mode="aspectFill" />
+    <image wx:if="{{item.photo}}" class="avatar" src="{{item.photo}}" mode="aspectFill" data-index="{{index}}" catchtap="onPhoto" />
     <view wx:else class="avatar"></view>
     <view class="grow">
       <view class="row">
         <view class="title grow ellipsis">{{item.person.display_name}}</view>
         <view wx:if="{{item.unread}}" class="badge">{{item.unread}}</view>
       </view>
-      <view wx:if="{{item.activity}}" class="soft">搭子：{{item.activity}}</view>
-      <view class="soft ellipsis">{{item.last_preview || '打个招呼吧'}}</view>
+      <view wx:if="{{item.activityText}}" class="soft">{{item.activityText}}</view>
+      <view class="soft ellipsis">{{item.last_preview || t.sayHi}}</view>
     </view>
   </view>
-  <view wx:if="{{loaded && !matches.length && !proposals.length}}" class="empty">还没有匹配。告诉 Suki 你想认识什么样的人。</view>
+  <suki-says wx:if="{{loaded && !matches.length && !proposals.length}}" face="thinking" size="264" title="{{t.emptyTitle}}" body="{{t.emptyBody}}" />
 </view>

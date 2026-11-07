@@ -1,21 +1,38 @@
 const api = require('../../lib/api');
 const live = require('../../lib/live');
+const i18n = require('../../lib/i18n');
+const person = require('../../lib/person');
 const { time, showError, confirm } = require('../../lib/format');
 
-const STATUS = { searching: '正在找地方', voting: '选地点', scheduling: '定时间', confirmed: '已确定', completed: '已结束', cancelled: '已取消' };
-const POST = { open: '报名中', filled: '已选好', closed: '已撤下' };
+const { t } = i18n;
+
+const COPY = {
+  posts: 'Your buddy posts',
+  plans: 'Date plans',
+  nobody: "Nobody's in yet. I'll let you know when someone is.",
+  pick: 'Pick them',
+  takeDown: 'Take it down',
+  openChat: 'Open chat',
+  loading: 'Checking your calendar...',
+  emptyTitle: 'No dates yet',
+  emptyBody: "When a chat feels ready, tap Plan a date, or just ask me. I'll find a spot you'd both like.",
+};
+const STATUS = { searching: 'Looking for places', voting: 'Choosing a place', scheduling: 'Finding a time', confirmed: 'On!', completed: 'Finished', cancelled: 'Cancelled' };
+const POST = { open: 'Open to join', filled: 'Picked', closed: 'Taken down' };
 
 Page({
-  data: { dates: [], posts: [], loaded: false },
+  data: { t: i18n.strings(COPY), dates: [], posts: [], loaded: false },
   onLoad() {
-    this.off = live.on((t) => {
-      if (t === 'dates' || t === 'buddies' || t === 'reconnect') this.load();
+    this.off = live.on((topic) => {
+      if (topic === 'dates' || topic === 'buddies' || topic === 'reconnect') this.load();
     });
   },
   onUnload() {
     if (this.off) this.off();
   },
   onShow() {
+    i18n.apply(this, COPY, 'Dates');
+    i18n.tabs();
     this.load();
   },
   async onPullDownRefresh() {
@@ -27,8 +44,12 @@ Page({
       const [dates, posts] = await Promise.all([api.dates.list(), api.buddies.mine()]);
       this.setData({
         loaded: true,
-        dates: dates.map((d) => Object.assign({}, d, { statusText: STATUS[d.status] || d.status, whenText: time(d.scheduled_at) })),
-        posts: posts.map((p) => Object.assign({}, p, { offers: p.offers || [], statusText: POST[p.status] || p.status })),
+        dates: dates.map((d) => Object.assign({}, d, { statusText: STATUS[d.status] ? t(STATUS[d.status]) : d.status, whenText: time(d.scheduled_at) })),
+        posts: posts.map((p) => Object.assign({}, p, {
+          kindText: person.activity(p.kind),
+          statusText: POST[p.status] ? t(POST[p.status]) : p.status,
+          offers: (p.offers || []).map((o) => Object.assign({}, o, { line: t('{name} wants to go too', { name: o.person.display_name }) })),
+        })),
       });
     } catch (e) {
       if (e.status !== 401 && e.status !== 403) showError(e);
@@ -41,8 +62,8 @@ Page({
     wx.navigateTo({ url: '/pages/chat/chat?id=' + e.currentTarget.dataset.id });
   },
   async onPick(e) {
-    const { post, user } = e.currentTarget.dataset;
-    if (!(await confirm('选 TA 一起去？', '其他报名的人会收到通知。'))) return;
+    const { post, user, name } = e.currentTarget.dataset;
+    if (!(await confirm(t('Go with {name}?', { name }), t('Everyone else who joined will be told.')))) return;
     try {
       wx.navigateTo({ url: '/pages/chat/chat?id=' + (await api.buddies.pick(post, user)) });
     } catch (err) {
@@ -50,7 +71,7 @@ Page({
     }
   },
   async onClose(e) {
-    if (!(await confirm('撤下这条搭子？', '之后别人就不能报名了。'))) return;
+    if (!(await confirm(t('Take this post down?'), t("People can't join it any more.")))) return;
     try {
       await api.buddies.close(e.currentTarget.dataset.id);
       await this.load();

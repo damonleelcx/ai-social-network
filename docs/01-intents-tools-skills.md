@@ -62,6 +62,17 @@ automated. Effects: **R** read, **W** writes our database, **X** reaches outside
 | `buddy_status` | "has anyone said yes to my post?" | `buddy_mine`, `buddy_show_offer` |
 | `buddy_pick` | "let's go with Kai" | `buddy_pick`, or `buddy_show_offer` if it's unclear who |
 | `buddy_close` | "take my post down" | `buddy_prepare_close` (G1 tap) |
+| `group_chat` | "open the hiking group chat" | `group_mine`, `group_show` (G1 tap opens the chat) |
+| `buddy_place` | "where should we go for drinks?" | `place_ideas`; real places only, never invented |
+| `trip_add` | "I'm in Tokyo from the 10th to the 20th" | `trip_prepare_add` (G1 tap) |
+| `trip_status` | "who else is going to Tokyo?" | `trip_mine`, `trip_show`; counts only, never names |
+| `trip_trending` | "where is everyone travelling?" | `trip_trending` |
+| `trip_remove` | "cancel my Lisbon trip" | `trip_prepare_remove` (G1 tap) |
+
+A post with more than one spot is a **group plan**: "I'm in" joins at once while there's room, and
+everyone in it shares a group chat that Suki's `group` card opens. A **trip** makes plans in that
+city reach the traveller while the trip is on, and lets them post plans there. All of it starts in
+the conversation with Suki.
 
 ### 1.2c Credits (`credits`)
 
@@ -192,6 +203,7 @@ These run on a deterministic filter first, so a model outage cannot stop them.
 | `sys_reputation_recompute` | new evaluation | `date-debrief` |
 | `sys_message_flagged` | Sentinel flags a chat | `safety-review` |
 | `sys_inactive_user` | 30 days away | stop proposing them |
+| `sys_suggest_next` | daily, or twice a day at high proactivity; not at low | Suki suggests something to do, free |
 
 ### 1.12 What is never said
 
@@ -250,6 +262,14 @@ Column **Agents** lists who may call a tool. The worker refuses anyone else.
 | `buddy_pick` | W | G0 | Suki | picks someone who's in on their own post, when their own message chooses them |
 | `buddy_show_offer` | R | G1 | Suki | renders someone who's in, with a button to pick them |
 | `buddy_prepare_close` | R | G1 | Suki | renders a confirm button |
+| `group_mine` | R | G0 | Suki | the group plans this person is in, with who's going |
+| `group_show` | R | G1 | Suki | renders the button to a group chat this person is in |
+| `place_ideas` | X | G0 | Suki | real public places near their city or a trip's city |
+| `trip_prepare_add` | X | G1 | Suki | finds the city and renders the trip for a tap |
+| `trip_mine` | R | G0 | Suki | this person's trips, with counts of others going and plans there |
+| `trip_show` | R | G1 | Suki | renders one of their trips |
+| `trip_trending` | R | G0 | Suki | busiest destinations in the next 30 days, counts only |
+| `trip_prepare_remove` | R | G1 | Suki | renders a confirm button |
 
 ### 2.2c Credits
 

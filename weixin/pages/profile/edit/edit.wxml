@@ -1,0 +1,145 @@
+<view wx:if="{{!form && error}}" class="empty"><view class="error">{{error}}</view></view>
+<suki-says wx:elif="{{!form}}" face="thinking" size="144" dots body="{{t.loading}}" />
+<view wx:else class="page">
+  <view class="card with-suki">
+    <suki-avatar mood="playful" size="88" />
+    <view class="grow soft">{{t.intro}}</view>
+  </view>
+
+  <view class="section">{{t.about}}</view>
+  <view class="card">
+    <view class="field-label">{{t.name}}</view>
+    <input class="input" maxlength="40" value="{{form.display_name}}" data-f="display_name" bindinput="onField" />
+    <view class="field-label">{{t.pronouns}}</view>
+    <input class="input" maxlength="30" value="{{form.pronouns}}" data-f="pronouns" bindinput="onField" />
+
+    <view class="field-label">{{t.birthday}}</view>
+    <block wx:if="{{birthText}}">
+      <view>{{birthText}}</view>
+      <view class="hint block">{{t.birthdayHint}}</view>
+    </block>
+    <picker wx:else mode="date" end="{{today}}" value="{{birthDraft}}" bindchange="onBirthdate">
+      <view class="link block">{{t.setBirthday}}</view>
+    </picker>
+
+    <view class="field-label">{{t.gender}}</view>
+    <view class="options">
+      <view wx:for="{{genders}}" wx:key="value" class="chip {{form.gender === item.value ? 'on' : ''}}" data-f="gender" data-v="{{item.value}}" bindtap="onPick">{{item.label}}</view>
+    </view>
+
+    <view class="field-label gap">{{t.city}}</view>
+    <input class="input" placeholder="{{profile.city_name || t.whereLive}}" value="{{cityQuery}}" bindinput="onCityInput" />
+    <view class="hint block">{{cityHint}}</view>
+    <button wx:if="{{cityQuery}}" class="plain" loading="{{cityBusy}}" bindtap="onCity">{{t.setCity}}</button>
+    <view wx:if="{{cityError}}" class="error">{{cityError}}</view>
+
+    <view class="field-label">{{t.work}}</view>
+    <input class="input" maxlength="80" value="{{form.occupation}}" data-f="occupation" bindinput="onField" />
+    <view class="field-label">{{t.studied}}</view>
+    <input class="input" maxlength="80" value="{{form.education}}" data-f="education" bindinput="onField" />
+  </view>
+
+  <view class="section">{{t.bio}}</view>
+  <view class="card">
+    <view wx:if="{{profile.bio_draft}}" class="draft">
+      <view class="soft">{{t.draft}}</view>
+      <view>{{profile.bio_draft}}</view>
+      <button class="primary" loading="{{acceptingBio}}" bindtap="onAcceptBio">{{t.useThis}}</button>
+    </view>
+    <textarea class="input area" maxlength="600" auto-height placeholder="{{t.bioPlaceholder}}" value="{{form.bio}}" data-f="bio" bindinput="onField" />
+  </view>
+
+  <view class="section">{{t.meet}}</view>
+  <view class="card">
+    <view class="field-label">{{t.like}}</view>
+    <view class="options">
+      <view wx:for="{{seeking}}" wx:key="value" class="chip {{item.on ? 'on' : ''}}" data-v="{{item.value}}" bindtap="onSeeking">{{item.label}}</view>
+    </view>
+    <view class="row gap">
+      <view class="grow half">
+        <view class="field-label">{{t.youngest}}</view>
+        <input class="input" type="number" maxlength="3" value="{{form.age_min}}" data-f="age_min" bindinput="onNumber" />
+      </view>
+      <view class="grow">
+        <view class="field-label">{{t.oldest}}</view>
+        <input class="input" type="number" maxlength="3" value="{{form.age_max}}" data-f="age_max" bindinput="onNumber" />
+      </view>
+    </view>
+    <view class="field-label">{{t.lookingFor}}</view>
+    <view class="options">
+      <view wx:for="{{goals}}" wx:key="value" class="chip {{form.goal === item.value ? 'on' : ''}}" data-f="goal" data-v="{{item.value}}" bindtap="onPick">{{item.label}}</view>
+    </view>
+  </view>
+
+  <view class="section">{{t.lifestyle}}</view>
+  <view class="card">
+    <view class="field-label">{{t.height}}</view>
+    <input class="input" type="number" maxlength="3" value="{{form.height_cm}}" data-f="height_cm" bindinput="onNumber" />
+    <view class="field-label">{{t.smoking}}</view>
+    <view class="options">
+      <view wx:for="{{habits}}" wx:key="value" class="chip {{form.smoking === item.value ? 'on' : ''}}" data-f="smoking" data-v="{{item.value}}" bindtap="onPick">{{item.label}}</view>
+    </view>
+    <view class="field-label gap">{{t.drinking}}</view>
+    <view class="options">
+      <view wx:for="{{habits}}" wx:key="value" class="chip {{form.drinking === item.value ? 'on' : ''}}" data-f="drinking" data-v="{{item.value}}" bindtap="onPick">{{item.label}}</view>
+    </view>
+    <view class="field-label gap">{{t.kidsNow}}</view>
+    <view class="options">
+      <view wx:for="{{kids}}" wx:key="value" class="chip {{form.kids === item.value ? 'on' : ''}}" data-f="kids" data-v="{{item.value}}" bindtap="onPick">{{item.label}}</view>
+    </view>
+    <view class="field-label gap">{{t.kidsFuture}}</view>
+    <view class="options">
+      <view wx:for="{{wantsKids}}" wx:key="value" class="chip {{form.wants_kids === item.value ? 'on' : ''}}" data-f="wants_kids" data-v="{{item.value}}" bindtap="onPick">{{item.label}}</view>
+    </view>
+    <view class="field-label gap">{{t.religion}}</view>
+    <input class="input" maxlength="40" value="{{form.religion}}" data-f="religion" bindinput="onField" />
+    <view class="hint block">{{t.religionHint}}</view>
+    <view class="field-label">{{t.politics}}</view>
+    <input class="input" maxlength="40" value="{{form.politics}}" data-f="politics" bindinput="onField" />
+    <view class="hint block">{{t.politicsHint}}</view>
+  </view>
+
+  <view class="section">{{t.languagesInterests}}</view>
+  <view class="card">
+    <block wx:for="{{tags}}" wx:key="key" wx:for-item="row">
+      <view class="field-label">{{row.label}}</view>
+      <input class="input" placeholder="{{row.placeholder}}" confirm-type="done" value="{{drafts[row.key]}}" data-key="{{row.key}}" bindinput="onTagDraft" bindconfirm="onTagAdd" bindblur="onTagAdd" />
+      <view wx:if="{{row.hint}}" class="hint block">{{row.hint}}</view>
+      <view class="options">
+        <view wx:for="{{row.values}}" wx:key="*this" wx:for-item="v" class="chip" data-key="{{row.key}}" data-v="{{v}}" bindtap="onTagRemove">{{v}} ×</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="section">{{t.prompts}}</view>
+  <view class="hint block">{{t.promptsHint}}</view>
+  <view wx:for="{{form.prompts}}" wx:key="index" class="card">
+    <view class="field-label">{{t.question}}</view>
+    <input class="input" maxlength="120" value="{{item.q}}" data-i="{{index}}" data-f="q" bindinput="onPrompt" />
+    <view class="field-label">{{t.answer}}</view>
+    <textarea class="input area" maxlength="300" auto-height value="{{item.a}}" data-i="{{index}}" data-f="a" bindinput="onPrompt" />
+    <view class="link" data-i="{{index}}" bindtap="onPromptRemove">{{t.removePrompt}}</view>
+  </view>
+  <button wx:if="{{canAddPrompt}}" class="plain" bindtap="onPromptAdd">{{t.addPrompt}}</button>
+
+  <view class="section">{{t.dealbreakers}}</view>
+  <view class="hint block">{{t.dealbreakersHint}}</view>
+  <view class="card">
+    <block wx:for="{{dealbreakerPicks}}" wx:key="key" wx:for-item="row">
+      <view class="field-label">{{row.label}}</view>
+      <view class="options">
+        <view wx:for="{{row.options}}" wx:key="value" wx:for-item="o" class="chip {{o.on ? 'on' : ''}}" data-key="{{row.key}}" data-v="{{o.value}}" bindtap="onDealbreaker">{{o.label}}</view>
+      </view>
+    </block>
+    <block wx:for="{{dealbreakerTags}}" wx:key="key" wx:for-item="row">
+      <view class="field-label gap">{{row.label}}</view>
+      <input class="input" placeholder="{{row.placeholder}}" confirm-type="done" value="{{drafts[row.key]}}" data-key="{{row.key}}" bindinput="onTagDraft" bindconfirm="onDealTagAdd" bindblur="onDealTagAdd" />
+      <view class="options">
+        <view wx:for="{{row.values}}" wx:key="*this" wx:for-item="v" class="chip" data-key="{{row.key}}" data-v="{{v}}" bindtap="onDealTagRemove">{{v}} ×</view>
+      </view>
+    </block>
+  </view>
+
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <button class="primary" disabled="{{!dirty}}" loading="{{saving}}" bindtap="onSave">{{dirty ? t.save : t.nothing}}</button>
+</view>

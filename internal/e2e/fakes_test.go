@@ -18,6 +18,7 @@ type fakeLLM struct {
 	down       atomic.Bool
 	holdMain   atomic.Bool
 	visionNude atomic.Bool
+	verdict    atomic.Value // what the Critic rules, when set
 }
 
 func newFakeLLM() *fakeLLM { return &fakeLLM{} }
@@ -151,7 +152,11 @@ func (f *fakeLLM) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		for _, m := range reAlias.FindAllStringSubmatch(user, -1) {
 			if !seen[m[1]] {
 				seen[m[1]] = true
-				calls = append(calls, call(m[1], "critic_verdict", map[string]any{"alias": m[1], "verdict": "approved", "notes": "fine"}))
+				verdict, _ := f.verdict.Load().(string)
+				if verdict == "" {
+					verdict = "approved"
+				}
+				calls = append(calls, call(m[1], "critic_verdict", map[string]any{"alias": m[1], "verdict": verdict, "notes": "fine"}))
 			}
 		}
 		reply(w, "", calls)
@@ -203,6 +208,10 @@ func (f *fakeLLM) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (f *fakeLLM) suki(w http.ResponseWriter, msgs []fakeMsg, has map[string]bool, user string, last fakeMsg, done bool, all string) {
 	if last.Role == "system" && strings.Contains(last.text(), "Rewrite your last message") {
 		reply(w, "Your score is 9/10, still. <<mood=happy>>", nil) // a stubborn model
+		return
+	}
+	if last.Role == "system" && strings.Contains(last.text(), "something for them to do") {
+		reply(w, "Why not say hi to someone today? <<mood=playful|replies=Good idea;Something else>>", nil)
 		return
 	}
 	if last.Role == "system" && strings.Contains(last.text(), "EVENT") {
@@ -291,5 +300,10 @@ func fakeGeo(w http.ResponseWriter, r *http.Request) {
 			{"type":"node","id":5,"lat":1,"lon":2,"tags":{"amenity":"cafe","name":"Private Cafe","access":"private"}}]}`))
 		return
 	}
-	_, _ = w.Write([]byte(`[{"lat":"1.0","lon":"2.0","address":{"city":"Testville","state":"Test","country":"Testland","country_code":"tt"}}]`))
+	// Trips need a second city; everything else lives in Testville.
+	city := "Testville"
+	if strings.Contains(strings.ToLower(r.URL.Query().Get("q")), "farport") {
+		city = "Farport"
+	}
+	_, _ = w.Write([]byte(`[{"lat":"1.0","lon":"2.0","address":{"city":"` + city + `","state":"Test","country":"Testland","country_code":"tt"}}]`))
 }

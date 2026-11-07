@@ -1,0 +1,4 @@
+.bar { padding: 12rpx 24rpx; background: #241644; }
+.bar .chip { margin: 0 0 0 12rpx; }
+.end { height: 2rpx; }
+.who { font-size: 22rpx; font-weight: 700; color: #a99fc4; margin: 0 0 6rpx 8rpx; }

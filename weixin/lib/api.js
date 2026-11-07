@@ -1,28 +1,21 @@
 // The server's API, over wx.request. The token lives in this mini program's own storage.
 const { API_URL } = require('../config');
+const { t } = require('./i18n');
+const { showError } = require('./format');
 
 let token = wx.getStorageSync('token') || '';
 let leaving = false;
 
-const ZH = {
-  'invalid email or password': '邮箱或密码不正确',
-  'an account with this email already exists': '这个邮箱已经注册过了',
-  'password must be at least 10 characters': '密码至少需要 10 位',
-  'that email address does not look valid': '邮箱格式不正确',
-  'that code is wrong or has expired': '验证码不正确或已过期',
-  'too many attempts; try again in 15 minutes': '尝试次数太多，请 15 分钟后再试',
-  'too many codes requested; try again in an hour': '验证码请求太多，请一小时后再试',
-  'please accept the terms to continue': '请先同意用户协议',
-  "WeChat sign-in isn't open yet.": '微信登录暂未开放。',
-  "WeChat couldn't confirm who you are. Please try again.": '微信没能确认你的身份，请再试一次。',
-  "this email can't be used on SynAgent": '这个邮箱不能使用 SynAgent',
-  'Slow down a little and try again in a moment.': '操作太频繁，请稍后再试。',
-};
-
-function setToken(t) {
-  token = t || '';
-  if (token) wx.setStorageSync('token', token);
-  else wx.removeStorageSync('token');
+function setToken(next) {
+  token = next || '';
+  if (token) {
+    wx.setStorageSync('token', token);
+    return;
+  }
+  wx.removeStorageSync('token');
+  // Her clips and the settings belong to the account that just left.
+  require('./voice').clear();
+  require('./settings').clear();
 }
 
 function leave(url) {
@@ -39,8 +32,9 @@ function failure(status, message) {
   } else if (status === 403 && message === 'please verify your email first') {
     leave('/pages/login/login?mode=verify');
   }
-  const err = new Error(ZH[message] || message || '出了点问题，请再试一次。');
+  const err = new Error(t(message || 'Something went wrong on our side. Please try again.'));
   err.status = status;
+  err.raw = message || ''; // What the server said, for code that needs to tell errors apart.
   return err;
 }
 
@@ -48,26 +42,26 @@ function headers(extra) {
   return Object.assign({ Accept: 'application/json' }, token ? { Authorization: 'Bearer ' + token } : {}, extra);
 }
 
-function request(path, method, body) {
+function request(path, method, body, timeout) {
   return new Promise((resolve, reject) => {
     wx.request({
       url: API_URL + path,
       method: method || 'GET',
       data: body,
-      timeout: 20000,
+      timeout: timeout || 20000,
       header: headers(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
       success(res) {
         if (res.statusCode >= 200 && res.statusCode < 300) resolve(res.data);
         else reject(failure(res.statusCode, res.data && res.data.error));
       },
       fail() {
-        reject(new Error('连接不上服务器，请检查网络后再试。'));
+        reject(new Error(t("I can't reach the server right now. Check your connection and try again.")));
       },
     });
   });
 }
-const get = (p) => request(p);
-const post = (p, b) => request(p, 'POST', b === undefined ? {} : b);
+const get = (p, timeout) => request(p, 'GET', undefined, timeout);
+const post = (p, b, timeout) => request(p, 'POST', b === undefined ? {} : b, timeout);
 const del = (p) => request(p, 'DELETE');
 
 function clientId() {
@@ -92,6 +86,19 @@ function media(id) {
   return mediaCache[id];
 }
 
+// The whole photo, full screen, with the person's other photos a swipe away. The temp files
+// work here for the same reason they work in <image>.
+async function previewPhotos(ids, id) {
+  const list = (ids || []).filter(Boolean);
+  const paths = (await Promise.all(list.map(media))).filter(Boolean);
+  const current = await media(id || list[0]);
+  if (!current) {
+    showError(new Error(t("That photo won't open right now. Please try again.")));
+    return;
+  }
+  wx.previewImage({ urls: paths.length ? paths : [current], current });
+}
+
 // The server takes a photo's raw bytes.
 function uploadPhoto() {
   return new Promise((resolve, reject) => {
@@ -113,10 +120,10 @@ function uploadPhoto() {
                 if (res.statusCode >= 200 && res.statusCode < 300) resolve(res.data);
                 else reject(failure(res.statusCode, res.data && res.data.error));
               },
-              fail: () => reject(new Error('上传失败，请再试一次。')),
+              fail: () => reject(new Error(t("That photo didn't upload. Please try again."))),
             });
           },
-          fail: () => reject(new Error('读取不了这张照片。')),
+          fail: () => reject(new Error(t("I can't read that photo."))),
         });
       },
       fail: () => resolve(null), // They backed out.
@@ -128,20 +135,27 @@ module.exports = {
   API_URL,
   getToken: () => token,
   setToken,
+  headers,
+  failure,
   clientId,
   media,
+  previewPhotos,
   uploadPhoto,
   auth: {
     signUp: (b) => post('/v1/auth/signup', b),
     signIn: (email, password) => post('/v1/auth/signin', { email, password }),
     signOut: () => post('/v1/auth/signout'),
-    wechat: (code, accept_terms, ref) => post('/v1/auth/wechat', { code, accept_terms, ref, language: 'zh' }),
+    wechat: (code, accept_terms, ref, language) => post('/v1/auth/wechat', { code, accept_terms, ref, language }),
     deleteWithWeChat: (code) => post('/v1/auth/wechat/delete', { code }),
     verify: (code) => post('/v1/auth/verify', { code }),
     resend: () => post('/v1/auth/resend'),
     forgot: (email) => post('/v1/auth/forgot', { email }),
     reset: (email, code, password) => post('/v1/auth/reset', { email, code, password }),
-    deleteAccount: (password) => post('/v1/account/delete', { password }),
+    changePassword: (current, next) => post('/v1/auth/change-password', { current, next }),
+    sessions: async () => (await get('/v1/auth/sessions')).sessions || [],
+    revokeSession: (id) => del(`/v1/auth/sessions/${id}`),
+    deleteAccount: (password) => post('/v1/account/delete', { password }, 60000),
+    exportData: () => get('/v1/account/export', 60000),
     me: () => get('/v1/me'),
   },
   photos: {
@@ -149,10 +163,19 @@ module.exports = {
     setPrimary: (id) => post(`/v1/photos/${id}/primary`),
     remove: (id) => del(`/v1/photos/${id}`),
   },
-  profile: { acceptBio: () => post('/v1/profile/bio-draft/accept') },
+  profile: {
+    get: () => get('/v1/profile'),
+    // The server takes POST as well as PATCH here, because wx.request has no PATCH.
+    save: async (b) => (await post('/v1/profile', b)).profile,
+    // Longer than the server's own wait on the map service, so its answer gets here.
+    setCity: (query) => post('/v1/profile/city', { query }, 60000),
+    pause: (paused) => post('/v1/profile/pause', { paused }),
+    acceptBio: () => post('/v1/profile/bio-draft/accept'),
+  },
   suki: {
     messages: (after) => get('/v1/agent/messages' + (after > 0 ? `?after=${after}` : '')),
     send: (text) => post('/v1/agent/messages', { text, client_id: clientId() }),
+    speechStatus: () => get('/v1/agent/speech'),
   },
   proposals: {
     list: async () => (await get('/v1/proposals')).proposals || [],
@@ -167,6 +190,9 @@ module.exports = {
     send: async (id, text) => (await post(`/v1/matches/${id}/messages`, { text, client_id: clientId() })).message,
     read: (id, seq) => post(`/v1/matches/${id}/read`, { seq }),
     startDate: async (id) => (await post(`/v1/matches/${id}/date`, { constraints: [] })).date_id,
+    hints: async (id) => (await get(`/v1/matches/${id}/hints`)).hints || [],
+    coach: (id) => post(`/v1/matches/${id}/coach`),
+    dismissHint: (hintId) => post(`/v1/hints/${hintId}/dismiss`),
   },
   dates: {
     list: async () => (await get('/v1/dates')).dates || [],
@@ -186,6 +212,15 @@ module.exports = {
     pick: async (id, user_id) => (await post(`/v1/buddies/${id}/pick`, { user_id })).match_id,
     close: (id) => post(`/v1/buddies/${id}/close`),
   },
+  groups: {
+    chat: (id, after) => get(`/v1/groups/${id}/messages${after ? '?after=' + after : ''}`),
+    send: async (id, text) => (await post(`/v1/groups/${id}/messages`, { text, client_id: clientId() })).message,
+  },
+  trips: {
+    get: async (id) => (await get(`/v1/trips/${id}`)).trip,
+    add: async (b) => (await post('/v1/trips', b)).trip,
+    remove: (id) => del(`/v1/trips/${id}`),
+  },
   referral: {
     status: () => get('/v1/referral'),
   },
@@ -195,8 +230,23 @@ module.exports = {
     wechatPrepay: (pack, code) => post('/v1/credits/wechat/prepay', { package: pack, code }),
   },
   safety: {
+    blocked: async () => (await get('/v1/blocks')).blocked || [],
     block: (user_id) => post('/v1/blocks', { user_id }),
+    unblock: (id) => del(`/v1/blocks/${id}`),
     report: (b) => post('/v1/reports', b),
   },
-  memories: { reset: () => post('/v1/memories/reset') },
+  settings: {
+    get: async () => (await get('/v1/settings')).settings,
+    // The server takes POST as well as PATCH here, because wx.request has no PATCH.
+    patch: async (b) => (await post('/v1/settings', b)).settings,
+  },
+  memories: {
+    list: async () => (await get('/v1/memories')).memories || [],
+    remove: (id) => del(`/v1/memories/${id}`),
+    reset: () => post('/v1/memories/reset'),
+  },
+  notifications: {
+    list: async () => (await get('/v1/notifications')).notifications || [],
+    markRead: () => post('/v1/notifications/read'),
+  },
 };

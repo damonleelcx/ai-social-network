@@ -1,0 +1,8 @@
+.says { display: flex; flex-direction: column; align-items: center; padding: 56rpx 24rpx; text-align: center; }
+.title { font-size: 34rpx; font-weight: 600; margin-top: 24rpx; color: #f3effa; }
+.body { font-size: 28rpx; color: #a99fc4; margin-top: 12rpx; }
+.dots { display: flex; margin-top: 24rpx; }
+.dot { width: 14rpx; height: 14rpx; margin: 0 5rpx; border-radius: 50%; background: #ff5c8a; opacity: .3; animation: pulse 1.2s infinite linear; }
+.d2 { animation-delay: .2s; }
+.d3 { animation-delay: .4s; }
+@keyframes pulse { 0%, 60%, 100% { opacity: .3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-6rpx); } }

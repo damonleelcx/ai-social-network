@@ -19,6 +19,9 @@ export function openNotificationTarget(data?: NotificationData | null) {
     case 'date':
       if (data.id) router.push(`/date/${data.id}`);
       break;
+    case 'group':
+      if (data.id) router.push(`/group/${data.id}`);
+      break;
   }
 }
 

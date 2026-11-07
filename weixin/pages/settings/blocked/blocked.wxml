@@ -1,0 +1,9 @@
+<view class="page">
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <suki-says wx:if="{{items === null && !error}}" face="thinking" size="144" dots body="{{t.loading}}" />
+  <suki-says wx:elif="{{items && !items.length}}" face="happy" title="{{t.nobody}}" body="{{t.nobodyBody}}" />
+  <view wx:for="{{items}}" wx:key="user_id" class="card row">
+    <view class="grow title">{{item.display_name}}</view>
+    <view class="chip unblock" data-id="{{item.user_id}}" data-name="{{item.display_name}}" bindtap="onUnblock">{{t.unblock}}</view>
+  </view>
+</view>

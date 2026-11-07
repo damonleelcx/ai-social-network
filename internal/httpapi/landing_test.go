@@ -64,11 +64,11 @@ func TestLandingAssetsResolve(t *testing.T) {
 // English is the default: another language only appears when someone picks it, so nothing may
 // read the browser's language. The promises the English page makes have to survive translation.
 func TestLandingLanguages(t *testing.T) {
-	for _, f := range []string{"/", "/landing/app.js", "/landing/i18n.js"} {
-		body := getLanding(t, f).Body.String()
-		if strings.Contains(body, "navigator.language") || strings.Contains(body, "Accept-Language") {
-			t.Errorf("%s picks a language by itself", f)
-		}
+	// A shared ?lang= link wins, then their own pick, then the browser's language.
+	page := getLanding(t, "/").Body.String()
+	pick := page[strings.Index(page, "var lang = new URLSearchParams"):]
+	if i, j, k := strings.Index(pick, "get('lang')"), strings.Index(pick, "localStorage.getItem('synagent.lang')"), strings.Index(pick, "navigator.languages"); i < 0 || j < i || k < j {
+		t.Error("the page should take a shared link, then their pick, then the browser's language")
 	}
 	if got := getLanding(t, "/").Body.String(); !strings.Contains(got, `<html lang="en"`) {
 		t.Error("the page isn't English by default")

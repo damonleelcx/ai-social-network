@@ -1,0 +1,7 @@
+{
+  "name": "synagent-weixin-e2e",
+  "private": true,
+  "description": "End-to-end tests for the mini program, driven through WeChat DevTools",
+  "scripts": { "test": "node run.js" },
+  "dependencies": { "miniprogram-automator": "^0.13.0" }
+}

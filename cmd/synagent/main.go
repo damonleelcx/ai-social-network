@@ -30,9 +30,11 @@ import (
 	"github.com/damonleelcx/ai-social-network/internal/engine"
 	"github.com/damonleelcx/ai-social-network/internal/externalauth"
 	"github.com/damonleelcx/ai-social-network/internal/httpapi"
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"github.com/damonleelcx/ai-social-network/internal/llm"
 	"github.com/damonleelcx/ai-social-network/internal/mail"
 	"github.com/damonleelcx/ai-social-network/internal/notify"
+	"github.com/damonleelcx/ai-social-network/internal/persona"
 	"github.com/damonleelcx/ai-social-network/internal/photostore"
 	"github.com/damonleelcx/ai-social-network/internal/places"
 	"github.com/damonleelcx/ai-social-network/internal/tts"
@@ -70,6 +72,11 @@ func run(mode string) error {
 			return errors.New("mail relay is not configured")
 		}
 		return s.Check(ctx)
+	}
+	if cfg.Region == "cn" {
+		// The China copy: finding company, in every language (server text and Suki's instructions).
+		i18n.UseChinaEdition()
+		persona.ChinaEdition = true
 	}
 	pool, err := db.Open(ctx, cfg.DatabaseURL)
 	if err != nil {
@@ -128,18 +135,32 @@ func run(mode string) error {
 	}
 	if mode == "serve" || mode == "web" {
 		hub := httpapi.NewHub()
-		a := &auth.Service{Pool: pool, Mailer: mailer, PublicOrigin: cfg.PublicOrigin, SessionTTL: cfg.SessionTTL, AdminEmails: cfg.AdminEmails}
-		srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill}
+		a := &auth.Service{Pool: pool, Mailer: mailer, PublicOrigin: cfg.PublicOrigin, SessionTTL: cfg.SessionTTL, AdminEmails: cfg.AdminEmails, TokenPrefix: httpapi.TokenPrefix(cfg.Region)}
+		srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill,
+			ICPFooter: httpapi.ICPFooter(cfg.ICPBeian, cfg.ICPLicence), Region: cfg.Region}
 		if cfg.GoogleClientID != "" {
 			srv.GoogleLogin = &externalauth.Google{ClientID: cfg.GoogleClientID}
 		}
 		if cfg.WeChat.AppID != "" && cfg.WeChat.AppSecret != "" {
 			srv.WeChatLogin = &externalauth.WeChat{AppID: cfg.WeChat.AppID, AppSecret: cfg.WeChat.AppSecret}
 		}
+		if cfg.PeerURL != "" {
+			peer, err := httpapi.NewPeer(cfg.Region, cfg.PeerURL, cfg.PeerSecret)
+			if err != nil {
+				return err
+			}
+			srv.Peer = peer
+		}
 		a.BeforeDelete = srv.BeforeDelete
 		srv.SpeechDailyChars = cfg.TTSDailyChars
 		if cfg.TTSAPIKey != "" && cfg.TTSVoiceID != "" {
-			voice, err := tts.NewFish("", cfg.TTSAPIKey, cfg.TTSVoiceID, cfg.TTSModel)
+			var voice tts.Synthesizer
+			var err error
+			if cfg.TTSProvider == "cosyvoice" {
+				voice, err = tts.NewCosyVoice("", cfg.TTSAPIKey, cfg.TTSModel, cfg.TTSVoiceID)
+			} else {
+				voice, err = tts.NewFish("", cfg.TTSAPIKey, cfg.TTSVoiceID, cfg.TTSModel)
+			}
 			if err != nil {
 				return err
 			}

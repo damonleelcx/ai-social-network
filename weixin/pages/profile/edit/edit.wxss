@@ -1,0 +1,4 @@
+.block { margin-bottom: 18rpx; }
+.area { width: auto; min-height: 120rpx; }
+.half { margin-right: 20rpx; }
+.draft { background: rgba(255,255,255,.08); border-radius: 16rpx; padding: 18rpx; margin-bottom: 18rpx; }

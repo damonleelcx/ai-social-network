@@ -1,21 +1,55 @@
 <view class="chat">
   <view class="row bar">
-    <view class="grow soft ellipsis">{{match.activity ? '搭子：' + match.activity : (match.person.city_name || '')}}</view>
-    <view wx:if="{{!match.activity}}" class="chip" bindtap="onDate">约会计划</view>
-    <view class="chip" bindtap="onMore">更多</view>
+    <view class="grow soft ellipsis" bindtap="onPerson">{{barText}}</view>
+    <view wx:if="{{!match.activity}}" class="chip" bindtap="onDate">{{t.plan}}</view>
+    <view class="chip" bindtap="onMore">{{t.more}}</view>
   </view>
+  <block wx:if="{{hint || asking}}">
+    <view wx:if="{{typing}}" class="coach-line soft row">
+      <suki-avatar mood="{{hint ? 'playful' : 'thinking'}}" size="44" ring="3" />
+      <view class="grow coach-line-words">{{hint ? t.noteWaiting : t.thinkingShort}}</view>
+    </view>
+    <view wx:else class="coach">
+      <view class="row">
+        <suki-avatar mood="{{hint ? 'playful' : 'thinking'}}" size="60" />
+        <view class="grow coach-head">
+          <view class="coach-title">{{t.justToYou}}</view>
+          <view class="hint">{{t.onlyYou}}</view>
+        </view>
+        <view wx:if="{{hint}}" class="coach-close" aria-role="button" aria-label="{{t.dismiss}}" bindtap="onDismissHint">×</view>
+      </view>
+      <block wx:if="{{hint}}">
+        <view class="gap">{{hint.body}}<view class="ai-label">{{t.aiGenerated}}</view></view>
+        <block wx:if="{{hint.suggestions.length}}">
+          <view wx:for="{{hint.suggestions}}" wx:key="*this" class="suggestion" data-text="{{item}}" bindtap="onSuggestion">{{item}}</view>
+          <view class="hint">{{t.tapSuggestion}}</view>
+        </block>
+      </block>
+      <view wx:else class="soft gap">{{t.thinking}}</view>
+    </view>
+  </block>
   <scroll-view class="chat-list" scroll-y scroll-into-view="{{bottom}}">
+    <suki-says wx:if="{{!loaded}}" face="thinking" size="144" dots body="{{t.loading}}" />
+    <suki-says wx:elif="{{!messages.length && match.status === 'active'}}" face="playful" size="192" title="{{sayHi}}" body="{{t.sayHiBody}}" />
     <block wx:for="{{messages}}" wx:key="seq">
-      <view wx:if="{{item.role !== 'text'}}" class="note">{{item.body}}</view>
+      <view wx:if="{{item.role === 'system'}}" class="note">{{item.body}}</view>
+      <view wx:elif="{{item.role !== 'text'}}" class="suki-note">
+        <suki-avatar mood="{{item.role === 'prompt' ? 'playful' : 'happy'}}" size="68" />
+        <view class="suki-note-who">{{item.role === 'prompt' ? t.sukiAsks : t.fromSuki}}</view>
+        <view class="suki-note-body">{{item.body}}</view>
+      </view>
       <view wx:else class="bubble-row {{item.sender_id === me ? 'mine' : ''}}">
         <view class="bubble">{{item.body}}</view>
       </view>
     </block>
-    <view wx:if="{{match.status && match.status !== 'active'}}" class="note">这段聊天已结束。</view>
+    <view wx:if="{{match.status && match.status !== 'active'}}" class="note">{{t.ended}}</view>
     <view id="end" class="end"></view>
   </scroll-view>
+  <view wx:if="{{match.status === 'active'}}" class="chips ask-row">
+    <view class="chip {{asking ? 'on' : ''}}" bindtap="onAsk">{{t.ask}}</view>
+  </view>
   <view wx:if="{{match.status === 'active'}}" class="composer">
-    <input class="input" placeholder="发消息" value="{{draft}}" confirm-type="send" adjust-position bindinput="onInput" bindconfirm="onSend" />
-    <view class="send" bindtap="onSend">发送</view>
+    <input class="input" placeholder="{{placeholder}}" value="{{draft}}" focus="{{focusInput}}" confirm-type="send" adjust-position bindinput="onInput" bindconfirm="onSend" bindfocus="onFocus" bindblur="onBlur" />
+    <view class="send" bindtap="onSend">{{t.send}}</view>
   </view>
 </view>

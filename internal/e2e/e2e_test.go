@@ -18,6 +18,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -90,7 +91,21 @@ type env struct {
 	cancel   context.CancelFunc
 	wg       sync.WaitGroup
 	photos   photostore.Store
+	// handler is the API; rehandle rebuilds it after the server is changed.
+	handler   http.Handler
+	handlerMu sync.RWMutex
 }
+
+func (e *env) rehandle() {
+	e.handlerMu.Lock()
+	e.handler = e.srv.Handler()
+	e.handlerMu.Unlock()
+}
+
+var (
+	setups    atomic.Int32
+	lastSetup string
+)
 
 func setup(t *testing.T) *env {
 	t.Helper()
@@ -106,11 +121,19 @@ func setup(t *testing.T) *env {
 	defer c0()
 	conn, err := pgx.Connect(ctx0, base)
 	if err != nil {
+		if os.Getenv("CI") != "" {
+			t.Fatalf("no test postgres: %v", err)
+		}
 		t.Skipf("no test postgres: %v", err)
 	}
 	_ = conn.Close(ctx0)
 	// One database per test process: this test wipes it, and two runs can overlap.
 	name := fmt.Sprintf("syn_e2e_%d", os.Getpid())
+	// A test with two copies of the server (two regions) needs a second database.
+	if n := setups.Add(1); n > 1 && t.Name() == lastSetup {
+		name = fmt.Sprintf("%s_%d", name, n)
+	}
+	lastSetup = t.Name()
 	url, err := db.EnsureDatabase(context.Background(), base, name)
 	if err != nil {
 		t.Fatal(err)
@@ -128,6 +151,9 @@ func setup(t *testing.T) *env {
 	}
 	chats, err := chatstore.Open(ctx, mongoURL, "syn_e2e_"+fmt.Sprint(time.Now().UnixNano()))
 	if err != nil {
+		if os.Getenv("CI") != "" {
+			t.Fatalf("no test mongo: %v", err)
+		}
 		t.Skipf("no test mongo: %v", err)
 	}
 	fake := newFakeLLM()
@@ -150,10 +176,13 @@ func setup(t *testing.T) *env {
 	e := &env{billing: bill, pool: pool, chats: chats, mail: m, bodies: &bytes.Buffer{}, store: store, model: model, svc: svc, fake: fake, cancel: cancel, photos: photos}
 	e.srv, e.auth = srv, a
 	// Every response body is kept, so the test can search all of them for scores.
-	handler := srv.Handler()
+	e.handler = srv.Handler()
 	e.api = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rec := &recorder{ResponseWriter: w, env: e}
-		handler.ServeHTTP(rec, r)
+		e.handlerMu.RLock()
+		h := e.handler
+		e.handlerMu.RUnlock()
+		h.ServeHTTP(rec, r)
 	}))
 	planner := &engine.Planner{Store: store, Model: model, LLM: "main"}
 	for i := 0; i < 3; i++ {

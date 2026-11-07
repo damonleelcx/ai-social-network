@@ -1,0 +1,11 @@
+<view class="page">
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view wx:if="{{memoryOff}}" class="card soft">{{t.off}}</view>
+  <suki-says wx:if="{{items === null && !error}}" face="thinking" size="144" dots body="{{t.loading}}" />
+  <suki-says wx:elif="{{items && !items.length}}" face="thinking" title="{{t.blank}}" body="{{t.blankBody}}" />
+  <view wx:for="{{items}}" wx:key="id" class="card row">
+    <view class="grow note-text">{{item.note}}</view>
+    <view class="chip remove" data-id="{{item.id}}" bindtap="onRemove">{{t.remove}}</view>
+  </view>
+  <button class="danger" loading="{{resetting}}" bindtap="onReset">{{t.reset}}</button>
+</view>
