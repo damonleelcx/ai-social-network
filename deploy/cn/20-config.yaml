@@ -15,8 +15,11 @@ data:
   # Photos live on this node's disk (the photos volume). It is a single node, so the
   # web and worker pods share it.
   SYN_PHOTO_DIR: "/photos"
-  SYN_TTS_VOICE_ID: "df5c6c19dca944918dcbd6f1368fd02f"
-  SYN_TTS_MODEL: "s2.1-pro-free"
+  # Fish Audio is blocked from China, so Suki speaks through Alibaba CosyVoice. The key
+  # (a DashScope API key, secret synagent-voice) is separate from the model's token plan.
+  SYN_TTS_PROVIDER: "cosyvoice"
+  SYN_TTS_VOICE_ID: "longxiaochun_v2"
+  SYN_TTS_MODEL: "cosyvoice-v2"
   SYN_TTS_DAILY_CHARS: "20000"
   SYN_WORKERS: "2"
   SYN_LEASE: "90s"

@@ -140,7 +140,13 @@ func run(mode string) error {
 		a.BeforeDelete = srv.BeforeDelete
 		srv.SpeechDailyChars = cfg.TTSDailyChars
 		if cfg.TTSAPIKey != "" && cfg.TTSVoiceID != "" {
-			voice, err := tts.NewFish("", cfg.TTSAPIKey, cfg.TTSVoiceID, cfg.TTSModel)
+			var voice tts.Synthesizer
+			var err error
+			if cfg.TTSProvider == "cosyvoice" {
+				voice, err = tts.NewCosyVoice("", cfg.TTSAPIKey, cfg.TTSModel, cfg.TTSVoiceID)
+			} else {
+				voice, err = tts.NewFish("", cfg.TTSAPIKey, cfg.TTSVoiceID, cfg.TTSModel)
+			}
 			if err != nil {
 				return err
 			}

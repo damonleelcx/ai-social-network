@@ -68,6 +68,8 @@ type Config struct {
 	TTSVoiceID    string
 	TTSModel      string
 	TTSDailyChars int
+	// TTSProvider is "fish" (default) or "cosyvoice" (Alibaba DashScope, for the China copy).
+	TTSProvider string
 	// Stripe. No keys means credits can't be bought, so messages to Suki stay free.
 	StripeSecretKey     string
 	StripeWebhookSecret string
@@ -141,6 +143,7 @@ func Load() (Config, error) {
 		TTSVoiceID:            os.Getenv("SYN_TTS_VOICE_ID"),
 		TTSModel:              env("SYN_TTS_MODEL", "s2.1-pro-free"),
 		TTSDailyChars:         envInt("SYN_TTS_DAILY_CHARS", 20000),
+		TTSProvider:           env("SYN_TTS_PROVIDER", "fish"),
 		PhotonURL:             env("SYN_PHOTON_URL", "https://photon.komoot.io"),
 		PhotoAutoApprove:      envBool("SYN_PHOTO_AUTO_APPROVE", false),
 		ExpoPushURL:           env("SYN_EXPO_PUSH_URL", "https://exp.host/--/api/v2/push/send"),
