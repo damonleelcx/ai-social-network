@@ -14,8 +14,22 @@ const pageStyle = `:root,[data-theme=light]{color-scheme:light;--ink:#2a2438;--b
 
 // The pages live in legal/<language>/, English being the original.
 //
-//go:embed legal
+//go:embed legal legal-cn
 var legalFiles embed.FS
+
+// The China copy has its own pages (legal-cn/), written for it: Chinese, the binding text,
+// and English.
+var chinaLegalLanguages = []legalChrome{
+	{code: "zh", name: "中文", terms: "用户协议", privacy: "隐私政策", deleteAccount: "注销账户", contact: "联系我们"},
+	{code: "en", name: "English", terms: "Terms", privacy: "Privacy", deleteAccount: "Delete your account", contact: "Contact",
+		note: "This translation is for convenience. If it differs from the Chinese version, the Chinese version prevails."},
+	{code: "ko", name: "한국어", terms: "약관", privacy: "개인정보", deleteAccount: "계정 삭제", contact: "문의하기",
+		note: "이 번역본은 편의를 위해 제공됩니다. 중국어본과 내용이 다를 경우 중국어본이 우선합니다."},
+	{code: "ja", name: "日本語", terms: "規約", privacy: "プライバシー", deleteAccount: "アカウントの削除", contact: "お問い合わせ",
+		note: "この翻訳は参考用です。中国語版と内容が異なる場合は、中国語版が優先します。"},
+	{code: "es", name: "Español", terms: "Términos", privacy: "Privacidad", deleteAccount: "Eliminar tu cuenta", contact: "Contacto",
+		note: "Esta traducción se ofrece para tu comodidad. Si difiere de la versión en chino, prevalece la versión en chino."},
+}
 
 // legalChrome is the words around a page, for each language.
 type legalChrome struct {
@@ -34,11 +48,11 @@ var legalLanguages = []legalChrome{
 		note: "Esta traducción se ofrece para tu comodidad. Si difiere de la versión en inglés, prevalece la versión en inglés."},
 }
 
-// pickLegalLanguage takes ?lang= first, then what the browser asks for, then English.
-func pickLegalLanguage(r *http.Request) legalChrome {
+// pickLegalLanguage takes ?lang= first, then what the browser asks for, then the first.
+func pickLegalLanguage(r *http.Request, languages []legalChrome) legalChrome {
 	find := func(code string) (legalChrome, bool) {
 		code, _, _ = strings.Cut(strings.ToLower(strings.TrimSpace(code)), "-")
-		for _, l := range legalLanguages {
+		for _, l := range languages {
 			if l.code == code {
 				return l, true
 			}
@@ -54,16 +68,20 @@ func pickLegalLanguage(r *http.Request) legalChrome {
 			return l
 		}
 	}
-	return legalLanguages[0]
+	return languages[0]
 }
 
 var legalLink = regexp.MustCompile(`href="/legal/[a-z-]+`)
 
 // legalPage serves a page in the language picked. Its links stay in that language.
-func legalPage(page string) http.HandlerFunc {
+func legalPage(page string, china bool) http.HandlerFunc {
+	languages, dir := legalLanguages, "legal/"
+	if china {
+		languages, dir = chinaLegalLanguages, "legal-cn/"
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		l := pickLegalLanguage(r)
-		body, err := legalFiles.ReadFile("legal/" + l.code + "/" + page + ".html")
+		l := pickLegalLanguage(r, languages)
+		body, err := legalFiles.ReadFile(dir + l.code + "/" + page + ".html")
 		if err != nil {
 			http.NotFound(w, r)
 			return
@@ -83,7 +101,7 @@ func legalPage(page string) http.HandlerFunc {
 		}
 		out.WriteString(main)
 		out.WriteString(`<nav aria-label="Language">`)
-		for _, other := range legalLanguages {
+		for _, other := range languages {
 			out.WriteString(`<a href="/legal/` + page + `?lang=` + other.code + `" lang="` + other.code + `">` + other.name + `</a>`)
 		}
 		out.WriteString(`</nav></footer></body></html>`)

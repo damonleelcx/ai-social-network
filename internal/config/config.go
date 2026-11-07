@@ -68,6 +68,8 @@ type Config struct {
 	TTSVoiceID    string
 	TTSModel      string
 	TTSDailyChars int
+	// TTSProvider is "fish" (default) or "cosyvoice" (Alibaba DashScope, for the China copy).
+	TTSProvider string
 	// Stripe. No keys means credits can't be bought, so messages to Suki stay free.
 	StripeSecretKey     string
 	StripeWebhookSecret string
@@ -80,6 +82,15 @@ type Config struct {
 	GooglePlayServiceAccount string
 	// ExpoPushURL is where push notifications go; empty disables push.
 	ExpoPushURL string
+	// ICPBeian and ICPLicence are the mainland China filing number and telecom licence
+	// shown in the home page footer. Set only on the China copy.
+	ICPBeian   string
+	ICPLicence string
+	// Region is this copy ("us" or "cn"); PeerURL and PeerSecret link it to the other one,
+	// so an account works from both. Empty PeerURL runs this copy alone.
+	Region     string
+	PeerURL    string
+	PeerSecret string
 
 	// DateMinLead is the soonest a date can be set; DebriefDelay is how long after
 	// its start Suki asks how it went. Both shorten for demos and tests.
@@ -137,9 +148,15 @@ func Load() (Config, error) {
 		TTSVoiceID:            os.Getenv("SYN_TTS_VOICE_ID"),
 		TTSModel:              env("SYN_TTS_MODEL", "s2.1-pro-free"),
 		TTSDailyChars:         envInt("SYN_TTS_DAILY_CHARS", 20000),
+		TTSProvider:           env("SYN_TTS_PROVIDER", "fish"),
 		PhotonURL:             env("SYN_PHOTON_URL", "https://photon.komoot.io"),
 		PhotoAutoApprove:      envBool("SYN_PHOTO_AUTO_APPROVE", false),
 		ExpoPushURL:           env("SYN_EXPO_PUSH_URL", "https://exp.host/--/api/v2/push/send"),
+		ICPBeian:              os.Getenv("SYN_ICP_BEIAN"),
+		ICPLicence:            os.Getenv("SYN_ICP_LICENCE"),
+		Region:                env("SYN_REGION", "us"),
+		PeerURL:               os.Getenv("SYN_PEER_URL"),
+		PeerSecret:            os.Getenv("SYN_PEER_SECRET"),
 		DateMinLead:           envDur("SYN_DATE_MIN_LEAD", time.Hour),
 		DebriefDelay:          envDur("SYN_DEBRIEF_DELAY", 14*time.Hour),
 	}
@@ -158,6 +175,14 @@ func Load() (Config, error) {
 	}
 	if c.MongoURL == "" {
 		return c, fmt.Errorf("SYN_MONGO_URL is required")
+	}
+	// "off" turns push off (the China copy, where Expo isn't used).
+	if c.ExpoPushURL == "off" {
+		c.ExpoPushURL = ""
+	}
+	// "off" skips Nominatim, which mainland China can't reach; cities then come from Photon.
+	if c.NominatimURL == "off" {
+		c.NominatimURL = ""
 	}
 	if c.S3Bucket == "" && c.PhotoDir == "" {
 		return c, fmt.Errorf("SYN_S3_BUCKET is required")

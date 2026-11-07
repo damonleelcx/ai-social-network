@@ -52,6 +52,13 @@ type Server struct {
 	// Speech is nil when no voice is configured.
 	Speech           *tts.Service
 	SpeechDailyChars int
+	// ICPFooter is the China filing notice for the home page (see ICPFooter). Empty
+	// outside China.
+	ICPFooter string
+	// Peer is the other region's copy (see peer.go). Nil runs this copy alone.
+	Peer *Peer
+	// Region is this copy: "us" (default) or "cn", which serves the China site.
+	Region string
 	limit            limiter
 	mapCache         userMapCache
 }
@@ -299,16 +306,20 @@ func (s *Server) Handler() http.Handler {
 
 	m.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { writeJSON(w, 200, map[string]bool{"ok": true}) })
 	m.HandleFunc("GET /readyz", s.ready)
-	m.Handle("GET /{$}", landing)
-	m.Handle("GET /landing/", landing)
+	site := landing
+	if s.ICPFooter != "" || s.Region == "cn" {
+		site = newLanding(s.ICPFooter, s.Region == "cn")
+	}
+	m.Handle("GET /{$}", site)
+	m.Handle("GET /landing/", site)
 	m.Handle("GET /app", webapp)
 	m.Handle("GET /app/", webapp)
-	m.HandleFunc("GET /legal/terms", legalPage("terms"))
-	m.HandleFunc("GET /legal/privacy", legalPage("privacy"))
-	m.HandleFunc("GET /legal/contact", legalPage("contact"))
-	m.HandleFunc("GET /legal/delete-account", legalPage("delete-account"))
-	m.HandleFunc("GET /legal/child-safety", legalPage("child-safety"))
-	m.HandleFunc("GET /open", legalPage("open"))
+	m.HandleFunc("GET /legal/terms", legalPage("terms", s.Region == "cn"))
+	m.HandleFunc("GET /legal/privacy", legalPage("privacy", s.Region == "cn"))
+	m.HandleFunc("GET /legal/contact", legalPage("contact", s.Region == "cn"))
+	m.HandleFunc("GET /legal/delete-account", legalPage("delete-account", s.Region == "cn"))
+	m.HandleFunc("GET /legal/child-safety", legalPage("child-safety", s.Region == "cn"))
+	m.HandleFunc("GET /open", legalPage("open", s.Region == "cn"))
 
 	m.HandleFunc("GET /v1/public/user-map", lim("user-map", 60, time.Minute, s.userMap))
 
@@ -427,7 +438,9 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /v1/admin/users/{id}/credits", s.moderator(s.adminGrantCredits))
 	m.HandleFunc("GET /v1/admin/goals/{id}/timeline", s.moderator(s.adminTimeline))
 
-	return logRequests(m)
+	m.HandleFunc("POST /internal/peer/email", s.peerOnly(s.peerEmail))
+	m.HandleFunc("POST /internal/peer/session", s.peerOnly(s.peerSession))
+	return logRequests(s.route(m))
 }
 
 func logRequests(next http.Handler) http.Handler {
@@ -535,6 +548,9 @@ func (s *Server) googleSignIn(w http.ResponseWriter, r *http.Request) {
 	if b.Language == "" {
 		b.Language = "en"
 	}
+	if s.externalSession(w, r, "google", g.Subject) {
+		return
+	}
 	u, created, err := s.Auth.SignInExternal(r.Context(), auth.External{Provider: "google", Subject: g.Subject, Email: g.Email, Name: g.Name, Lang: b.Language, AcceptTerms: b.AcceptTerms})
 	if err != nil {
 		handleErr(w, r, err)
@@ -586,6 +602,9 @@ func (s *Server) wechatSignIn(w http.ResponseWriter, r *http.Request) {
 	if b.Language == "" {
 		b.Language = "zh"
 	}
+	if s.externalSession(w, r, "wechat", openid) {
+		return
+	}
 	u, created, err := s.Auth.SignInExternal(r.Context(), auth.External{Provider: "wechat", Subject: openid, Lang: b.Language, AcceptTerms: b.AcceptTerms})
 	if err != nil {
 		handleErr(w, r, err)
@@ -625,6 +644,16 @@ func (s *Server) signup(w http.ResponseWriter, r *http.Request) {
 	}
 	if b.Language == "" {
 		b.Language = "en"
+	}
+	if s.Peer != nil && !fromPeer(r) {
+		taken, err := s.Peer.EmailTaken(r.Context(), b.Email)
+		if err != nil {
+			slog.Warn("peer email check", "err", err) // sign up here; the address is checked again at sign-in
+		}
+		if taken {
+			handleErr(w, r, auth.ErrEmailTaken)
+			return
+		}
 	}
 	u, err := s.Auth.SignUp(r.Context(), b.Email, b.Password, b.Name, b.Language, b.AcceptTerms)
 	if err != nil {

@@ -1,3 +1,3 @@
-// The same server as the app. It must be on the mini program's request, socket, download
-// and upload domain lists, and those need an ICP-filed domain. See README.md.
-module.exports = { API_URL: 'https://match.heros-agent.space' };
+// The China copy of the server (Alibaba Cloud, ICP-filed zhiyuwujie.top). It is on the
+// mini program's request, socket, download and upload domain lists. See README.md.
+module.exports = { API_URL: 'https://suki.zhiyuwujie.top' };

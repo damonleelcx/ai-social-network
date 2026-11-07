@@ -46,6 +46,9 @@ type Service struct {
 	// counts only once it is verified, so signing up with an admin's address
 	// grants nothing.
 	AdminEmails []string
+	// TokenPrefix marks the sessions this copy issues ("cn." in China, none in the US), so
+	// the other copy can tell where a session lives and forward its requests there.
+	TokenPrefix string
 	// BeforeDelete runs after DeleteAccount has checked the password and
 	// before the account row goes: chat messages (MongoDB) and photos (S3) are
 	// outside the Postgres cascade, so they go here.
@@ -280,6 +283,10 @@ func (s *Service) Ban(ctx context.Context, userID string) error {
 
 func (s *Service) CreateSession(ctx context.Context, userID, ua, ip string) (string, time.Time, error) {
 	raw, hash := token()
+	if s.TokenPrefix != "" {
+		raw = s.TokenPrefix + raw
+		hash = Hash(raw)
+	}
 	exp := time.Now().Add(s.SessionTTL)
 	_, err := s.Pool.Exec(ctx, `INSERT INTO sessions (id, user_id, expires_at, user_agent, ip) VALUES ($1,$2,$3,$4,$5)`,
 		hash, userID, exp, truncate(ua, 300), ip)

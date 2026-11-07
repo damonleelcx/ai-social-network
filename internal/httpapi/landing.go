@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"embed"
+	"html"
 	"io/fs"
 	"net/http"
 	"path"
@@ -25,9 +26,28 @@ var landingTypes = map[string]string{
 
 // landing serves the marketing site out of the binary. Text is gzipped once, up front:
 // three.js alone is half a megabyte, and it's a page people open on their phones.
-var landing = newLanding()
+var landing = newLanding("", false)
 
-func newLanding() http.Handler {
+// ICPFooter is the mainland China filing notice the home page must show when it is
+// served from China: the ICP filing number, linked to the MIIT lookup, and the value-added
+// telecom licence number. Empty values are left out; both empty means no notice.
+func ICPFooter(beian, licence string) string {
+	var parts []string
+	if beian != "" {
+		parts = append(parts, `<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">`+html.EscapeString(beian)+`</a>`)
+	}
+	if licence != "" {
+		parts = append(parts, "增值电信业务经营许可证："+html.EscapeString(licence))
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return `<p class="icp" lang="zh-CN">` + strings.Join(parts, " · ") + "</p>\n"
+}
+
+// newLanding builds the site. A non-empty footer is added inside the home page's footer,
+// and china rewrites it for the China copy (landing_cn.go).
+func newLanding(footer string, china bool) http.Handler {
 	assets := map[string]*staticAsset{}
 	err := fs.WalkDir(landingFiles, "landing", func(name string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
@@ -40,6 +60,12 @@ func newLanding() http.Handler {
 		body, err := landingFiles.ReadFile(name)
 		if err != nil {
 			return err
+		}
+		if china {
+			body = chinaLanding(name, body)
+		}
+		if footer != "" && name == "landing/index.html" {
+			body = bytes.Replace(body, []byte("</footer>"), []byte(footer+"</footer>"), 1)
 		}
 		a, err := newStaticAsset(body, ctype)
 		if err != nil {

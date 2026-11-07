@@ -1,10 +1,14 @@
 // Copy is written in English and looked up by its English text, the same way as the app.
-// The default here is Chinese. Once someone is signed in, their language setting decides.
+// The default is WeChat's own language (Chinese if we don't have it). Once someone is
+// signed in, their language setting decides.
 //
 // wxml can't call a function, so each page lists its words in COPY, and apply() turns that
 // into data.t for the page's language. Words with a value in them are built in the page's
 // load() with t(), and load() runs again when the language changes.
 const catalog = require('./catalog');
+// The mini program is the China edition: these sentences read as finding company there,
+// in every language (catalog_cn.js, generated from the app's China wording).
+const china = require('./catalog_cn');
 
 const COLUMN = { zh: 0, ko: 1, ja: 2, es: 3 };
 const LANGUAGES = [
@@ -27,14 +31,28 @@ const KEY = 'language';
 
 const isLanguage = (l) => typeof l === 'string' && (l === 'en' || COLUMN[l] !== undefined);
 
+// WeChat's own language (zh_CN, en, ko, ja ...) when nothing is chosen yet; Chinese if unknown.
+function deviceLanguage() {
+  let tag = '';
+  try {
+    tag = (wx.getAppBaseInfo ? wx.getAppBaseInfo() : wx.getSystemInfoSync()).language || '';
+  } catch (e) {
+    return 'zh';
+  }
+  const base = String(tag).toLowerCase().split(/[-_]/)[0];
+  return isLanguage(base) ? base : 'zh';
+}
+
 let current = wx.getStorageSync(KEY);
-if (!isLanguage(current)) current = 'zh';
+if (!isLanguage(current)) current = deviceLanguage();
 let tabsIn = '';
 const parts = new Set();
 
 function t(english, vars) {
   const row = catalog[english];
   let text = Array.isArray(row) && COLUMN[current] !== undefined ? row[COLUMN[current]] : english;
+  const cn = china[english];
+  if (cn && current !== 'zh' && cn[current]) text = cn[current];
   Object.keys(vars || {}).forEach((k) => {
     text = text.split('{' + k + '}').join(String(vars[k]));
   });

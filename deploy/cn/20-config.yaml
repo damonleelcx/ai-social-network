@@ -1,0 +1,50 @@
+# The China copy (Alibaba Cloud, Hangzhou) at suki.zhiyuwujie.top. Same knobs as
+# deploy/k8s/20-config.yaml, minus what can't run from China (S3, the US mail relay).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: synagent-config
+  namespace: synagent
+data:
+  SYN_ADDR: ":8080"
+  SYN_PUBLIC_ORIGIN: "https://suki.zhiyuwujie.top"
+  SYN_LLM_BASE_URL: "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
+  SYN_LLM_MODEL: "qwen3.8-max"
+  SYN_LLM_FAST_MODEL: "qwen3.8-flash"
+  SYN_MONGO_DB: "synagent"
+  # Photos live on this node's disk (the photos volume). It is a single node, so the
+  # web and worker pods share it.
+  SYN_PHOTO_DIR: "/photos"
+  # Fish Audio is blocked from China, so Suki speaks through Alibaba CosyVoice. The key
+  # (a DashScope API key, secret synagent-voice) is separate from the model's token plan.
+  SYN_TTS_PROVIDER: "cosyvoice"
+  SYN_TTS_VOICE_ID: "longxiaochun_v2"
+  SYN_TTS_MODEL: "cosyvoice-v2"
+  SYN_TTS_DAILY_CHARS: "20000"
+  SYN_WORKERS: "2"
+  SYN_LEASE: "90s"
+  SYN_TURN_WORKERS: "4"
+  SYN_TURN_LEASE: "60s"
+  SYN_ACCOUNT_DAILY_TOKENS: "2000000"
+  SYN_DEPLOYMENT_DAILY_TOKENS: "10000000"
+  GOMEMLIMIT: "300MiB"
+  # Shown in the home page footer, as mainland rules require. Add SYN_ICP_BEIAN
+  # (苏ICP备…号) once known.
+  SYN_ICP_LICENCE: "苏B2-20262623"
+  # This copy is China's: accounts made here live here. The link to the US copy
+  # (SYN_PEER_URL and SYN_PEER_SECRET) is in the synagent secret, set once both sides have it.
+  SYN_REGION: "cn"
+  # No push through Expo from China; the mini program doesn't use it.
+  SYN_EXPO_PUSH_URL: "off"
+  # Nominatim is blocked from China; cities come from Photon, which answers here.
+  SYN_NOMINATIM_URL: "off"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: photos
+  namespace: synagent
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources: { requests: { storage: 20Gi } }

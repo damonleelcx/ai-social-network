@@ -5,7 +5,7 @@ import { ApiError, setApiHandlers, setToken } from '@/api/client';
 import { auth, settings as settingsApi } from '@/api/endpoints';
 import type { Me, Profile, Settings, User } from '@/api/types';
 import { socket } from '@/lib/socket';
-import { isLanguage, setLanguage as applyLanguageToCopy, type Language } from '@/i18n';
+import { deviceLanguage, isLanguage, setLanguage as applyLanguageToCopy, type Language } from '@/i18n';
 import { voice } from '@/lib/voice';
 
 const TOKEN_KEY = 'synagent.token';
@@ -87,8 +87,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       // An account that never chose keeps what they picked on this device before signing in.
       const local = await SecureStore.getItemAsync(THEME_KEY).catch(() => null);
       if (s.theme === 'system' && (local === 'light' || local === 'dark')) s = await settingsApi.patch({ theme: local });
-      const chosen = await SecureStore.getItemAsync(LANGUAGE_KEY).catch(() => null);
-      if (s.language === 'en' && isLanguage(chosen) && chosen !== 'en') s = await settingsApi.patch({ language: chosen });
+      // What they picked on this device, else the phone's language, for an account still on the default.
+      const stored = await SecureStore.getItemAsync(LANGUAGE_KEY).catch(() => null);
+      const chosen = isLanguage(stored) ? stored : deviceLanguage();
+      if (s.language === 'en' && chosen !== 'en') s = await settingsApi.patch({ language: chosen });
       setSettings(s);
       setCachedTheme(s.theme);
       SecureStore.setItemAsync(THEME_KEY, s.theme).catch(() => {});
@@ -101,11 +103,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const boot = useCallback(async () => {
     setStatus('loading');
     // Before anything renders, so nobody sees a flash of English.
-    const chosen = await SecureStore.getItemAsync(LANGUAGE_KEY).catch(() => null);
-    if (isLanguage(chosen)) {
-      applyLanguageToCopy(chosen);
-      setLanguageState(chosen);
-    }
+    const picked = await SecureStore.getItemAsync(LANGUAGE_KEY).catch(() => null);
+    const chosen = isLanguage(picked) ? picked : deviceLanguage();
+    applyLanguageToCopy(chosen);
+    setLanguageState(chosen);
     let stored: string | null = null;
     try {
       stored = await SecureStore.getItemAsync(TOKEN_KEY);

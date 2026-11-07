@@ -9,12 +9,28 @@ import "strings"
 // column maps a language setting to its place in the catalog.
 var column = map[string]int{"zh": 0, "ko": 1, "ja": 2, "es": 3}
 
+// chinaEdition is set on the China copy, where SynAgent is for finding company: the
+// sentences in chinaText then read that way in every language (catalog_cn.go).
+var chinaEdition bool
+
+// UseChinaEdition switches the catalog to the China copy's wording.
+func UseChinaEdition() { chinaEdition = true }
+
 // T returns english in lang, with {placeholders} filled from key, value pairs.
 func T(lang, english string, vars ...string) string {
 	text := english
 	if c, ok := column[lang]; ok {
 		if row, ok := catalog[english]; ok {
 			text = row[c]
+		}
+	}
+	if chinaEdition && lang != "zh" {
+		l := lang
+		if _, ok := column[l]; !ok {
+			l = "en"
+		}
+		if t := chinaText[english][l]; t != "" {
+			text = t
 		}
 	}
 	for i := 0; i+1 < len(vars); i += 2 {
@@ -28,7 +44,7 @@ func T(lang, english string, vars ...string) string {
 var catalog = map[string][4]string{
 	// Suki, in her own conversation.
 	"Hi, I'm Suki! I'm an AI matchmaker, and I'm going to help you meet people you actually click with: someone to date, or just company for a movie or a trip. No endless swiping, just good introductions. Let's get to know each other. What should I call you?": {
-		"嗨，我是 Suki！我是一位 AI 红娘，会帮你遇见真正合拍的人：可以是约会对象，也可以只是一起看电影、一起旅行的搭子。不用没完没了地滑卡片，只有用心的介绍。我们先认识一下吧，我该怎么称呼你？",
+		"嗨，我是 Suki！我是你的找搭子助手，会帮你遇见真正合拍的人：一起看电影、一起旅行、一起吃饭的搭子，或者更多。不用没完没了地滑卡片，只有用心的介绍。我们先认识一下吧，我该怎么称呼你？",
 		"안녕하세요, 저는 Suki예요! AI 매치메이커로서 정말 잘 맞는 사람을 만나도록 도와드릴게요. 데이트 상대든, 영화나 여행을 함께할 사람이든요. 끝없는 스와이프 없이, 좋은 소개만요. 우리 먼저 서로 알아가요. 뭐라고 불러 드릴까요?",
 		"こんにちは、Suki です！AI の仲人として、本当に気の合う人との出会いをお手伝いします。恋人でも、映画や旅行を一緒に楽しむ仲間でも。延々とスワイプしなくても大丈夫、いい紹介だけ。まずはお互いを知りましょう。なんて呼べばいいですか？",
 		"¡Hola, soy Suki! Soy una casamentera con IA y voy a ayudarte a conocer a gente con la que de verdad conectes: alguien con quien salir, o compañía para ir al cine o de viaje. Nada de deslizar sin fin, solo buenas presentaciones. Vamos a conocernos. ¿Cómo te llamo?"},
@@ -43,7 +59,7 @@ var catalog = map[string][4]string{
 		"いい人を見つけました！{name} さんを紹介しますね。",
 		"¡Encontré a alguien! Te presento a {name}."},
 	"It's a match with {name}! You both said yes. I'm thinking of an opener for you right now.": {
-		"你和 {name} 配对成功！你们都说好了。我正在帮你想开场白。",
+		"你和 {name} 结伴成功！你们都说好了。我正在帮你想开场白。",
 		"{name}님과 매치됐어요! 두 분 모두 좋다고 했어요. 지금 첫마디를 생각하고 있어요.",
 		"{name} さんとマッチしました！おふたりとも「はい」でした。今、最初のひと言を考えていますね。",
 		"¡Tienes un match con {name}! Los dos dijisteis que sí. Estoy pensando en cómo podrías empezar."},
@@ -63,7 +79,7 @@ var catalog = map[string][4]string{
 		"プロフィールが完成しました。とても素敵です。気に入りそうな人を探してきますね。すぐ戻ります！",
 		"Tu perfil está listo y queda genial. Voy a buscar personas que creo que te encantarán. ¡Vuelvo pronto!"},
 	"Nobody new near you just yet, so keep me company for a bit. What's the best date you've ever been on? The more I know about you, the better I'll choose when someone new turns up.": {
-		"你附近暂时还没有新的人，先陪我聊聊吧。你经历过最棒的一次约会是什么样的？我越了解你，等有新的人出现时就越能选对。",
+		"你附近暂时还没有新的人，先陪我聊聊吧。你经历过最开心的一次结伴出去玩是什么样的？我越了解你，等有新的人出现时就越能选对。",
 		"아직 근처에 새로운 분이 없어요. 그동안 저랑 얘기해요. 지금까지 가장 좋았던 데이트는 어땠어요? 당신을 더 잘 알수록 새로운 분이 나타났을 때 더 잘 고를 수 있어요.",
 		"近くにはまだ新しい人がいません。それまで少しお話ししましょう。今までで最高のデートはどんなものでしたか？あなたのことを知るほど、新しい人が現れたときによりよく選べます。",
 		"Todavía no hay nadie nuevo cerca de ti, así que hazme compañía un rato. ¿Cuál ha sido la mejor cita de tu vida? Cuanto más sepa de ti, mejor elegiré cuando aparezca alguien nuevo."},
@@ -102,9 +118,9 @@ var catalog = map[string][4]string{
 		"말해 줘서 고마워요. 알겠어요.",
 		"教えてくれてありがとう。わかりました。",
 		"Gracias por contármelo. Ya lo tengo."},
-	"Go to my matches": {"去看我的配对", "내 매치 보기", "マッチを見る", "Ir a mis matches"},
+	"Go to my matches": {"去看我的搭子", "내 매치 보기", "マッチを見る", "Ir a mis matches"},
 	"I keep things PG around here, so I'll leave that one alone. Happy to help with your profile, your matches or planning a great date.": {
-		"我这里只聊健康的内容，这个话题就不接了。我很乐意帮你弄资料、看配对，或者安排一场很棒的约会。",
+		"我这里只聊健康的内容，这个话题就不接了。我很乐意帮你弄资料、看搭子，或者安排一次很棒的见面。",
 		"여기서는 건전한 이야기만 해서 그건 넘어갈게요. 프로필이나 매치, 멋진 데이트 계획은 기꺼이 도와드릴게요.",
 		"ここでは健全な話題だけにしているので、それはやめておきますね。プロフィールやマッチ、素敵なデートの計画なら喜んでお手伝いします。",
 		"Aquí mantengo las cosas para todos los públicos, así que eso lo dejo pasar. Encantada de ayudarte con tu perfil, tus matches o a planear una gran cita."},
@@ -121,17 +137,17 @@ var catalog = map[string][4]string{
 		"あなたの安全が第一です。今危険な状況なら、現地の緊急番号（米国 911、EU 112）に電話して、周りに人がいる場所へ移動してください。\n\n安全チームの担当者に知らせました。相手のプロフィールからブロックすることもでき、すぐに連絡は一切取れなくなります。",
 		"Tu seguridad es lo primero. Si estás en peligro ahora mismo, llama al número de emergencias de tu zona (911 en EE. UU., 112 en la UE) y ve a un lugar con más gente.\n\nYa avisé a una persona de nuestro equipo de seguridad. También puedes bloquear a esta persona desde su perfil, y perderá todo contacto contigo al instante."},
 	"Thanks for being honest with me. SynAgent is only for adults aged 18 and over, so I can't help you with dating here, and I've paused this account until someone on our team has looked at it. No hard feelings.": {
-		"谢谢你对我说实话。SynAgent 只面向 18 岁及以上的成年人，所以我没法在这里帮你约会，这个账户也已暂停，等我们团队的人看过再说。别往心里去。",
+		"谢谢你对我说实话。SynAgent 只面向 18 岁及以上的成年人，所以我没法在这里帮你找搭子，这个账户也已暂停，等我们团队的人看过再说。别往心里去。",
 		"솔직하게 말해 줘서 고마워요. SynAgent는 만 18세 이상 성인만 이용할 수 있어서 여기서는 데이트를 도와드릴 수 없고, 팀원이 확인할 때까지 이 계정을 일시 중지했어요. 기분 나쁘게 생각하지 말아요.",
 		"正直に話してくれてありがとう。SynAgent は 18 歳以上の成人専用なので、ここでデートのお手伝いはできません。チームの担当者が確認するまで、このアカウントは一時停止しました。悪く思わないでくださいね。",
 		"Gracias por ser sincero conmigo. SynAgent es solo para adultos de 18 años o más, así que no puedo ayudarte con citas aquí, y he pausado esta cuenta hasta que alguien de nuestro equipo la revise. Sin rencores."},
 	"Feedback after dates privately shapes who I introduce you to, and those details stay private, so there's no number for you to look at. The privacy policy explains more. So tell me: what made your favorite date your favorite?": {
-		"约会后的反馈会在私下影响我之后给你介绍谁，这些细节是保密的，所以没有数字可以给你看。隐私政策里有更多说明。那告诉我：你最喜欢的一次约会，好在哪里？",
+		"见面后的反馈会在私下影响我之后给你介绍谁，这些细节是保密的，所以没有数字可以给你看。隐私政策里有更多说明。那告诉我：你最喜欢的一次见面，好在哪里？",
 		"데이트 후 피드백은 제가 다음에 누구를 소개할지에 비공개로 영향을 줘요. 자세한 내용은 비공개라서 보여 드릴 숫자는 없어요. 더 알고 싶다면 개인정보 처리방침을 참고해 주세요. 그럼 말해 주세요. 가장 좋았던 데이트는 뭐가 좋았나요?",
 		"デート後のフィードバックは、次に誰を紹介するかに非公開で影響します。詳細は非公開なので、お見せできる数字はありません。詳しくはプライバシーポリシーをご覧ください。では教えてください。一番よかったデートは、どこがよかったですか？",
 		"Los comentarios después de las citas influyen en privado en a quién te presento, y esos detalles son privados, así que no hay ningún número que puedas ver. La política de privacidad explica más. Cuéntame: ¿qué hizo que tu cita favorita fuera tu favorita?"},
 	"Feedback after dates privately shapes who I introduce you to, and those details stay private. The privacy policy explains more. Tell me more about what you're looking for, and I'll keep it in mind for your next introduction.": {
-		"约会后的反馈会在私下影响我之后给你介绍谁，这些细节是保密的。隐私政策里有更多说明。再多跟我说说你想找什么样的人，下次介绍时我会记在心上。",
+		"见面后的反馈会在私下影响我之后给你介绍谁，这些细节是保密的。隐私政策里有更多说明。再多跟我说说你想找什么样的人，下次介绍时我会记在心上。",
 		"데이트 후 피드백은 제가 다음에 누구를 소개할지에 비공개로 영향을 주고, 자세한 내용은 비공개예요. 더 알고 싶다면 개인정보 처리방침을 참고해 주세요. 어떤 사람을 찾는지 더 들려주면 다음 소개 때 기억해 둘게요.",
 		"デート後のフィードバックは、次に誰を紹介するかに非公開で影響し、詳細は非公開です。詳しくはプライバシーポリシーをご覧ください。どんな人を探しているかもっと教えてくれたら、次の紹介で覚えておきますね。",
 		"Los comentarios después de las citas influyen en privado en a quién te presento, y esos detalles son privados. La política de privacidad explica más. Cuéntame más sobre lo que buscas y lo tendré en cuenta para tu próxima presentación."},
@@ -195,7 +211,7 @@ var catalog = map[string][4]string{
 	"It's {venue}! Now, when works for you both?":                                  {"就去 {venue}！那么，你们什么时候方便？", "{venue}(으)로 정해졌어요! 이제 언제가 좋을까요?", "{venue} に決まりました！では、いつがいいですか？", "¡Será en {venue}! Ahora, ¿cuándo os viene bien a los dos?"},
 	"New time suggested. Does it work?":                                            {"有人提议了新时间，可以吗？", "새로운 시간이 제안됐어요. 괜찮으세요?", "新しい時間が提案されました。大丈夫ですか？", "Se ha propuesto una nueva hora. ¿Os va bien?"},
 	"You're on! Have a wonderful time. Remember to tell a friend where you'll be.": {"定了！祝你们玩得开心。记得告诉朋友你们会去哪里。", "확정이에요! 즐거운 시간 보내세요. 어디 가는지 친구에게 꼭 알려 주세요.", "決まり！楽しんできてくださいね。行き先を友だちに伝えるのを忘れずに。", "¡Hecho! Que lo paséis genial. Recordad contarle a un amigo dónde estaréis."},
-	"This date plan was cancelled.":                                                {"这个约会计划已取消。", "이 데이트 계획은 취소됐어요.", "このデートの計画はキャンセルされました。", "Este plan de cita se ha cancelado."},
+	"This date plan was cancelled.":                                                {"这个见面计划已取消。", "이 데이트 계획은 취소됐어요.", "このデートの計画はキャンセルされました。", "Este plan de cita se ha cancelado."},
 	"I'm meeting {name} at {venue}{address} on {time}. Just letting you know where I'll be.": {
 		"我会在 {time} 去 {venue}{address} 见 {name}。告诉你一声我会在哪儿。",
 		"{time}에 {venue}{address}에서 {name}님을 만나요. 제가 어디 있을지 알려 드려요.",
@@ -205,25 +221,25 @@ var catalog = map[string][4]string{
 	// Notifications.
 	"Suki found someone for you":                    {"Suki 为你找到了一个人", "Suki가 좋은 사람을 찾았어요", "Suki がいい人を見つけました", "Suki ha encontrado a alguien para ti"},
 	"Take a look when you have a moment.":           {"有空时看一眼吧。", "시간 날 때 한번 보세요.", "時間のあるときに見てみてください。", "Échale un vistazo cuando puedas."},
-	"It's a match!":                                 {"配对成功！", "매치됐어요!", "マッチしました！", "¡Tienes un match!"},
+	"It's a match!":                                 {"结伴成功！", "매치됐어요!", "マッチしました！", "¡Tienes un match!"},
 	"You and {name} both said yes.":                 {"你和 {name} 都说好了。", "{name}님과 두 분 모두 좋다고 했어요.", "{name} さんとおふたりとも「はい」でした。", "Tú y {name} habéis dicho que sí."},
 	"New message":                                   {"新消息", "새 메시지", "新しいメッセージ", "Mensaje nuevo"},
 	"You have a new message.":                       {"你有一条新消息。", "새 메시지가 왔어요.", "新しいメッセージがあります。", "Tienes un mensaje nuevo."},
-	"Date ideas are ready":                          {"约会地点选好了", "데이트 장소가 준비됐어요", "デートのアイデアができました", "Las ideas para la cita están listas"},
+	"Date ideas are ready":                          {"见面地点选好了", "데이트 장소가 준비됐어요", "デートのアイデアができました", "Las ideas para la cita están listas"},
 	"Suki found a few places for you both.":         {"Suki 为你们找到了几个地方。", "Suki가 두 분을 위한 장소를 몇 곳 찾았어요.", "Suki がおふたりに合う場所をいくつか見つけました。", "Suki ha encontrado algunos sitios para los dos."},
-	"A time for your date":                          {"约会时间提议", "데이트 시간 제안", "デートの時間", "Una hora para vuestra cita"},
+	"A time for your date":                          {"见面时间提议", "데이트 시간 제안", "デートの時間", "Una hora para vuestra cita"},
 	"Open SynAgent to say yes or suggest another.":  {"打开 SynAgent 确认，或者提议别的时间。", "SynAgent를 열어 수락하거나 다른 시간을 제안하세요.", "SynAgent を開いて、承諾するか別の時間を提案してください。", "Abre SynAgent para aceptar o proponer otra."},
-	"Your date is confirmed":                        {"约会已确认", "데이트가 확정됐어요", "デートが確定しました", "Tu cita está confirmada"},
+	"Your date is confirmed":                        {"见面已确认", "데이트가 확정됐어요", "デートが確定しました", "Tu cita está confirmada"},
 	"See you there. Suki will check in afterwards.": {"祝顺利。之后 Suki 会来问问你。", "잘 다녀오세요. 나중에 Suki가 안부를 물을게요.", "楽しんできてください。あとで Suki が様子を聞きますね。", "Que vaya bien. Suki te preguntará después."},
-	"Your date is tomorrow":                         {"明天就是约会了", "내일이 데이트예요", "デートは明日です", "Tu cita es mañana"},
+	"Your date is tomorrow":                         {"明天就是见面了", "내일이 데이트예요", "デートは明日です", "Tu cita es mañana"},
 	"Tell a friend your plans, and have fun.":       {"把安排告诉朋友，玩得开心。", "친구에게 계획을 알리고 즐거운 시간 보내세요.", "予定を友だちに伝えて、楽しんでください。", "Cuéntale tus planes a un amigo y pásalo bien."},
-	"Your date is coming up":                        {"约会快到了", "데이트가 곧이에요", "もうすぐデートです", "Tu cita está cerca"},
+	"Your date is coming up":                        {"见面快到了", "데이트가 곧이에요", "もうすぐデートです", "Tu cita está cerca"},
 	"It's almost time.":                             {"时间快到了。", "거의 시간이 됐어요.", "もうすぐ時間です。", "Ya casi es la hora."},
 	"Everything okay?":                              {"一切还好吗？", "괜찮으세요?", "大丈夫ですか？", "¿Todo bien?"},
 	"Just checking in. If anything feels off, open SynAgent and tell Suki.": {"来问候一下。如果有什么不对劲，打开 SynAgent 告诉 Suki。", "잘 지내는지 확인해요. 뭔가 이상하다면 SynAgent를 열어 Suki에게 말해 주세요.", "様子を聞きに来ました。何か変だと感じたら、SynAgent を開いて Suki に伝えてください。", "Solo quería saber cómo estás. Si algo no va bien, abre SynAgent y cuéntaselo a Suki."},
 	"Suki has an idea":              {"Suki 有个主意", "Suki에게 아이디어가 있어요", "Suki にアイデアがあります", "Suki tiene una idea"},
 	"Something you could do today.": {"今天可以做点这个。", "오늘 해볼 만한 일이 있어요.", "今日できることがあります。", "Algo que podrías hacer hoy."},
-	"How did it go?":                    {"约会怎么样？", "어땠어요?", "どうでしたか？", "¿Qué tal fue?"},
+	"How did it go?":                    {"见面怎么样？", "어땠어요?", "どうでしたか？", "¿Qué tal fue?"},
 	"Suki would love to hear about it.": {"Suki 很想听听。", "Suki가 듣고 싶어 해요.", "Suki が聞きたがっています。", "A Suki le encantaría saberlo."},
 
 	// Email.
