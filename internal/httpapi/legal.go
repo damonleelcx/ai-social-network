@@ -23,6 +23,12 @@ var chinaLegalLanguages = []legalChrome{
 	{code: "zh", name: "中文", terms: "用户协议", privacy: "隐私政策", deleteAccount: "注销账户", contact: "联系我们"},
 	{code: "en", name: "English", terms: "Terms", privacy: "Privacy", deleteAccount: "Delete your account", contact: "Contact",
 		note: "This translation is for convenience. If it differs from the Chinese version, the Chinese version prevails."},
+	{code: "ko", name: "한국어", terms: "약관", privacy: "개인정보", deleteAccount: "계정 삭제", contact: "문의하기",
+		note: "이 번역본은 편의를 위해 제공됩니다. 중국어본과 내용이 다를 경우 중국어본이 우선합니다."},
+	{code: "ja", name: "日本語", terms: "規約", privacy: "プライバシー", deleteAccount: "アカウントの削除", contact: "お問い合わせ",
+		note: "この翻訳は参考用です。中国語版と内容が異なる場合は、中国語版が優先します。"},
+	{code: "es", name: "Español", terms: "Términos", privacy: "Privacidad", deleteAccount: "Eliminar tu cuenta", contact: "Contacto",
+		note: "Esta traducción se ofrece para tu comodidad. Si difiere de la versión en chino, prevalece la versión en chino."},
 }
 
 // legalChrome is the words around a page, for each language.

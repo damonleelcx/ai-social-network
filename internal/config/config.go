@@ -180,6 +180,10 @@ func Load() (Config, error) {
 	if c.ExpoPushURL == "off" {
 		c.ExpoPushURL = ""
 	}
+	// "off" skips Nominatim, which mainland China can't reach; cities then come from Photon.
+	if c.NominatimURL == "off" {
+		c.NominatimURL = ""
+	}
 	if c.S3Bucket == "" && c.PhotoDir == "" {
 		return c, fmt.Errorf("SYN_S3_BUCKET is required")
 	}

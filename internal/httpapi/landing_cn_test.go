@@ -19,7 +19,7 @@ func chinaGet(t *testing.T, path string) string {
 func TestChinaSiteSaysNothingItShouldnt(t *testing.T) {
 	paths := []string{"/", "/landing/app.js", "/landing/i18n.js", "/landing/scene.js", "/open"}
 	for _, page := range []string{"terms", "privacy", "contact", "delete-account", "child-safety"} {
-		paths = append(paths, "/legal/"+page, "/legal/"+page+"?lang=en", "/legal/"+page+"?lang=ko")
+		paths = append(paths, "/legal/"+page, "/legal/"+page+"?lang=en", "/legal/"+page+"?lang=ko", "/legal/"+page+"?lang=ja", "/legal/"+page+"?lang=es")
 	}
 	if got := chinaGet(t, "/legal/privacy"); !strings.Contains(got, "南京知遇无界科技有限公司") || !strings.Contains(got, "中华人民共和国境内") {
 		t.Error("China privacy policy isn't China's")
@@ -38,11 +38,11 @@ func TestChinaSiteSaysNothingItShouldnt(t *testing.T) {
 			t.Errorf("China home page lacks %q", want)
 		}
 	}
-	if strings.Contains(page, `value="ko"`) || strings.Contains(page, `value="ja"`) {
-		t.Error("China home page offers Korean or Japanese")
+	if !strings.Contains(page, `value="ko"`) || !strings.Contains(page, `value="ja"`) {
+		t.Error("China home page should offer Korean and Japanese")
 	}
 	i18n := chinaGet(t, "/landing/i18n.js")
-	for _, want := range []string{`"An assistant you talk to,": ["一位能聊天的找搭子助手，"`, `"In WeChat": ["在微信里"`, "18 岁"} {
+	for _, want := range []string{`"An assistant you talk to,": ["一位能聊天的找搭子助手，", "끝없는 목록이 아니라,"`, `"In WeChat": ["在微信里", "위챗에서", "WeChat で"]`, "18 岁", "18세", "18歳"} {
 		if !strings.Contains(i18n, want) {
 			t.Errorf("China translations lack %q", want)
 		}

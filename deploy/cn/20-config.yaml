@@ -36,6 +36,8 @@ data:
   SYN_REGION: "cn"
   # No push through Expo from China; the mini program doesn't use it.
   SYN_EXPO_PUSH_URL: "off"
+  # Nominatim is blocked from China; cities come from Photon, which answers here.
+  SYN_NOMINATIM_URL: "off"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
