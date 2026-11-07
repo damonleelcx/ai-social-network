@@ -16,9 +16,16 @@
     try { saved = localStorage.getItem('synagent.theme'); } catch (e) {}
     var theme = saved === 'light' || saved === 'dark' ? saved : matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
     document.documentElement.dataset.theme = theme;
-    // English unless they chose otherwise, here or through a shared ?lang= link.
+    // A shared ?lang= link, else what they chose here, else the browser's language.
     var lang = new URLSearchParams(location.search).get('lang');
     try { lang = lang || localStorage.getItem('synagent.lang'); } catch (e) {}
+    if (!lang) {
+      var tags = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en'];
+      for (var i = 0; i < tags.length && !lang; i++) {
+        var base = String(tags[i]).toLowerCase().split(/[-_]/)[0];
+        if (base === 'zh' || base === 'ko' || base === 'ja' || base === 'en') lang = base;
+      }
+    }
     if (lang === 'zh' || lang === 'ko' || lang === 'ja') {
       document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : lang;
       document.documentElement.dataset.lang = lang;
