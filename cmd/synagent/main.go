@@ -30,9 +30,11 @@ import (
 	"github.com/damonleelcx/ai-social-network/internal/engine"
 	"github.com/damonleelcx/ai-social-network/internal/externalauth"
 	"github.com/damonleelcx/ai-social-network/internal/httpapi"
+	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"github.com/damonleelcx/ai-social-network/internal/llm"
 	"github.com/damonleelcx/ai-social-network/internal/mail"
 	"github.com/damonleelcx/ai-social-network/internal/notify"
+	"github.com/damonleelcx/ai-social-network/internal/persona"
 	"github.com/damonleelcx/ai-social-network/internal/photostore"
 	"github.com/damonleelcx/ai-social-network/internal/places"
 	"github.com/damonleelcx/ai-social-network/internal/tts"
@@ -70,6 +72,11 @@ func run(mode string) error {
 			return errors.New("mail relay is not configured")
 		}
 		return s.Check(ctx)
+	}
+	if cfg.Region == "cn" {
+		// The China copy: finding company, in every language (server text and Suki's instructions).
+		i18n.UseChinaEdition()
+		persona.ChinaEdition = true
 	}
 	pool, err := db.Open(ctx, cfg.DatabaseURL)
 	if err != nil {

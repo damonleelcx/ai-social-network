@@ -29,8 +29,8 @@
     "borderStyle": "black",
     "list": [
       { "pagePath": "pages/suki/suki", "text": "Suki", "iconPath": "assets/tabs/suki.png", "selectedIconPath": "assets/tabs/suki-on.png" },
-      { "pagePath": "pages/matches/matches", "text": "配对", "iconPath": "assets/tabs/matches.png", "selectedIconPath": "assets/tabs/matches-on.png" },
-      { "pagePath": "pages/dates/dates", "text": "约会", "iconPath": "assets/tabs/dates.png", "selectedIconPath": "assets/tabs/dates-on.png" },
+      { "pagePath": "pages/matches/matches", "text": "搭子", "iconPath": "assets/tabs/matches.png", "selectedIconPath": "assets/tabs/matches-on.png" },
+      { "pagePath": "pages/dates/dates", "text": "见面", "iconPath": "assets/tabs/dates.png", "selectedIconPath": "assets/tabs/dates-on.png" },
       { "pagePath": "pages/me/me", "text": "我", "iconPath": "assets/tabs/me.png", "selectedIconPath": "assets/tabs/me-on.png" }
     ]
   },

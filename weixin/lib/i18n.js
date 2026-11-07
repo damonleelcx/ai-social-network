@@ -6,6 +6,9 @@
 // into data.t for the page's language. Words with a value in them are built in the page's
 // load() with t(), and load() runs again when the language changes.
 const catalog = require('./catalog');
+// The mini program is the China edition: these sentences read as finding company there,
+// in every language (catalog_cn.js, generated from the app's China wording).
+const china = require('./catalog_cn');
 
 const COLUMN = { zh: 0, ko: 1, ja: 2, es: 3 };
 const LANGUAGES = [
@@ -48,6 +51,8 @@ const parts = new Set();
 function t(english, vars) {
   const row = catalog[english];
   let text = Array.isArray(row) && COLUMN[current] !== undefined ? row[COLUMN[current]] : english;
+  const cn = china[english];
+  if (cn && current !== 'zh' && cn[current]) text = cn[current];
   Object.keys(vars || {}).forEach((k) => {
     text = text.split('{' + k + '}').join(String(vars[k]));
   });

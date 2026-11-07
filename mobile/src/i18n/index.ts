@@ -1,4 +1,5 @@
 import { catalog } from './catalog';
+import { chinaWording } from './catalog-cn';
 
 // Copy is written in English and looked up by its English text, so a string with no translation
 // just shows in English. Until someone chooses, the phone's language decides (deviceLanguage).
@@ -48,9 +49,17 @@ export const currentLanguage = () => current;
 /** For dates and times, so they match the words around them. */
 export const dateLocale = () => LOCALE[current];
 
+/** Served from the China copy (suki.zhiyuwujie.top), the app reads as finding company in every language. */
+const inChina = (() => {
+  const host = (globalThis as { location?: { hostname?: string } }).location?.hostname ?? '';
+  return host === 'zhiyuwujie.top' || host.endsWith('.zhiyuwujie.top');
+})();
+
 export function tr(english: string, vars?: Record<string, string | number>) {
   const column = COLUMN[current as keyof typeof COLUMN];
   let text = column === undefined ? english : (catalog[english]?.[column] ?? english);
+  const cn = inChina && current !== 'zh' ? chinaWording[english] : undefined;
+  if (cn?.[current as keyof typeof cn]) text = cn[current as keyof typeof cn] as string;
   for (const [k, v] of Object.entries(vars ?? {})) text = text.replace(`{${k}}`, String(v));
   return text;
 }

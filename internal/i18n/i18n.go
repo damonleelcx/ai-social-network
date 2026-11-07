@@ -9,12 +9,28 @@ import "strings"
 // column maps a language setting to its place in the catalog.
 var column = map[string]int{"zh": 0, "ko": 1, "ja": 2, "es": 3}
 
+// chinaEdition is set on the China copy, where SynAgent is for finding company: the
+// sentences in chinaText then read that way in every language (catalog_cn.go).
+var chinaEdition bool
+
+// UseChinaEdition switches the catalog to the China copy's wording.
+func UseChinaEdition() { chinaEdition = true }
+
 // T returns english in lang, with {placeholders} filled from key, value pairs.
 func T(lang, english string, vars ...string) string {
 	text := english
 	if c, ok := column[lang]; ok {
 		if row, ok := catalog[english]; ok {
 			text = row[c]
+		}
+	}
+	if chinaEdition && lang != "zh" {
+		l := lang
+		if _, ok := column[l]; !ok {
+			l = "en"
+		}
+		if t := chinaText[english][l]; t != "" {
+			text = t
 		}
 	}
 	for i := 0; i+1 < len(vars); i += 2 {
