@@ -25,6 +25,9 @@ data:
   SYN_ACCOUNT_DAILY_TOKENS: "2000000"
   SYN_DEPLOYMENT_DAILY_TOKENS: "10000000"
   GOMEMLIMIT: "300MiB"
+  # Shown in the home page footer, as mainland rules require. Add SYN_ICP_BEIAN
+  # (苏ICP备…号) once known.
+  SYN_ICP_LICENCE: "苏B2-20262623"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

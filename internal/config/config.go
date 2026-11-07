@@ -80,6 +80,10 @@ type Config struct {
 	GooglePlayServiceAccount string
 	// ExpoPushURL is where push notifications go; empty disables push.
 	ExpoPushURL string
+	// ICPBeian and ICPLicence are the mainland China filing number and telecom licence
+	// shown in the home page footer. Set only on the China copy.
+	ICPBeian   string
+	ICPLicence string
 
 	// DateMinLead is the soonest a date can be set; DebriefDelay is how long after
 	// its start Suki asks how it went. Both shorten for demos and tests.
@@ -140,6 +144,8 @@ func Load() (Config, error) {
 		PhotonURL:             env("SYN_PHOTON_URL", "https://photon.komoot.io"),
 		PhotoAutoApprove:      envBool("SYN_PHOTO_AUTO_APPROVE", false),
 		ExpoPushURL:           env("SYN_EXPO_PUSH_URL", "https://exp.host/--/api/v2/push/send"),
+		ICPBeian:              os.Getenv("SYN_ICP_BEIAN"),
+		ICPLicence:            os.Getenv("SYN_ICP_LICENCE"),
 		DateMinLead:           envDur("SYN_DATE_MIN_LEAD", time.Hour),
 		DebriefDelay:          envDur("SYN_DEBRIEF_DELAY", 14*time.Hour),
 	}

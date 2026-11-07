@@ -52,6 +52,9 @@ type Server struct {
 	// Speech is nil when no voice is configured.
 	Speech           *tts.Service
 	SpeechDailyChars int
+	// ICPFooter is the China filing notice for the home page (see ICPFooter). Empty
+	// outside China.
+	ICPFooter string
 	limit            limiter
 	mapCache         userMapCache
 }
@@ -299,8 +302,12 @@ func (s *Server) Handler() http.Handler {
 
 	m.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { writeJSON(w, 200, map[string]bool{"ok": true}) })
 	m.HandleFunc("GET /readyz", s.ready)
-	m.Handle("GET /{$}", landing)
-	m.Handle("GET /landing/", landing)
+	site := landing
+	if s.ICPFooter != "" {
+		site = newLanding(s.ICPFooter)
+	}
+	m.Handle("GET /{$}", site)
+	m.Handle("GET /landing/", site)
 	m.Handle("GET /app", webapp)
 	m.Handle("GET /app/", webapp)
 	m.HandleFunc("GET /legal/terms", legalPage("terms"))

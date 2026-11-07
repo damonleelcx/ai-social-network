@@ -129,7 +129,8 @@ func run(mode string) error {
 	if mode == "serve" || mode == "web" {
 		hub := httpapi.NewHub()
 		a := &auth.Service{Pool: pool, Mailer: mailer, PublicOrigin: cfg.PublicOrigin, SessionTTL: cfg.SessionTTL, AdminEmails: cfg.AdminEmails}
-		srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill}
+		srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill,
+			ICPFooter: httpapi.ICPFooter(cfg.ICPBeian, cfg.ICPLicence)}
 		if cfg.GoogleClientID != "" {
 			srv.GoogleLogin = &externalauth.Google{ClientID: cfg.GoogleClientID}
 		}
