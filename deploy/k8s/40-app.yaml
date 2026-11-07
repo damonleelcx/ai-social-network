@@ -33,6 +33,7 @@ spec:
           envFrom:
             - configMapRef: { name: synagent-config }
             - secretRef: { name: synagent }
+            - secretRef: { name: synagent-peer, optional: true }
             - secretRef: { name: synagent-mail, optional: true }
             - secretRef: { name: synagent-voice, optional: true }
             - secretRef: { name: synagent-billing, optional: true }
