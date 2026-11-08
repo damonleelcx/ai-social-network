@@ -268,9 +268,16 @@ module.exports = {
     status: () => get('/v1/referral'),
   },
   credits: {
-    status: () => get('/v1/credits'),
+    // Remembers whether credits go through WeChat's virtual payment, for lib/pay.js.
+    status: async () => {
+      const s = await get('/v1/credits');
+      module.exports.credits.virtual = !!s.wechat_virtual;
+      return s;
+    },
     usage: async () => (await get('/v1/credits/usage')).usage || [],
     wechatPrepay: (pack, code) => post('/v1/credits/wechat/prepay', { package: pack, code }),
+    wechatVirtual: (pack, code) => post('/v1/credits/wechat/virtual', { package: pack, code }),
+    wechatVirtualCheck: (order) => post('/v1/credits/wechat/virtual/check', { order }),
   },
   safety: {
     blocked: async () => (await get('/v1/blocks')).blocked || [],
