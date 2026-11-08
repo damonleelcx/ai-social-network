@@ -16,7 +16,11 @@ const COPY = {
   photos: 'Photos',
   photosHint: 'Tap a photo to see all of it. Use ··· to make it your main one or remove it.',
   invite: 'Invite friends',
+  inviteHint: 'Know someone who could use company for a meal, a film or a trip? Send them SynAgent.',
   inviteCode: 'Your invite code',
+  checkIn: 'Daily check-in',
+  checkInButton: 'Check in',
+  checkedIn: 'Checked in today',
   sendInvite: 'Send to WeChat friends',
   momentsPoster: 'Share a poster to Moments',
   credits: 'Credits',
@@ -32,7 +36,7 @@ const COPY = {
   account: 'Account',
   accountHint: 'Password, sessions, your data, legal',
 };
-const REASON = { purchase: 'Bought credits', turn: 'Message to Suki', referral: 'A friend joined', refund: "Refund: Suki couldn't answer", grant: 'Added by SynAgent' };
+const REASON = { purchase: 'Bought credits', turn: 'Message to Suki', referral: 'A friend joined', invited: 'Joined through a friend', checkin: 'Daily check-in', refund: "Refund: Suki couldn't answer", grant: 'Added by SynAgent' };
 const SCREENS = {
   edit: '/pages/profile/edit/edit',
   notifications: '/pages/notifications/notifications',
@@ -44,7 +48,7 @@ const SCREENS = {
 };
 
 Page({
-  data: { t: i18n.strings(COPY), user: {}, displayName: '', canPause: false, paused: false, pausing: false, photos: [], mainPhoto: '', invite: null, joinedText: '', credits: null, balanceText: '', creditsText: '', usage: [], packs: [], buying: false, unread: 0 },
+  data: { t: i18n.strings(COPY), user: {}, displayName: '', canPause: false, paused: false, pausing: false, photos: [], mainPhoto: '', invite: null, joinedText: '', checkin: null, checkinText: '', checking: false, credits: null, balanceText: '', creditsText: '', usage: [], packs: [], buying: false, unread: 0 },
   onLoad() {
     this.off = live.on((topic) => {
       if (topic === 'credits' || topic === 'photos' || topic === 'notification' || topic === 'reconnect') this.load();
@@ -93,13 +97,39 @@ Page({
         usage: usage.slice(0, 20).map((u) => ({ delta: u.delta, text: REASON[u.reason] ? t(REASON[u.reason]) : u.reason, when: time(u.created_at) })),
         unread: notifications.filter((n) => !n.read).length,
       });
+      this.loadCheckIn();
       const invite = await share.prepare();
-      this.setData({ invite, joinedText: invite && invite.joined ? t('{count} people have joined', { count: invite.joined }) : '' });
+      this.setData({ invite, joinedText: invite ? t('Friends who joined: {count}', { count: invite.joined || 0 }) : '' });
       const shown = await Promise.all(photos.map(async (p) => ({ id: p.id, status: p.status, is_primary: p.is_primary, path: await api.media(p.id) })));
       this.setData({ photos: shown, mainPhoto: (shown.find((p) => p.is_primary) || shown[0] || {}).path || '' });
     } catch (e) {
       if (e.status !== 401 && e.status !== 403) showError(e);
     }
+  },
+  // Kept apart from load(), so a server without check-in just hides the card.
+  async loadCheckIn() {
+    try {
+      this.showCheckIn(await api.checkin.status());
+    } catch (e) {
+      this.setData({ checkin: null });
+    }
+  },
+  showCheckIn(st) {
+    const checkin = st && st.enabled ? st : null;
+    this.setData({ checkin, checkinText: checkin ? t('Check in once a day for {n} credits. A new day starts at midnight, China time.', { n: checkin.credits }) : '' });
+  },
+  async onCheckIn() {
+    if (this.data.checking || !this.data.checkin || this.data.checkin.checked_in) return;
+    this.setData({ checking: true });
+    try {
+      const st = await api.checkin.checkIn();
+      this.showCheckIn(st);
+      if (st.earned > 0) wx.showToast({ title: t('+{n} credits', { n: st.earned }), icon: 'none' });
+      await this.load();
+    } catch (err) {
+      showError(err);
+    }
+    this.setData({ checking: false });
   },
   async onPause(e) {
     const paused = e.detail.value;

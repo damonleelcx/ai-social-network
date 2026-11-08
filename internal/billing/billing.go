@@ -61,6 +61,10 @@ type Service struct {
 	XPay *XPay
 	// Google is Google Play Billing for the Play build of the Android app. Nil means it's off.
 	Google *GooglePlay
+	// Rewards are earned credits (invites, check-in). Nil means DefaultRewards.
+	Rewards *Rewards
+	// Now is for tests. Nil means time.Now.
+	Now func() time.Time
 }
 
 // ErrBadSignature means a webhook didn't come from the payment provider.

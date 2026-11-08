@@ -375,6 +375,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /v1/credits", v(s.creditStatus))
 	m.HandleFunc("GET /v1/credits/usage", v(s.creditUsage))
 	m.HandleFunc("GET /v1/referral", v(s.referralStatus))
+	m.HandleFunc("GET /v1/checkin", v(s.checkInStatus))
+	m.HandleFunc("POST /v1/checkin", v(lim("checkin", 30, time.Minute, s.checkIn)))
 	m.HandleFunc("GET /v1/scenes/{file}", s.sceneImage)
 	m.HandleFunc("GET /v1/referral/poster", v(lim("poster", 30, time.Hour, s.referralPoster)))
 	m.HandleFunc("POST /v1/credits/checkout", v(lim("checkout", 20, time.Hour, s.creditCheckout)))
@@ -1182,6 +1184,29 @@ func (s *Server) referralStatus(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		handleErr(w, r, err)
 		return
+	}
+	writeJSON(w, 200, st)
+}
+
+// checkInStatus says whether today's check-in (China time) is done.
+func (s *Server) checkInStatus(w http.ResponseWriter, r *http.Request) {
+	st, err := s.Billing.CheckInStatus(r.Context(), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, st)
+}
+
+// checkIn pays today's check-in once; repeating it is harmless and pays nothing.
+func (s *Server) checkIn(w http.ResponseWriter, r *http.Request) {
+	st, err := s.Billing.DoCheckIn(r.Context(), userOf(r).ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	if st.Earned > 0 {
+		s.Dating.Touch(r.Context(), userOf(r).ID, "credits")
 	}
 	writeJSON(w, 200, st)
 }

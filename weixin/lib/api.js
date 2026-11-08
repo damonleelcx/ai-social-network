@@ -267,6 +267,10 @@ module.exports = {
   referral: {
     status: () => get('/v1/referral'),
   },
+  checkin: {
+    status: () => get('/v1/checkin'),
+    checkIn: () => post('/v1/checkin', {}),
+  },
   credits: {
     // Remembers whether credits go through WeChat's virtual payment, for lib/pay.js.
     status: async () => {

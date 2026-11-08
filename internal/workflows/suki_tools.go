@@ -9,6 +9,7 @@ import (
 	"github.com/damonleelcx/ai-social-network/internal/dating"
 	"github.com/damonleelcx/ai-social-network/internal/hidden"
 	"github.com/damonleelcx/ai-social-network/internal/moderation"
+	"github.com/damonleelcx/ai-social-network/internal/persona"
 	"github.com/damonleelcx/ai-social-network/internal/places"
 	"github.com/damonleelcx/ai-social-network/internal/profile"
 	"github.com/damonleelcx/ai-social-network/internal/safety"
@@ -789,13 +790,20 @@ func registerSukiTools() {
 			return card("buy_credits"), nil
 		})
 
-	add("invite_friends", "This person's invite link and code, what they earn for each friend, and how many friends have joined. It also shows them a card with buttons to share their invite and a poster for WeChat Moments.", noArgs, tools.Read,
+	add("invite_friends", "This person's invite link and code, what they and the friend earn, and how many friends have joined. It also shows them a card with buttons to share their invite and a poster for WeChat Moments.", noArgs, tools.Read,
 		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
 			st, err := d.Billing.ReferralStatus(ctx, env.UserID)
 			if err != nil {
 				return nil, err
 			}
-			return map[string]any{"link": st.Link, "code": st.Code, "credits_per_friend": st.CreditsPerFriend, "earned_when": "the friend signs up with the link or code and finishes their profile", "friends_joined": st.Joined, "credits_earned": st.CreditsEarned,
+			if persona.ChinaEdition {
+				// WeChat forbids rewarding or promising rewards for sharing (诱导分享), so in the
+				// China copy Suki never pitches credits as a reason to invite anyone.
+				return map[string]any{"link": st.Link, "code": st.Code, "friends_joined": st.Joined,
+					"how_to_share": "In the mini program: the share button on the Me page, or ··· then Send to friends. Don't mention credits or any reward for inviting or sharing.",
+					"card": map[string]any{"kind": "invite"}}, nil
+			}
+			return map[string]any{"link": st.Link, "code": st.Code, "credits_per_friend": st.CreditsPerFriend, "credits_for_the_friend": st.CreditsForFriend, "earned_when": "the friend signs up with the link or code and finishes their profile", "friends_joined": st.Joined, "credits_earned": st.CreditsEarned,
 				"card": map[string]any{"kind": "invite"}}, nil
 		})
 
