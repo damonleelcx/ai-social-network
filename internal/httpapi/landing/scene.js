@@ -370,8 +370,39 @@ const smooth = (a, b, v) => {
 };
 const mix = (a, b, t) => a + (b - a) * t;
 
+// Some privacy tools fight fingerprinting by making WebGL report random limits, often far below
+// what the hardware has: a vertex-attribute limit of 2, say. three.js believes them, can't turn on
+// the per-instance data, and the gate, the heart and the two figures silently vanish, on some
+// loads and not others. Every WebGL 2 context is guaranteed at least the standard's minimums
+// (OpenGL ES 3.0, table 6.32+), so a smaller number is never true and is raised to the minimum.
+const WEBGL2_MINIMUMS = {
+  0x8869: 16, // MAX_VERTEX_ATTRIBS
+  0x8872: 16, // MAX_TEXTURE_IMAGE_UNITS
+  0x8b4c: 16, // MAX_VERTEX_TEXTURE_IMAGE_UNITS
+  0x8b4d: 32, // MAX_COMBINED_TEXTURE_IMAGE_UNITS
+  0x8dfb: 256, // MAX_VERTEX_UNIFORM_VECTORS
+  0x8dfd: 224, // MAX_FRAGMENT_UNIFORM_VECTORS
+  0x8dfc: 15, // MAX_VARYING_VECTORS
+  0x0d33: 2048, // MAX_TEXTURE_SIZE
+  0x851c: 2048, // MAX_CUBE_MAP_TEXTURE_SIZE
+  0x84e8: 2048, // MAX_RENDERBUFFER_SIZE
+  0x8d57: 4, // MAX_SAMPLES
+};
+
+function honestContext(canvas) {
+  const gl = canvas.getContext('webgl2', { antialias: false, powerPreference: 'low-power' });
+  if (!gl) return undefined; // three.js then reports that WebGL 2 isn't there, and the page goes flat
+  const ask = gl.getParameter.bind(gl);
+  gl.getParameter = (p) => {
+    const v = ask(p);
+    const floor = WEBGL2_MINIMUMS[p];
+    return floor && typeof v === 'number' && v < floor ? floor : v;
+  };
+  return gl;
+}
+
 export function createWorld({ canvas, screen, stage, forge, forgeHead, finale, reduced, theme, stepCount, onStep, onReady }) {
-  const renderer = new WebGLRenderer({ canvas, antialias: false, powerPreference: 'low-power' });
+  const renderer = new WebGLRenderer({ canvas, context: honestContext(canvas), antialias: false, powerPreference: 'low-power' });
   renderer.outputColorSpace = LinearSRGBColorSpace;
   renderer.setPixelRatio(1);
 
