@@ -341,7 +341,7 @@ func (s *Service) completePurchase(ctx context.Context, reference, providerID st
 		if amount != cents || !strings.EqualFold(paidCurrency, currency) {
 			return fmt.Errorf("purchase %s: paid %d %s, expected %d %s", reference, amount, paidCurrency, cents, currency)
 		}
-		if _, err := tx.Exec(ctx, `UPDATE credit_purchases SET status='paid', paid_at=now(), session_id=$2 WHERE replace(id::text,'-','')=replace($1,'-','')`, reference, providerID); err != nil {
+		if _, err := tx.Exec(ctx, `UPDATE credit_purchases SET status='paid', paid_at=now(), session_id=$2, payer_openid=NULL WHERE replace(id::text,'-','')=replace($1,'-','')`, reference, providerID); err != nil {
 			return err
 		}
 		if userID == nil {

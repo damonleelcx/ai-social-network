@@ -123,7 +123,7 @@ func (s *Service) XPayOrder(ctx context.Context, userID, packageID, code string)
 	if pkg == nil {
 		return nil, &UserError{"Pick one of the credit packs."}
 	}
-	_, sessionKey, err := (&externalauth.WeChat{AppID: x.AppID, AppSecret: x.AppSecret, URL: x.APIURL, HTTP: s.HTTP}).Session(ctx, code)
+	openid, sessionKey, err := (&externalauth.WeChat{AppID: x.AppID, AppSecret: x.AppSecret, URL: x.APIURL, HTTP: s.HTTP}).Session(ctx, code)
 	if errors.Is(err, externalauth.ErrRejected) || err == nil && sessionKey == "" {
 		return nil, &UserError{"WeChat couldn't confirm who you are. Please try again."}
 	}
@@ -131,8 +131,9 @@ func (s *Service) XPayOrder(ctx context.Context, userID, packageID, code string)
 		return nil, err
 	}
 	var id string
-	if err := s.Pool.QueryRow(ctx, `INSERT INTO credit_purchases (user_id, package, credits, amount_cents, currency) VALUES ($1,$2,$3,$4,$5) RETURNING id`,
-		userID, pkg.ID, pkg.Credits, pkg.AmountCents, pkg.Currency).Scan(&id); err != nil {
+	// The openid is kept only while the purchase is pending: asking WeChat about the order needs it.
+	if err := s.Pool.QueryRow(ctx, `INSERT INTO credit_purchases (user_id, package, credits, amount_cents, currency, payer_openid) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
+		userID, pkg.ID, pkg.Credits, pkg.AmountCents, pkg.Currency, openid).Scan(&id); err != nil {
 		return nil, err
 	}
 	order := tradeNo(id)
@@ -372,12 +373,12 @@ func (s *Service) CheckXPayOrder(ctx context.Context, userID, order string) (*Pa
 	if s.XPay == nil {
 		return nil, &UserError{"Buying credits isn't open yet."}
 	}
-	var status, pkgID string
-	err := s.Pool.QueryRow(ctx, `SELECT status, package FROM credit_purchases WHERE replace(id::text,'-','')=$1 AND user_id=$2`, order, userID).Scan(&status, &pkgID)
+	var status, pkgID, openid string
+	err := s.Pool.QueryRow(ctx, `SELECT status, package, coalesce(payer_openid,'') FROM credit_purchases WHERE replace(id::text,'-','')=$1 AND user_id=$2`, order, userID).Scan(&status, &pkgID, &openid)
 	if err != nil {
 		return nil, &UserError{"That purchase isn't yours."}
 	}
-	if status == "paid" {
+	if status == "paid" || openid == "" {
 		return nil, nil
 	}
 	var out struct {
@@ -388,7 +389,7 @@ func (s *Service) CheckXPayOrder(ctx context.Context, userID, order string) (*Pa
 			ProductID string `json:"product_id"`
 		} `json:"order"`
 	}
-	if err := s.xpayCall(ctx, "/xpay/query_order", map[string]any{"order_id": order, "env": s.XPay.Env}, &out); err != nil {
+	if err := s.xpayCall(ctx, "/xpay/query_order", map[string]any{"openid": openid, "order_id": order, "env": s.XPay.Env}, &out); err != nil {
 		return nil, err
 	}
 	o := out.Order

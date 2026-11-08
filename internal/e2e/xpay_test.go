@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"bytes"
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/hmac"
@@ -64,12 +65,18 @@ func TestWeChatVirtualPaymentAddsCredits(t *testing.T) {
 				return
 			}
 			var in struct {
+				OpenID  string `json:"openid"`
 				OrderID string `json:"order_id"`
 				Env     int    `json:"env"`
 			}
 			_ = json.Unmarshal(raw, &in)
 			mu.Lock()
 			defer mu.Unlock()
+			// As WeChat does: asking about an order needs the buyer's openid.
+			if r.URL.Path == "/xpay/query_order" && in.OpenID != "openid-ada" {
+				_ = json.NewEncoder(w).Encode(map[string]any{"errcode": 268490001, "errmsg": "openid error"})
+				return
+			}
 			if r.URL.Path == "/xpay/notify_provide_goods" {
 				delivered = append(delivered, in.OrderID)
 				orders[in.OrderID] = 4
@@ -225,6 +232,11 @@ func TestWeChatVirtualPaymentAddsCredits(t *testing.T) {
 	a.do("POST", "/v1/credits/wechat/virtual/check", map[string]any{"order": o2.Order}, 200, nil)
 	if !check.Paid || balance() != 400 {
 		t.Fatalf("after the check: paid %v, balance %d", check.Paid, st.Balance)
+	}
+	// Once paid, the buyer's openid isn't kept.
+	var kept int
+	if err := e.pool.QueryRow(context.Background(), `SELECT count(*) FROM credit_purchases WHERE payer_openid IS NOT NULL AND status='paid'`).Scan(&kept); err != nil || kept != 0 {
+		t.Fatalf("openid kept on %d paid purchases (%v)", kept, err)
 	}
 	mu.Lock()
 	if len(delivered) != 1 || delivered[0] != o2.Order {
