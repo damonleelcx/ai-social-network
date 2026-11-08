@@ -96,6 +96,12 @@ type Config struct {
 	// its start Suki asks how it went. Both shorten for demos and tests.
 	DateMinLead  time.Duration
 	DebriefDelay time.Duration
+
+	// Rewards are credits earned, not bought: an invited friend going live pays both sides
+	// (SYN_INVITE_CREDITS_INVITER, SYN_INVITE_CREDITS_INVITEE), at most SYN_INVITE_DAILY_CAP
+	// friends per China day and SYN_INVITE_TOTAL_CAP ever per inviter; a daily check-in pays
+	// SYN_CHECKIN_CREDITS. Zero turns a reward off.
+	Rewards billing.Rewards
 }
 
 func Load() (Config, error) {
@@ -160,6 +166,14 @@ func Load() (Config, error) {
 		DateMinLead:           envDur("SYN_DATE_MIN_LEAD", time.Hour),
 		DebriefDelay:          envDur("SYN_DEBRIEF_DELAY", 14*time.Hour),
 	}
+	d := billing.DefaultRewards()
+	c.Rewards = billing.Rewards{
+		InviterCredits: envNonNeg("SYN_INVITE_CREDITS_INVITER", d.InviterCredits),
+		InviteeCredits: envNonNeg("SYN_INVITE_CREDITS_INVITEE", d.InviteeCredits),
+		InviteDailyCap: envNonNeg("SYN_INVITE_DAILY_CAP", d.InviteDailyCap),
+		InviteTotalCap: envNonNeg("SYN_INVITE_TOTAL_CAP", d.InviteTotalCap),
+		CheckInCredits: envNonNeg("SYN_CHECKIN_CREDITS", d.CheckInCredits),
+	}
 	for _, e := range strings.Split(os.Getenv("SYN_ADMIN_EMAILS"), ",") {
 		if e = strings.ToLower(strings.TrimSpace(e)); e != "" {
 			c.AdminEmails = append(c.AdminEmails, e)
@@ -205,6 +219,14 @@ func env(k, d string) string {
 
 func envInt(k string, d int) int {
 	if v, err := strconv.Atoi(os.Getenv(k)); err == nil {
+		return v
+	}
+	return d
+}
+
+// envNonNeg is envInt that ignores a negative value.
+func envNonNeg(k string, d int) int {
+	if v := envInt(k, d); v >= 0 {
 		return v
 	}
 	return d

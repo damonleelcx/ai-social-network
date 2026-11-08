@@ -2,7 +2,7 @@
 
 A native mini program that talks to the same server as the app. React Native can't run in WeChat, so these are separate pages. The account, Suki, matches, chats and credits are all shared with the app.
 
-**In it:** WeChat sign-in, plus email sign-in, sign-up, verification and forgot password; Suki's conversation and cards, with her voice (speaker buttons and reading new messages aloud); matches and chat, with report, block and Suki's private coaching hints; a person's full profile, where tapping any photo shows all of it; date plans and your buddy posts; editing your profile and pausing introductions; photos, credits balance and history; a notifications list; settings for the app, your account (password, sessions, data export, legal, sign-out, deletion), blocked people, Suki and what she remembers. Chinese by default, plus English, Korean, Japanese and Spanish, following the account's language setting. Words live in `lib/catalog.js`, keyed by their English like the app's catalog.
+**In it:** WeChat sign-in, plus email sign-in, sign-up, verification and forgot password; Suki's conversation and cards, with her voice (speaker buttons and reading new messages aloud); matches and chat, with report, block and Suki's private coaching hints; a person's full profile, where tapping any photo shows all of it; date plans and your buddy posts; editing your profile and pausing introductions; photos, credits balance and history; a daily check-in (签到) on Me; sharing to chats and Moments from Suki's page, and an invite card on Me; a notifications list; settings for the app, your account (password, sessions, data export, legal, sign-out, deletion), blocked people, Suki and what she remembers. Chinese by default, plus English, Korean, Japanese and Spanish, following the account's language setting. Words live in `lib/catalog.js`, keyed by their English like the app's catalog.
 
 **Not in it yet:** push notifications (see "Push notifications" below) and a light theme. The theme setting is left out because it would change nothing here. Credits can be bought with WeChat Pay, except on iOS, and that needs a decision before release (see item 6 below).
 
@@ -13,6 +13,12 @@ It has been run end to end in WeChat DevTools (see `e2e/README.md`), but not on 
 ## Running it
 
 Open this folder in WeChat DevTools. `project.config.json` uses the tourist AppID, so it runs in the simulator without a real one. Turn off domain checking in DevTools' local settings to reach the server before the domains below are configured.
+
+## Sharing, invites and check-in
+
+Shares carry only the sharer's opaque invite code (`ref=`), and always a fixed image from `assets/share` (made by `e2e/make_assets.py`), since WeChat otherwise uses a screenshot of the page. Nothing a share says, and nothing next to the share button, mentions credits or any reward: WeChat's rules forbid rewarding or promising a reward for sharing (诱导分享). Credits are paid by the server only when an invited friend's *new* account goes live, to both of them, within per-day and lifetime caps, and the daily check-in pays once per China calendar day. Amounts and caps are server settings: `SYN_INVITE_CREDITS_INVITER`, `SYN_INVITE_CREDITS_INVITEE`, `SYN_INVITE_DAILY_CAP`, `SYN_INVITE_TOTAL_CAP`, `SYN_CHECKIN_CREDITS`.
+
+Only Suki's page offers Moments: Moments opens the shared page by itself, without sign-in, and her page then shows a hello instead of anyone's data.
 
 ## What it needs before release
 

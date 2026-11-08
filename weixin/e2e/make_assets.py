@@ -2,9 +2,13 @@
 
 weixin/assets/suki: Suki's faces, small enough for the 2 MB package limit.
 weixin/assets/tabs: tab bar icons at 81x81, each under WeChat's 40 KB limit.
+weixin/assets/share: share cards. Without one, WeChat uses a screenshot of the page, which
+could show someone's chats or matches. No words on them, so they suit every language.
+Only the share cards: python weixin/e2e/make_assets.py share
 """
 import math
 import os
+import sys
 
 from PIL import Image, ImageChops, ImageDraw
 
@@ -12,6 +16,8 @@ FACES = ["portrait", "happy", "surprised", "thinking", "playful", "pouty", "chib
 SRC = "mobile/assets/suki"
 FACE_OUT = "weixin/assets/suki"
 TAB_OUT = "weixin/assets/tabs"
+SHARE_OUT = "weixin/assets/share"
+NIGHT = (27, 16, 51)  # The mini program's background.
 FACE_SIZE = 192
 TAB = 81
 S = 8  # Drawn large and scaled down, which smooths the edges.
@@ -132,6 +138,34 @@ def suki_tab(on):
     return img
 
 
+def share_card(w, h):
+    """Suki in her ring on the night background, with a soft brand glow behind her."""
+    img = Image.new("RGBA", (w, h), NIGHT + (255,))
+    side = round(min(w, h) * 0.72)
+    glow_side = round(side * 1.35)
+    glow = gradient(glow_side, BRAND).convert("RGBA")
+    mask = circle_mask(glow_side).point(lambda v: v * 0.35)
+    glow.putalpha(mask)
+    img.alpha_composite(glow, ((w - glow_side) // 2, (h - glow_side) // 2))
+    ring = gradient(side, IRIS).convert("RGBA")
+    ring.putalpha(circle_mask(side))
+    img.alpha_composite(ring, ((w - side) // 2, (h - side) // 2))
+    inset = side // 22
+    face = Image.open(f"{SRC}/chibi.png").convert("RGB").resize((side, side), Image.LANCZOS).convert("RGBA")
+    face.putalpha(circle_mask(side, inset))
+    img.alpha_composite(face, ((w - side) // 2, (h - side) // 2))
+    return img.convert("RGB")
+
+
+def share_cards():
+    os.makedirs(SHARE_OUT, exist_ok=True)
+    # 5:4 for a chat share card; square for Moments.
+    for name, size in (("card", (500, 400)), ("square", (400, 400))):
+        path = f"{SHARE_OUT}/{name}.jpg"
+        share_card(*size).save(path, quality=84, optimize=True)
+        print(f"{path} {os.path.getsize(path)}")
+
+
 def save(img, name):
     path = f"{TAB_OUT}/{name}.png"
     img.resize((TAB, TAB), Image.LANCZOS).save(path, optimize=True)
@@ -141,6 +175,9 @@ def save(img, name):
 
 
 def main():
+    if sys.argv[1:] == ["share"]:
+        share_cards()
+        return
     os.makedirs(FACE_OUT, exist_ok=True)
     os.makedirs(TAB_OUT, exist_ok=True)
     for face in FACES:
@@ -153,6 +190,7 @@ def main():
     for name, glyph in (("matches", heart_glyph), ("dates", calendar), ("me", person)):
         save(off_icon(glyph), name)
         save(on_badge(glyph), f"{name}-on")
+    share_cards()
 
 
 if __name__ == "__main__":

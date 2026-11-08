@@ -535,4 +535,15 @@ module.exports = {
   'Their own words': ['原文', '원문', '原文', 'Sus propias palabras'],
   'Show original': ['查看原文', '원문 보기', '原文を表示', 'Ver original'],
   'Show translation': ['查看翻译', '번역 보기', '翻訳を表示', 'Ver traducción'],
+  // Sharing, invites and the daily check-in. Share copy never mentions a reward (WeChat bans 诱导分享).
+  'Suki helps you find company for a meal, a film or a trip': ['Suki 帮你找搭子：吃饭、看电影、旅行都有伴', 'Suki가 밥, 영화, 여행을 함께할 사람을 찾아 줘요', 'Suki が、ごはんや映画、旅行を一緒に楽しめる仲間探しを手伝います', 'Suki te ayuda a encontrar compañía para comer, ir al cine o viajar'],
+  'I help you find company for a meal, a film, a walk or a trip, and introduce you to people worth meeting. Tap the button below to open SynAgent and say hi.': ['我帮你找搭子：吃饭、看电影、散步、旅行都有伴，还会给你介绍值得认识的人。点下方按钮打开 SynAgent，跟我打个招呼吧。', '밥, 영화, 산책, 여행을 함께할 사람을 찾아 주고, 만날 만한 사람을 소개해 드려요. 아래 버튼을 눌러 SynAgent를 열고 인사해 주세요.', 'ごはん、映画、散歩、旅行を一緒に楽しめる仲間探しを手伝い、会う価値のある人を紹介します。下のボタンから SynAgent を開いて、声をかけてください。', 'Te ayudo a encontrar compañía para comer, ir al cine, pasear o viajar, y te presento a gente que vale la pena conocer. Toca el botón de abajo para abrir SynAgent y saludarme.'],
+  'Know someone who could use company for a meal, a film or a trip? Send them SynAgent.': ['身边有想找饭搭子、影搭子、旅行搭子的朋友吗？把 SynAgent 发给他们吧。', '밥, 영화, 여행을 함께할 사람이 필요한 친구가 있나요? SynAgent를 보내 주세요.', 'ごはんや映画、旅行の仲間がほしい友だちはいますか？SynAgent を送ってみましょう。', '¿Conoces a alguien que quiera compañía para comer, ir al cine o viajar? Mándale SynAgent.'],
+  'Friends who joined: {count}': ['已加入的朋友：{count}', '가입한 친구: {count}명', '参加した友だち：{count} 人', 'Amigos que se unieron: {count}'],
+  'Joined through a friend': ['通过朋友邀请加入', '친구 초대로 가입', 'お友だちの招待で参加', 'Te uniste por un amigo'],
+  'Daily check-in': ['每日签到', '출석 체크', '毎日のチェックイン', 'Registro diario'],
+  'Check in': ['签到', '출석하기', 'チェックイン', 'Registrarme'],
+  'Checked in today': ['今日已签到', '오늘 출석 완료', '今日はチェックイン済み', 'Hoy ya te registraste'],
+  'Check in once a day for {n} credits. A new day starts at midnight, China time.': ['每天签到一次可得 {n} 积分，每天零点（北京时间）刷新。', '하루에 한 번 출석하면 {n}크레딧을 받아요. 하루는 중국 시간 자정에 시작돼요.', '1 日 1 回チェックインすると {n} クレジットもらえます。日付は中国時間の午前 0 時に切り替わります。', 'Regístrate una vez al día y recibe {n} créditos. El día cambia a medianoche, hora de China.'],
+  '+{n} credits': ['+{n} 积分', '+{n}크레딧', '+{n} クレジット', '+{n} créditos'],
 };

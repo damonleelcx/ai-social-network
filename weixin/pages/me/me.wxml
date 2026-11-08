@@ -40,9 +40,18 @@
     <view class="arrow">›</view>
   </view>
 
+  <block wx:if="{{checkin}}">
+    <view class="section">{{t.checkIn}}</view>
+    <view class="card row">
+      <view class="grow soft">{{checkinText}}</view>
+      <button class="checkin {{checkin.checked_in ? 'plain' : 'primary'}}" size="mini" disabled="{{checkin.checked_in || checking}}" bindtap="onCheckIn">{{checkin.checked_in ? t.checkedIn : t.checkInButton}}</button>
+    </view>
+  </block>
+
   <view class="section">{{t.invite}}</view>
   <view class="card" wx:if="{{invite}}">
-    <view class="soft">{{t.inviteCode}}: <text selectable="true">{{invite.code}}</text></view>
+    <view class="soft">{{t.inviteHint}}</view>
+    <view class="soft gap">{{t.inviteCode}}: <text selectable="true">{{invite.code}}</text></view>
     <view class="soft gap" wx:if="{{joinedText}}">{{joinedText}}</view>
     <button class="plain" open-type="share">{{t.sendInvite}}</button>
   </view>

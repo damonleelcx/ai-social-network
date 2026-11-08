@@ -227,6 +227,10 @@ module.exports = {
   referral: {
     status: () => get('/v1/referral'),
   },
+  checkin: {
+    status: () => get('/v1/checkin'),
+    checkIn: () => post('/v1/checkin', {}),
+  },
   credits: {
     status: () => get('/v1/credits'),
     usage: async () => (await get('/v1/credits/usage')).usage || [],

@@ -22,6 +22,8 @@ const COPY = {
   hear: 'Hear Suki say this',
   stop: 'Stop',
   cancelVoice: 'Getting Suki’s voice. Tap to cancel',
+  momentsTitle: "Hi, I'm Suki!",
+  momentsBody: 'I help you find company for a meal, a film, a walk or a trip, and introduce you to people worth meeting. Tap the button below to open SynAgent and say hi.',
 };
 
 function shape(m) {
@@ -46,8 +48,15 @@ function newestSpeakable(messages) {
 }
 
 Page({
-  data: { t: i18n.strings(COPY), messages: [], thinking: false, draft: '', replies: [], bottom: '', loaded: false, speaker: false, clip: null, phase: null, moodAvatar: true, headerMood: 'happy' },
+  data: { t: i18n.strings(COPY), moments: false, messages: [], thinking: false, draft: '', replies: [], bottom: '', loaded: false, speaker: false, clip: null, phase: null, moodAvatar: true, headerMood: 'happy' },
   onLoad() {
+    // Opened from Moments: no sign-in and no navigation here, just a hello. WeChat shows its
+    // own button to open the full mini program, which keeps the link's invite code.
+    if (share.fromMoments()) {
+      this.setData({ moments: true });
+      return;
+    }
+    wx.showShareMenu({ menus: ['shareAppMessage', 'shareTimeline'], fail: () => {} });
     if (!api.getToken()) {
       wx.reLaunch({ url: '/pages/login/login' });
       return;
@@ -68,6 +77,7 @@ Page({
   },
   onShow() {
     i18n.apply(this, COPY);
+    if (this.data.moments) return;
     i18n.tabs();
     this.focused = true;
     // Only what arrives from here on is new. Nothing she said while they were away gets read out.
@@ -81,6 +91,9 @@ Page({
   },
   onShareAppMessage() {
     return share.message();
+  },
+  onShareTimeline() {
+    return share.timeline();
   },
   onHide() {
     this.focused = false;

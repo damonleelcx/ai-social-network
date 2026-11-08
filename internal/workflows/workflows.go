@@ -142,7 +142,7 @@ func StartDebriefAnalysis(ctx context.Context, userID, dateID string) error {
 	return start(ctx, userID, "date-debrief", "debrief", "Understand how the date went", "Extract what this person said about their date.", dateID)
 }
 
-// RewardReferrer pays whoever invited this person, and tells them.
+// RewardReferrer pays whoever invited this person, and the person too, and tells them both.
 func RewardReferrer(ctx context.Context, userID string) error {
 	paid, err := d.Billing.RewardReferral(ctx, userID)
 	if err != nil || paid == nil {
@@ -154,6 +154,14 @@ func RewardReferrer(ctx context.Context, userID string) error {
 		slog.Error("referral announce", "err", err)
 	}
 	d.Dating.Touch(ctx, paid.UserID, "credits")
+	if paid.InviteeCredits > 0 {
+		lang := d.Dating.Lang(ctx, userID)
+		body := i18n.T(lang, "You joined through a friend's invite, so I added {credits} credits to welcome you. You have {balance} now.", "credits", strconv.Itoa(paid.InviteeCredits), "balance", strconv.Itoa(paid.InviteeBalance))
+		if err := d.Dating.PostFromSuki(ctx, userID, body, "happy", nil, "invited:"+userID); err != nil {
+			slog.Error("invited announce", "err", err)
+		}
+		d.Dating.Touch(ctx, userID, "credits")
+	}
 	return nil
 }
 
