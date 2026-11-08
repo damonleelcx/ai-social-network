@@ -31,8 +31,10 @@ import (
 	"github.com/damonleelcx/ai-social-network/internal/photostore"
 	"github.com/damonleelcx/ai-social-network/internal/places"
 	"github.com/damonleelcx/ai-social-network/internal/profile"
+	"github.com/damonleelcx/ai-social-network/internal/scenes"
 	"github.com/damonleelcx/ai-social-network/internal/translate"
 	"github.com/damonleelcx/ai-social-network/internal/tts"
+	"github.com/damonleelcx/ai-social-network/internal/verify"
 	"github.com/damonleelcx/ai-social-network/internal/workflows"
 )
 
@@ -62,6 +64,10 @@ type Server struct {
 	Region string
 	// Translator puts profiles into the reader's language. Nil turns that off.
 	Translator *translate.Service
+	// Scenes serves the pictures of what plans and trips are about.
+	Scenes *scenes.Service
+	// Verifier checks a live selfie against someone's main photo. Nil turns the badge off.
+	Verifier *verify.Service
 	limit            limiter
 	mapCache         userMapCache
 }
@@ -369,6 +375,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /v1/credits", v(s.creditStatus))
 	m.HandleFunc("GET /v1/credits/usage", v(s.creditUsage))
 	m.HandleFunc("GET /v1/referral", v(s.referralStatus))
+	m.HandleFunc("GET /v1/scenes/{file}", s.sceneImage)
+	m.HandleFunc("GET /v1/referral/poster", v(lim("poster", 30, time.Hour, s.referralPoster)))
 	m.HandleFunc("POST /v1/credits/checkout", v(lim("checkout", 20, time.Hour, s.creditCheckout)))
 	m.HandleFunc("POST /v1/billing/stripe", s.stripeWebhook)
 	m.HandleFunc("POST /v1/credits/wechat/prepay", v(lim("checkout", 20, time.Hour, s.wechatPrepay)))
@@ -437,6 +445,9 @@ func (s *Server) Handler() http.Handler {
 	// The same again for the mini program, because wx.request has no PATCH.
 	m.HandleFunc("POST /v1/settings", s.signedIn(s.patchSettings))
 	m.HandleFunc("GET /v1/memories", v(s.memories))
+	m.HandleFunc("GET /v1/looking-for", v(s.lookingFor))
+	m.HandleFunc("POST /v1/verify/selfie", v(lim("selfie", 10, time.Hour, s.verifySelfie)))
+	m.HandleFunc("DELETE /v1/looking-for/red-flags/{field}", v(s.dropRedFlag))
 	m.HandleFunc("DELETE /v1/memories/{id}", v(s.deleteMemory))
 	m.HandleFunc("POST /v1/memories/reset", v(s.resetMemories))
 
@@ -1488,6 +1499,49 @@ func (s *Server) buddyClose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, map[string]any{"ok": true})
+}
+
+// sceneImage is a picture of a scene, which shows no one, so it needs no sign-in. Its key never
+// changes what it points at, so it's kept for a year.
+func (s *Server) sceneImage(w http.ResponseWriter, r *http.Request) {
+	key, ok := strings.CutSuffix(r.PathValue("file"), ".jpg")
+	if s.Scenes == nil || !ok || len(key) != 24 {
+		fail(w, 404, "not found")
+		return
+	}
+	img, err := s.Scenes.Get(r.Context(), key)
+	if err != nil {
+		fail(w, 404, "not found")
+		return
+	}
+	w.Header().Set("Content-Type", "image/jpeg")
+	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+	_, _ = w.Write(img)
+}
+
+// verifySelfie takes a selfie straight from the camera and says whether it matches their main
+// photo. The picture is only looked at, never kept.
+func (s *Server) verifySelfie(w http.ResponseWriter, r *http.Request) {
+	if s.Verifier == nil {
+		fail(w, 404, "not found")
+		return
+	}
+	raw, err := io.ReadAll(http.MaxBytesReader(w, r.Body, photostore.MaxUpload))
+	if err != nil {
+		fail(w, 413, "That photo is too large (12 MB at most).")
+		return
+	}
+	res, err := s.Verifier.Check(r.Context(), userOf(r).ID, raw)
+	var ue *verify.UserError
+	if errors.As(err, &ue) {
+		fail(w, 422, ue.Msg)
+		return
+	}
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, res)
 }
 
 // ── Translation ──

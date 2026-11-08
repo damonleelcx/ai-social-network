@@ -45,6 +45,7 @@
     <view class="soft">{{t.inviteCode}}: <text selectable="true">{{invite.code}}</text></view>
     <view class="soft gap" wx:if="{{joinedText}}">{{joinedText}}</view>
     <button class="plain" open-type="share">{{t.sendInvite}}</button>
+    <button class="plain" bindtap="onPoster">{{t.momentsPoster}}</button>
   </view>
 
   <view class="section">{{t.credits}}</view>

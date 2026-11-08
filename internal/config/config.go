@@ -19,6 +19,10 @@ type Config struct {
 	CookieSecure bool
 
 	LLMBaseURL   string
+	// Pictures for plans and trips (internal/scenes). ImageURL defaults to the LLM host's
+	// DashScope multimodal generation; "off" turns pictures off.
+	ImageModel, ImageURL string
+	SceneDailyCap        int
 	LLMAPIKey    string
 	LLMModel     string // reasoning, drafting, planning
 	LLMFastModel string // routing, judging, summarising
@@ -109,6 +113,9 @@ func Load() (Config, error) {
 		CookieSecure:             envBool("SYN_COOKIE_SECURE", true),
 		LLMBaseURL:               env("SYN_LLM_BASE_URL", "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"),
 		LLMAPIKey:                os.Getenv("SYN_LLM_API_KEY"),
+		ImageModel:               env("SYN_IMAGE_MODEL", "qwen-image-3.0-pro"),
+		ImageURL:                 os.Getenv("SYN_IMAGE_URL"),
+		SceneDailyCap:            envInt("SYN_SCENE_DAILY_CAP", 100),
 		StripeSecretKey:          os.Getenv("SYN_STRIPE_SECRET_KEY"),
 		StripeWebhookSecret:      os.Getenv("SYN_STRIPE_WEBHOOK_SECRET"),
 		GooglePlayPackage:        env("SYN_GOOGLE_PLAY_PACKAGE", "space.herosagent.synagent"),

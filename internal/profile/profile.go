@@ -52,6 +52,9 @@ type Profile struct {
 	Prompts     []Prompt            `json:"prompts"`
 	Dealbreaker map[string][]string `json:"dealbreakers"`
 	Status      string              `json:"status"`
+	// VerifiedPhotoID is the main photo a live selfie matched. The badge shows while it still is.
+	VerifiedPhotoID string `json:"-"`
+	Verified        bool   `json:"verified"`
 }
 
 // Public is what another person may see, and only someone Suki proposed to them
@@ -76,6 +79,8 @@ type Public struct {
 	Interests   []string `json:"interests"`
 	Prompts     []Prompt `json:"prompts"`
 	PhotoIDs    []string `json:"photo_ids"`
+	// Verified: a live selfie matched their main photo.
+	Verified bool `json:"verified,omitempty"`
 }
 
 func (p *Profile) Public(photoIDs []string) Public {
@@ -84,12 +89,13 @@ func (p *Profile) Public(photoIDs []string) Public {
 	}
 	return Public{UserID: p.UserID, DisplayName: p.DisplayName, Age: p.Age, Gender: p.Gender, Pronouns: p.Pronouns, CityName: p.CityName,
 		Goal: p.Goal, Bio: p.Bio, Occupation: p.Occupation, Education: p.Education, HeightCM: p.HeightCM, Smoking: p.Smoking,
-		Drinking: p.Drinking, Kids: p.Kids, WantsKids: p.WantsKids, Languages: p.Languages, Interests: p.Interests, Prompts: p.Prompts, PhotoIDs: photoIDs}
+		Drinking: p.Drinking, Kids: p.Kids, WantsKids: p.WantsKids, Languages: p.Languages, Interests: p.Interests, Prompts: p.Prompts, PhotoIDs: photoIDs, Verified: p.Verified}
 }
 
 const Cols = `p.user_id, p.display_name, coalesce(to_char(p.birthdate,'YYYY-MM-DD'),''), p.gender, p.pronouns, p.seeking, p.city_key, p.city_name, p.city_lat, p.city_lon,
 	p.age_min, p.age_max, p.goal, p.bio, p.bio_draft, p.occupation, p.education, p.height_cm, p.smoking, p.drinking, p.kids, p.wants_kids, p.religion, p.politics,
-	p.languages, p.interests, p.prompts, p.dealbreakers, p.status`
+	p.languages, p.interests, p.prompts, p.dealbreakers, p.status, coalesce(p.verified_photo_id::text,''),
+	coalesce(p.verified_photo_id = (SELECT ph.id FROM photos ph WHERE ph.user_id=p.user_id AND ph.status='approved' ORDER BY ph.is_primary DESC, ph.created_at LIMIT 1), false)`
 
 // Scan reads one row selected with Cols.
 func Scan(row pgx.Row) (*Profile, error) {
@@ -97,7 +103,7 @@ func Scan(row pgx.Row) (*Profile, error) {
 	var prompts, deal []byte
 	err := row.Scan(&p.UserID, &p.DisplayName, &p.Birthdate, &p.Gender, &p.Pronouns, &p.Seeking, &p.CityKey, &p.CityName, &p.CityLat, &p.CityLon,
 		&p.AgeMin, &p.AgeMax, &p.Goal, &p.Bio, &p.BioDraft, &p.Occupation, &p.Education, &p.HeightCM, &p.Smoking, &p.Drinking, &p.Kids, &p.WantsKids, &p.Religion, &p.Politics,
-		&p.Languages, &p.Interests, &prompts, &deal, &p.Status)
+		&p.Languages, &p.Interests, &prompts, &deal, &p.Status, &p.VerifiedPhotoID, &p.Verified)
 	if err != nil {
 		return nil, err
 	}

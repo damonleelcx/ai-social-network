@@ -1,6 +1,9 @@
 package e2e
 
 import (
+	"image/png"
+	"image/color"
+	"image"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -19,6 +22,7 @@ type fakeLLM struct {
 	holdMain   atomic.Bool
 	visionNude atomic.Bool
 	translations atomic.Int64
+	selfieMismatch atomic.Bool
 	verdict    atomic.Value // what the Critic rules, when set
 }
 
@@ -84,6 +88,11 @@ func (f *fakeLLM) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
+	// The selfie check: the same person, or not, as a test says.
+	if strings.Contains(string(last.Content), "image_url") && strings.Contains(string(last.Content), "verify identity") {
+		reply(w, fmt.Sprintf(`{"same_person":%v,"live_selfie":true,"one_person_each":true,"confidence":"high"}`, !f.selfieMismatch.Load()), nil)
+		return
+	}
 	// The vision check is multi-part content.
 	if strings.Contains(string(last.Content), "image_url") {
 		nude := f.visionNude.Load()
@@ -110,6 +119,10 @@ func (f *fakeLLM) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		default:
 			reply(w, `{}`, nil)
 		}
+		return
+	}
+	if strings.Contains(sys, "Name the scene of this plan") {
+		reply(w, `{"scene":"Hotpot Dinner!"}`, nil)
 		return
 	}
 	if strings.Contains(sys, "Translate the JSON values a person wrote") {
@@ -332,4 +345,27 @@ func fakeGeo(w http.ResponseWriter, r *http.Request) {
 		city = "Farport"
 	}
 	_, _ = w.Write([]byte(`[{"lat":"1.0","lon":"2.0","address":{"city":"` + city + `","state":"Test","country":"Testland","country_code":"tt"}}]`))
+}
+
+// fakeImages stands in for the image model: it "draws" a plain picture and counts how often.
+type fakeImages struct {
+	drawn atomic.Int64
+	url   string
+}
+
+func (f *fakeImages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		f.drawn.Add(1)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = fmt.Fprintf(w, `{"output":{"choices":[{"message":{"content":[{"type":"image","image":"%s/pic.png"}]}}]}}`, f.url)
+		return
+	}
+	img := image.NewRGBA(image.Rect(0, 0, 640, 480))
+	for y := 0; y < 480; y++ {
+		for x := 0; x < 640; x++ {
+			img.Set(x, y, color.RGBA{uint8(x / 3), 60, uint8(y / 2), 255})
+		}
+	}
+	w.Header().Set("Content-Type", "image/png")
+	_ = png.Encode(w, img)
 }
