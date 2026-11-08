@@ -535,4 +535,5 @@ module.exports = {
   'Their own words': ['原文', '원문', '原文', 'Sus propias palabras'],
   'Show original': ['查看原文', '원문 보기', '原文を表示', 'Ver original'],
   'Show translation': ['查看翻译', '번역 보기', '翻訳を表示', 'Ver traducción'],
+  'Please update WeChat to buy credits.': ['请升级微信后再购买积分。', '크레딧을 구매하려면 WeChat을 업데이트해 주세요.', 'クレジットを購入するには WeChat をアップデートしてください。', 'Actualiza WeChat para comprar créditos.'],
 };

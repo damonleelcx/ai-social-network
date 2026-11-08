@@ -75,6 +75,8 @@ type Config struct {
 	StripeWebhookSecret string
 	// WeChat Pay for the mini program. All of it, or none of it.
 	WeChat billing.WeChatConfig
+	// WeChat's virtual payment for credits in the mini program. All of it, or none of it.
+	XPay billing.XPayConfig
 	// Google Play Billing: the Android package, and a service account's JSON key.
 	// GoogleClientID is the OAuth web client id for sign-in. Empty turns it off.
 	GoogleClientID           string
@@ -121,6 +123,13 @@ func Load() (Config, error) {
 			PrivateKeyPEM: os.Getenv("SYN_WECHAT_MCH_PRIVATE_KEY"),
 			PublicKeyID:   os.Getenv("SYN_WECHAT_PAY_PUBLIC_KEY_ID"),
 			PublicKeyPEM:  os.Getenv("SYN_WECHAT_PAY_PUBLIC_KEY"),
+		},
+		XPay: billing.XPayConfig{
+			OfferID:    os.Getenv("SYN_WECHAT_XPAY_OFFER_ID"),
+			AppKey:     os.Getenv("SYN_WECHAT_XPAY_APP_KEY"),
+			Env:        os.Getenv("SYN_WECHAT_XPAY_ENV"),
+			PushToken:  os.Getenv("SYN_WECHAT_PUSH_TOKEN"),
+			PushAESKey: os.Getenv("SYN_WECHAT_PUSH_AES_KEY"),
 		},
 		LLMModel:              env("SYN_LLM_MODEL", "qwen3.8-max"),
 		LLMFastModel:          env("SYN_LLM_FAST_MODEL", "qwen3.8-flash"),
