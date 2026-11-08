@@ -546,4 +546,5 @@ module.exports = {
   'Checked in today': ['今日已签到', '오늘 출석 완료', '今日はチェックイン済み', 'Hoy ya te registraste'],
   'Check in once a day for {n} credits. A new day starts at midnight, China time.': ['每天签到一次可得 {n} 积分，每天零点（北京时间）刷新。', '하루에 한 번 출석하면 {n}크레딧을 받아요. 하루는 중국 시간 자정에 시작돼요.', '1 日 1 回チェックインすると {n} クレジットもらえます。日付は中国時間の午前 0 時に切り替わります。', 'Regístrate una vez al día y recibe {n} créditos. El día cambia a medianoche, hora de China.'],
   '+{n} credits': ['+{n} 积分', '+{n}크레딧', '+{n} クレジット', '+{n} créditos'],
+  'Please update WeChat to buy credits.': ['请升级微信后再购买积分。', '크레딧을 구매하려면 WeChat을 업데이트해 주세요.', 'クレジットを購入するには WeChat をアップデートしてください。', 'Actualiza WeChat para comprar créditos.'],
 };

@@ -57,6 +57,8 @@ type Service struct {
 	HTTP         *http.Client
 	// WeChat is WeChat Pay for the mini program. Nil means it's off.
 	WeChat *WeChat
+	// XPay is WeChat's virtual payment, which credits must use in the mini program. Nil means off.
+	XPay *XPay
 	// Google is Google Play Billing for the Play build of the Android app. Nil means it's off.
 	Google *GooglePlay
 	// Rewards are earned credits (invites, check-in). Nil means DefaultRewards.
@@ -78,7 +80,7 @@ func (s *Service) stripeEnabled() bool { return s != nil && s.StripeKey != "" &&
 // Enabled says whether credits are on sale anywhere. Until they are, nobody is charged. Someone
 // who can't buy where they are is sent to where they can.
 func (s *Service) Enabled() bool {
-	return s.stripeEnabled() || (s != nil && (s.WeChat != nil || s.Google != nil))
+	return s.stripeEnabled() || (s != nil && (s.WeChat != nil || s.XPay != nil || s.Google != nil))
 }
 
 type Status struct {
@@ -91,6 +93,8 @@ type Status struct {
 	Packages        []Package       `json:"packages"`
 	WeChatEnabled   bool            `json:"wechat_enabled"`
 	WeChatPackages  []Package       `json:"wechat_packages"`
+	// WeChatVirtual says credits are bought with virtual payment (wx.requestVirtualPayment).
+	WeChatVirtual bool `json:"wechat_virtual"`
 	GoogleEnabled   bool            `json:"google_enabled"`
 	GoogleProducts  []GoogleProduct `json:"google_products"`
 	GoogleAccount   string          `json:"google_account"`
@@ -114,7 +118,7 @@ func (s *Service) Status(ctx context.Context, userID string) (*Status, error) {
 	if err != nil {
 		return nil, err
 	}
-	st := &Status{MatchesUsed: n, FreeMatches: FreeMatches, Free: free, CostPerMessage: CostPerMessage, PaymentsEnabled: s.stripeEnabled(), Packages: Packages, WeChatEnabled: s.WeChat != nil, WeChatPackages: WeChatPackages,
+	st := &Status{MatchesUsed: n, FreeMatches: FreeMatches, Free: free, CostPerMessage: CostPerMessage, PaymentsEnabled: s.stripeEnabled(), Packages: Packages, WeChatEnabled: s.WeChat != nil || s.XPay != nil, WeChatVirtual: s.XPay != nil, WeChatPackages: WeChatPackages,
 		GoogleEnabled: s.Google != nil, GoogleProducts: GoogleProducts, GoogleAccount: GoogleAccountTag(userID)}
 	err = s.Pool.QueryRow(ctx, `SELECT coalesce((SELECT balance FROM credit_balances WHERE user_id=$1),0)`, userID).Scan(&st.Balance)
 	return st, err

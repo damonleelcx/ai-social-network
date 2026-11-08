@@ -123,6 +123,11 @@ func run(mode string) error {
 	} else {
 		bill.WeChat = wc
 	}
+	if xp, err := billing.NewXPay(cfg.WeChat.AppID, cfg.WeChat.AppSecret, cfg.XPay); err != nil {
+		slog.Error("wechat virtual payment is off", "err", err)
+	} else {
+		bill.XPay = xp
+	}
 	if gp, err := billing.NewGooglePlay(cfg.GooglePlayPackage, cfg.GooglePlayServiceAccount); err != nil {
 		slog.Error("google play billing is off", "err", err)
 	} else {

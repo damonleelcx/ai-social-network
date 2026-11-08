@@ -32,6 +32,7 @@ spec:
             - secretRef: { name: synagent }
             - secretRef: { name: synagent-voice, optional: true }
             - secretRef: { name: synagent-wechat-pay, optional: true }
+            - secretRef: { name: synagent-wechat-xpay, optional: true }
             - secretRef: { name: synagent-wechat-app, optional: true }
           startupProbe:
             httpGet: { path: /readyz, port: http }
@@ -88,6 +89,7 @@ spec:
             - secretRef: { name: synagent }
             - secretRef: { name: synagent-voice, optional: true }
             - secretRef: { name: synagent-wechat-pay, optional: true }
+            - secretRef: { name: synagent-wechat-xpay, optional: true }
             - secretRef: { name: synagent-wechat-app, optional: true }
           resources:
             requests: { cpu: 50m, memory: 96Mi }
