@@ -5,13 +5,14 @@ import { ScrollView, View } from 'react-native';
 import { useScreenSize } from '@/ui/screenSize';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as api from '@/api/endpoints';
-import type { Match, Person, Proposal } from '@/api/types';
+import type { Match, Proposal } from '@/api/types';
 import { DecisionBar, useDecision } from '@/features/proposalActions';
 import { useTopic } from '@/state/live';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
 import { Backdrop } from '@/ui/layout';
 import { PersonDetails, personLine, PhotoPager, SharedChips } from '@/ui/person';
+import { TranslatedNote, usePersonInLanguage } from '@/features/PersonTranslation';
 import { Button, Glass, IconButton, Pill, T } from '@/ui/primitives';
 import { SukiAvatar, SukiLoading, SukiSays } from '@/ui/suki';
 import { tr } from '@/i18n';
@@ -46,7 +47,7 @@ export default function PersonScreen() {
     else load();
   });
 
-  const person: Person | undefined = proposal?.person ?? match?.person;
+  const { shown: person, translated, original, toggle } = usePersonInLanguage(proposal?.person ?? match?.person);
   const back = (
     <View style={{ position: 'absolute', top: insets.top + space.sm, left: space.sm }}>
       <View style={{ backgroundColor: t.glassStrong, borderRadius: 21 }}>
@@ -100,6 +101,7 @@ export default function PersonScreen() {
           {proposal?.match_id ? (
             <Button label={tr('Chat with {name}', { name: person.display_name })} icon="chatbubbles" full onPress={() => router.replace(`/chat/${proposal.match_id}`)} />
           ) : null}
+          {translated ? <TranslatedNote original={original} toggle={toggle} /> : null}
           <PersonDetails person={person} />
         </View>
       </ScrollView>

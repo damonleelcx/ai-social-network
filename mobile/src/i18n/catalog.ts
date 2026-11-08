@@ -691,4 +691,9 @@ export const catalog: Record<string, readonly [string, string, string, string]> 
   "That's your own city. A trip is for somewhere else.": ['那是你自己的城市。旅行要去别的地方。', '내가 사는 도시예요. 여행은 다른 곳으로 해 주세요.', 'それはあなたの住む街です。旅行は別の場所にしてください。', 'Esa es tu ciudad. Un viaje es a otro sitio.'],
   'You already have 5 trips coming up. Remove one first.': ['你已经有 5 次即将出发的旅行，请先删除一个。', '예정된 여행이 이미 5개예요. 먼저 하나를 삭제해 주세요.', '予定している旅行がすでに 5 件あります。先にひとつ削除してください。', 'Ya tienes 5 viajes próximos. Elimina uno primero.'],
   "That trip is over or isn't yours.": ['那次旅行已经结束，或者不是你的。', '끝난 여행이거나 내 여행이 아니에요.', 'その旅行は終わっているか、あなたのものではありません。', 'Ese viaje ya terminó o no es tuyo.'],
+  // Profile translation
+  'Translated by Suki': ['由 Suki 翻译', 'Suki가 번역했어요', 'Suki が翻訳しました', 'Traducido por Suki'],
+  'Their own words': ['原文', '원문', '原文', 'Sus propias palabras'],
+  'Show original': ['查看原文', '원문 보기', '原文を表示', 'Ver original'],
+  'Show translation': ['查看翻译', '번역 보기', '翻訳を表示', 'Ver traducción'],
 };

@@ -74,7 +74,11 @@ function SukiBubble({ msg, moodAvatar, speaker }: { msg: Message; moodAvatar: bo
           </View>
         ) : null}
         {cards.map((c, i) => (
-          <SukiCard key={`${msg.seq}-${i}`} card={c} />
+          // A card gets the column's width, not its content's: shrunk to fit, a short card became a
+          // narrow strip, and Android measured its wrapped text a line short, under the button.
+          <View key={`${msg.seq}-${i}`} style={{ alignSelf: 'stretch', maxWidth: 460 }}>
+            <SukiCard card={c} />
+          </View>
         ))}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm, marginLeft: 4, minHeight: META_ROW_HEIGHT }}>
           <T v="caption" faint>

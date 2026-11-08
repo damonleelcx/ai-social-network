@@ -2,6 +2,7 @@ import type {
   AppNotification,
   Blocked,
   BuddyRequest,
+  Person,
   GroupChat,
   GroupMessage,
   Trip,
@@ -154,6 +155,14 @@ export const buddies = {
   pick: async (id: string, user_id: string) =>
     (await api<{ match_id: string }>(`/v1/buddies/${id}/pick`, { method: 'POST', body: { user_id } })).match_id,
   close: (id: string) => api<Ok>(`/v1/buddies/${id}/close`, { method: 'POST', body: {} }),
+};
+
+/** What someone wrote about themselves, translated. Only the fields they filled in. */
+export type PersonWords = Partial<Pick<Person, 'bio' | 'city_name' | 'occupation' | 'education' | 'interests' | 'prompts'>>;
+
+export const people = {
+  translation: (id: string, lang: string) =>
+    api<{ lang: string; translated: boolean; words: PersonWords }>(`/v1/people/${id}/translation?lang=${encodeURIComponent(lang)}`),
 };
 
 export const groups = {

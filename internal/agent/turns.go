@@ -429,13 +429,26 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 
 // addCard adds a tool's card. The post card may already be showing, drafted by code, and two
 // of them would offer to post the same plan twice.
+//
+// A trip and a travel plan for the same message are one thing said twice: "Singapore this weekend"
+// is a trip, and the travel post drafted beside it would go up in their home city. The trip wins.
 func addCard(cards []map[string]any, c map[string]any) []map[string]any {
-	if c["kind"] == "buddy_post" {
+	travelPost := func(x map[string]any) bool { return x["kind"] == "buddy_post" && x["activity"] == "travel" }
+	switch {
+	case c["kind"] == "buddy_post":
 		for _, have := range cards {
-			if have["kind"] == "buddy_post" {
+			if have["kind"] == "buddy_post" || (travelPost(c) && have["kind"] == "trip_post") {
 				return cards
 			}
 		}
+	case c["kind"] == "trip_post":
+		kept := cards[:0:0]
+		for _, have := range cards {
+			if !travelPost(have) {
+				kept = append(kept, have)
+			}
+		}
+		cards = kept
 	}
 	return append(cards, c)
 }
