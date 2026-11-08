@@ -1,18 +1,21 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, View } from 'react-native';
+import { Linking, View } from 'react-native';
 import { Alert, Share } from '@/lib/dialogs';
 import * as api from '@/api/endpoints';
-import type { Card, CreditStatus, Proposal } from '@/api/types';
+import type { Card, CreditStatus, Proposal, ReferralStatus } from '@/api/types';
+import { sharePoster } from '@/lib/poster';
+import { LookingForCard } from './LookingForCard';
 import { BuddyOfferCard, BuddyPostCard, BuddyRequestCard, GroupCard, TripCard, TripPostCard } from './BuddyCards';
 import { openNamedScreen, openPayment } from '@/lib/links';
 import { buyOnPlay, isPlayBuild, playPrices, unfinishedPlayPurchases } from '@/lib/playBilling';
-import { pickAndUploadPhoto } from '@/lib/photos';
+import { pickAndUploadPhoto, takeVerificationSelfie } from '@/lib/photos';
 import { useLive, useTopic } from '@/state/live';
 import { useSession } from '@/state/session';
 import { useTheme } from '@/theme/ThemeProvider';
-import { radius, space } from '@/theme/tokens';
-import { MediaImage, personLine, SharedChips } from '@/ui/person';
+import { space } from '@/theme/tokens';
+import { SharedChips } from '@/ui/person';
+import { HeroCard, PhotoBadge } from '@/ui/HeroCard';
 import { Button, ErrorText, Glass, Pill, T, type IconName } from '@/ui/primitives';
 import { confirm, showError } from '@/ui/sheet';
 import { DecisionBar, useDecision } from './proposalActions';
@@ -147,6 +150,7 @@ function ProposalCard({ id }: { id: string }) {
   useTopic('proposals', load);
   useTopic('matches', load);
 
+  const { sendToSuki } = useLive();
   const { decide, busy } = useDecision(() => load());
 
   if (gone) {
@@ -163,35 +167,47 @@ function ProposalCard({ id }: { id: string }) {
   const open = proposal.status === 'open' && !proposal.my_decision;
   const expired = proposal.status === 'expired' || new Date(proposal.expires_at).getTime() < Date.now();
   return (
-    <Glass strong padded={false} style={{ overflow: 'hidden', borderRadius: radius.lg, width: 280 }}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={tr("See {name}'s profile", { name: p.display_name })}
-        onPress={() => router.push(`/person?proposal=${proposal.id}`)}
-      >
-        <MediaImage id={p.photo_ids?.[0]} style={{ height: 240 }} />
-      </Pressable>
-      <View style={{ padding: space.md, gap: space.sm }}>
-        <View>
-          <T v="heading">{p.display_name}</T>
-          <T v="small" soft>
-            {personLine(p)}
-          </T>
-        </View>
-        <SharedChips shared={proposal.shared} />
-        {proposal.match_id ? (
-          <Button label={tr('Open chat')} icon="chatbubbles" small onPress={() => router.push(`/chat/${proposal.match_id}`)} />
-        ) : proposal.my_decision === 'accept' ? (
-          <Pill tone="good" icon="heart" label={tr('You said yes. Waiting on {name}.', { name: p.display_name })} />
-        ) : proposal.my_decision === 'pass' ? (
-          <Pill tone="plain" label={tr('You passed on this one.')} />
-        ) : expired || !open ? (
-          <Pill tone="plain" label={tr('This introduction has ended.')} />
-        ) : (
-          <DecisionBar proposal={proposal} decide={decide} busy={busy} />
-        )}
-      </View>
-    </Glass>
+    <HeroCard
+      photo={p.photo_ids?.[0]}
+      title={[p.display_name, p.age ? String(p.age) : ''].filter(Boolean).join(', ')}
+      subtitle={[p.occupation, p.city_name].filter(Boolean).join(' · ')}
+      badges={
+        <>
+          <PhotoBadge label={tr('Suki recommends')} />
+          {p.verified ? <PhotoBadge label={tr('Verified')} /> : null}
+        </>
+      }
+      onPress={() => router.push(`/person?proposal=${proposal.id}`)}
+      pressLabel={tr("See {name}'s profile", { name: p.display_name })}
+      height={340}
+    >
+      {proposal.pitch ? (
+        <T numberOfLines={4} style={{ fontStyle: 'italic' }}>
+          {proposal.pitch}
+        </T>
+      ) : null}
+      <SharedChips shared={proposal.shared} />
+      {open && !expired ? (
+        <Button
+          label={tr('Ask Suki about {name}', { name: p.display_name })}
+          icon="chatbubble-ellipses-outline"
+          kind="secondary"
+          small
+          onPress={() => sendToSuki(tr('Tell me more about {name}. What should I know before I decide?', { name: p.display_name }))}
+        />
+      ) : null}
+      {proposal.match_id ? (
+        <Button label={tr('Open chat')} icon="chatbubbles" small onPress={() => router.push(`/chat/${proposal.match_id}`)} />
+      ) : proposal.my_decision === 'accept' ? (
+        <Pill tone="good" icon="heart" label={tr('You said yes. Waiting on {name}.', { name: p.display_name })} />
+      ) : proposal.my_decision === 'pass' ? (
+        <Pill tone="plain" label={tr('You passed on this one.')} />
+      ) : expired || !open ? (
+        <Pill tone="plain" label={tr('This introduction has ended.')} />
+      ) : (
+        <DecisionBar proposal={proposal} decide={decide} busy={busy} />
+      )}
+    </HeroCard>
   );
 }
 
@@ -258,6 +274,81 @@ function ConfirmCard({ card }: { card: Extract<Card, { kind: 'confirm' }> }) {
         if (await confirm(title, body, tr(card.label), true)) await run();
       }}
     />
+  );
+}
+
+/** A live selfie for the verified badge, compared with their main photo and never kept. */
+function SelfieCard() {
+  const { refreshMe } = useSession();
+  const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle');
+  const [reason, setReason] = useState<string | null>(null);
+  if (state === 'done') return <Pill tone="good" icon="shield-checkmark" label={tr("You're verified.")} />;
+  return (
+    <Glass strong style={{ gap: space.sm }}>
+      <T v="subheading">{tr('Get the verified badge')}</T>
+      <T v="small" soft>{tr("One face check: take a selfie now, facing the camera in good light. Our AI provider compares it with your main photo, then it's deleted and only the result is kept. Tapping the button means you agree to this check.")}</T>
+      {reason ? <T v="small" color="#ff8a9a">{tr(reason)}</T> : null}
+      <Button
+        label={tr('Agree and take a selfie')}
+        icon="camera-outline"
+        small
+        loading={state === 'busy'}
+        onPress={async () => {
+          setState('busy');
+          setReason(null);
+          try {
+            const r = await takeVerificationSelfie();
+            if (r?.verified) {
+              setState('done');
+              refreshMe().catch(() => {});
+              return;
+            }
+            if (r?.reason) setReason(r.reason);
+          } catch (e) {
+            showError(e);
+          }
+          setState('idle');
+        }}
+      />
+    </Glass>
+  );
+}
+
+/** Suki's way to invite friends: the invite to send, and a poster for WeChat Moments. */
+function InviteCard() {
+  const [status, setStatus] = useState<ReferralStatus | null>(null);
+  const [busy, setBusy] = useState<'' | 'link' | 'poster'>('');
+  useEffect(() => {
+    api.referral.status().then(setStatus, () => {});
+  }, []);
+  if (!status) return null;
+  const run = (which: 'link' | 'poster', fn: () => Promise<unknown>) => async () => {
+    setBusy(which);
+    try {
+      await fn();
+    } catch (e) {
+      showError(e);
+    } finally {
+      setBusy('');
+    }
+  };
+  return (
+    <Glass strong style={{ gap: space.sm }}>
+      <T v="subheading">{tr('Earn {n} credits for each friend', { n: String(status.credits_per_friend) })}</T>
+      <T v="small" soft>{tr('You get them when your friend signs up with your link or code and finishes their profile.')}</T>
+      <Button
+        label={tr('Share my invite')}
+        icon="share-outline"
+        small
+        loading={busy === 'link'}
+        onPress={run('link', () =>
+          Share.share({
+            message: tr('Come try SynAgent with me. Suki, an AI winggirl, introduces you to people worth meeting. Start here: {url} (invite code: {code})', { url: status.link, code: status.code }),
+          }),
+        )}
+      />
+      <Button label={tr('Share a poster to WeChat Moments')} icon="image-outline" kind="secondary" small loading={busy === 'poster'} onPress={run('poster', () => sharePoster(tr('Share my invite')))} />
+    </Glass>
   );
 }
 
@@ -405,6 +496,12 @@ export function SukiCard({ card }: { card: Card }) {
       return <BuddyOfferCard id={card.request_id} userId={card.user_id} />;
     case 'group':
       return <GroupCard id={card.request_id} />;
+    case 'invite':
+      return <InviteCard />;
+    case 'looking_for':
+      return <LookingForCard />;
+    case 'selfie':
+      return <SelfieCard />;
     case 'trip_post':
       return <TripPostCard card={card} />;
     case 'trip':

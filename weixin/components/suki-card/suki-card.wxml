@@ -10,35 +10,74 @@
   <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onPost">{{t.post}}</button>
 </view>
 
-<view wx:elif="{{card.kind === 'buddy_request' && item}}" class="card">
-  <view class="row">
-    <image wx:if="{{photo}}" class="avatar" src="{{photo}}" mode="aspectFill" bindtap="onPreview" />
-    <view class="grow">
-      <view class="title">{{activityText}}</view>
-      <view class="soft">{{item.person.display_name}} · {{item.when}}</view>
-      <view wx:if="{{groupText}}" class="soft">{{groupText}}</view>
+<view wx:elif="{{card.kind === 'buddy_request' && item}}" class="card hero-card">
+  <view class="hero" bindtap="onPreview">
+    <image wx:if="{{scene || photo}}" class="hero-img" src="{{scene || photo}}" mode="aspectFill" />
+    <view wx:else class="hero-img hero-empty"></view>
+    <view class="hero-shade"></view>
+    <view class="hero-badges"><text wx:if="{{item.person.verified}}" class="badge">✓ {{t.verified}}</text><text class="badge">{{activityText}}</text><text wx:if="{{groupText}}" class="badge">{{groupText}}</text></view>
+    <view class="hero-text hero-row">
+      <image wx:if="{{scene && photo}}" class="hero-avatar" src="{{photo}}" mode="aspectFill" />
+      <view class="grow">
+      <view class="hero-title">{{heroTitle}}</view>
+      <view wx:if="{{heroLine}}" class="hero-line">{{heroLine}}</view>
+      </view>
     </view>
   </view>
-  <view wx:if="{{placeText}}" class="soft">{{placeText}}</view>
-  <view wx:if="{{item.note}}">{{item.note}}</view>
-  <block wx:if="{{item.spots > 1}}">
-    <block wx:if="{{item.offered || item.joined}}">
-      <button class="primary" bindtap="onOpenGroup">{{t.openGroup}}</button>
-      <button wx:if="{{item.offered}}" class="plain" loading="{{state === 'busy'}}" bindtap="onOffer">{{t.leaveGroup}}</button>
+  <view class="hero-body">
+    <view class="title">{{item.when}}</view>
+    <view wx:if="{{placeText}}" class="soft">{{placeText}}</view>
+    <view wx:if="{{item.note}}">{{item.note}}</view>
+    <block wx:if="{{item.spots > 1}}">
+      <block wx:if="{{item.offered || item.joined}}">
+        <button class="primary" bindtap="onOpenGroup">{{t.openGroup}}</button>
+        <button wx:if="{{item.offered}}" class="plain" loading="{{state === 'busy'}}" bindtap="onOffer">{{t.leaveGroup}}</button>
+      </block>
+      <view wx:elif="{{item.status !== 'open'}}" class="soft">{{t.gone}}</view>
+      <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onOffer">{{t.joinGroup}}</button>
     </block>
     <view wx:elif="{{item.status !== 'open'}}" class="soft">{{t.gone}}</view>
-    <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onOffer">{{t.joinGroup}}</button>
-  </block>
-  <view wx:elif="{{item.status !== 'open'}}" class="soft">{{t.gone}}</view>
-  <button wx:elif="{{item.offered}}" class="plain" loading="{{state === 'busy'}}" bindtap="onOffer">{{t.takeBack}}</button>
-  <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onOffer">{{t.imIn}}</button>
+    <button wx:elif="{{item.offered}}" class="plain" loading="{{state === 'busy'}}" bindtap="onOffer">{{t.takeBack}}</button>
+    <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onOffer">{{t.imIn}}</button>
+  </view>
 </view>
 
-<view wx:elif="{{card.kind === 'group' && item}}" class="card">
+<view wx:elif="{{card.kind === 'group' && item}}" class="card {{scene ? 'hero-card' : ''}}">
+  <image wx:if="{{scene}}" class="scene-strip" src="{{scene}}" mode="aspectFill" />
+  <view class="{{scene ? 'hero-body' : ''}}">
   <view class="title">{{activityText}}</view>
   <view class="soft">{{item.when}}<text wx:if="{{groupText}}"> · {{groupText}}</text></view>
   <view wx:if="{{placeText}}" class="soft">{{placeText}}</view>
   <button class="primary" bindtap="onOpenGroup">{{t.openGroup}}</button>
+  </view>
+</view>
+
+<view wx:elif="{{card.kind === 'looking_for' && looking}}" class="card">
+  <view class="title">{{t.lookingTitle}}</view>
+  <view class="soft">{{t.lookingHint}}</view>
+  <view class="lf-head">{{t.must}}</view>
+  <view wx:if="{{!looking.must.length}}" class="soft">{{t.nothingYet}}</view>
+  <view wx:for="{{looking.must}}" wx:key="*this" class="lf-line">{{item}}</view>
+  <view class="lf-head">{{t.redFlags}}</view>
+  <view wx:if="{{!looking.flags.length}}" class="soft">{{t.nothingYet}}</view>
+  <view wx:for="{{looking.flags}}" wx:key="field" class="lf-line row"><view class="grow">{{item.text}}</view><view class="lf-x" data-field="{{item.field}}" bindtap="onDropFlag">✕</view></view>
+  <view class="lf-head">{{t.nice}}</view>
+  <view wx:if="{{!looking.nice.length}}" class="soft">{{t.nothingYet}}</view>
+  <view wx:for="{{looking.nice}}" wx:key="id" class="lf-line row"><view class="grow">{{item.note}}</view><view class="lf-x" data-id="{{item.id}}" bindtap="onDropNote">✕</view></view>
+  <button class="plain" bindtap="onChangeLooking">{{t.changeSomething}}</button>
+</view>
+
+<view wx:elif="{{card.kind === 'selfie'}}" class="card">
+  <view class="title">{{t.selfieTitle}}</view>
+  <view class="soft">{{t.selfieHint}}</view>
+  <view wx:if="{{state === 'done'}}" class="done">{{t.verifiedNow}}</view>
+  <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onSelfie">{{t.takeSelfie}}</button>
+</view>
+
+<view wx:elif="{{card.kind === 'invite'}}" class="card">
+  <view class="soft">{{t.inviteLine}}</view>
+  <button class="primary" open-type="share">{{t.sendInvite}}</button>
+  <button class="plain" bindtap="onPoster">{{t.momentsPoster}}</button>
 </view>
 
 <view wx:elif="{{card.kind === 'trip_post'}}" class="card">
@@ -52,45 +91,60 @@
   </block>
 </view>
 
-<view wx:elif="{{card.kind === 'trip' && item}}" class="card">
+<view wx:elif="{{card.kind === 'trip' && item}}" class="card {{scene ? 'hero-card' : ''}}">
+  <image wx:if="{{scene}}" class="scene-strip" src="{{scene}}" mode="aspectFill" />
+  <view class="{{scene ? 'hero-body' : ''}}">
   <view class="title">✈ {{item.city_name}}</view>
   <view class="soft">{{datesText}}</view>
   <view wx:if="{{item.note}}">{{item.note}}</view>
   <view class="soft">{{tripText}}</view>
+  </view>
 </view>
 
-<view wx:elif="{{card.kind === 'buddy_offer' && item && item.person}}" class="card">
-  <view class="row">
-    <image wx:if="{{photo}}" class="avatar" src="{{photo}}" mode="aspectFill" bindtap="onPreview" />
-    <view class="grow">
-      <view class="title">{{offerLine}}</view>
-      <view class="soft">{{activityText}} · {{item.when}}</view>
+<view wx:elif="{{card.kind === 'buddy_offer' && item && item.person}}" class="card hero-card">
+  <view class="hero" bindtap="onPreview">
+    <image wx:if="{{photo}}" class="hero-img" src="{{photo}}" mode="aspectFill" />
+    <view wx:else class="hero-img hero-empty"></view>
+    <view class="hero-shade"></view>
+    <view class="hero-badges"><text class="badge">{{t.wantsToJoin}}</text></view>
+    <view class="hero-text">
+      <view class="hero-title">{{heroTitle}}</view>
+      <view wx:if="{{heroLine}}" class="hero-line">{{heroLine}}</view>
     </view>
   </view>
-  <view wx:if="{{state === 'done' || item.status !== 'open'}}" class="done">{{t.picked}}</view>
-  <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onPick">{{t.pick}}</button>
+  <view class="hero-body">
+    <view class="title">{{activityText}} · {{item.when}}</view>
+    <view wx:if="{{state === 'done' || item.status !== 'open'}}" class="done">{{t.picked}}</view>
+    <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onPick">{{t.pick}}</button>
+  </view>
 </view>
 
-<view wx:elif="{{card.kind === 'proposal' && item}}" class="card">
-  <view class="row">
-    <image wx:if="{{photo}}" class="avatar" src="{{photo}}" mode="aspectFill" bindtap="onPreview" />
-    <view class="grow" bindtap="onProfile">
-      <view class="title">{{item.person.display_name}} · {{item.person.age}}</view>
-      <view class="soft">{{item.person.city_name}}</view>
-      <view class="link">{{t.profile}} ›</view>
+<view wx:elif="{{card.kind === 'proposal' && item}}" class="card hero-card">
+  <view class="hero" bindtap="onProfile">
+    <image wx:if="{{photo}}" class="hero-img" src="{{photo}}" mode="aspectFill" />
+    <view wx:else class="hero-img hero-empty"></view>
+    <view class="hero-shade"></view>
+    <view class="hero-badges"><text class="badge">{{t.recommends}}</text><text wx:if="{{item.person.verified}}" class="badge">✓ {{t.verified}}</text></view>
+    <view class="hero-text">
+      <view class="hero-title">{{heroTitle}}</view>
+      <view wx:if="{{heroLine}}" class="hero-line">{{heroLine}}</view>
     </view>
   </view>
-  <view wx:if="{{intro}}" class="with-suki">
-    <suki-avatar mood="playful" size="64" />
-    <view class="grow pitch">{{item.pitch}}</view>
+  <view class="hero-body">
+    <view wx:if="{{intro}}" class="with-suki">
+      <suki-avatar mood="playful" size="64" />
+      <view class="grow pitch">{{item.pitch}}</view>
+    </view>
+    <view wx:else class="pitch-quote">{{item.pitch}}</view>
+    <view class="link" bindtap="onProfile">{{t.profile}} ›</view>
+    <button wx:if="{{item.status === 'open' && !state}}" class="plain" bindtap="onAsk">{{askLabel}}</button>
+    <block wx:if="{{item.status === 'open' && !state}}">
+      <button class="primary" data-decision="accept" bindtap="onDecide">{{t.like}}</button>
+      <button class="plain" data-decision="pass" bindtap="onDecide">{{t.pass}}</button>
+    </block>
+    <view wx:elif="{{state === 'busy'}}" class="soft">{{t.moment}}</view>
+    <view wx:else class="done">{{t.answered}}</view>
   </view>
-  <view wx:else>{{item.pitch}}</view>
-  <block wx:if="{{item.status === 'open' && !state}}">
-    <button class="primary" data-decision="accept" bindtap="onDecide">{{t.like}}</button>
-    <button class="plain" data-decision="pass" bindtap="onDecide">{{t.pass}}</button>
-  </block>
-  <view wx:elif="{{state === 'busy'}}" class="soft">{{t.moment}}</view>
-  <view wx:else class="done">{{t.answered}}</view>
 </view>
 
 <view wx:elif="{{card.kind === 'match'}}" class="card">

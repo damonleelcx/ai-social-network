@@ -30,6 +30,8 @@ automated. Effects: **R** read, **W** writes our database, **X** reaches outside
 | `profile_prompts` | answering "my ideal Sunday" | `profile_save` |
 | `profile_write_bio` | "write my bio for me" | `bio_draft` (user approves) |
 | `profile_dealbreakers` | "no smokers, ever" | `dealbreaker_set` |
+| `profile_verify` | "how do I get verified?" | `selfie_request` (card: live selfie compared with their main photo, never kept) |
+| `profile_looking_for` | "what do you think I'm looking for?" | `looking_for_show` (card: must-haves, red flags, notes; corrections by tap or by telling Suki) |
 | `photo_add` | "I want to add a photo" | `photo_request` |
 | `photo_feedback` | "is this a good photo?" | `photo_list`, `photo_advice` |
 | `photo_manage` | "make the second one my main photo" | `photo_set_primary`, `photo_remove` |
@@ -44,6 +46,7 @@ automated. Effects: **R** read, **W** writes our database, **X** reaches outside
 | `match_status` | "any matches yet?" | `proposal_list`, `match_list` |
 | `match_why` | "why them?" | `proposal_explain` (shared ground only) |
 | `match_view` | "tell me more about them" | `candidate_view` |
+| `match_ask` | "what's her work like?", "does he smoke?" | `candidate_view`; answers only from their profile, says so when it doesn't say |
 | `match_accept` | "yes, I like them" | `proposal_prepare_decision` (G1 tap) |
 | `match_pass` | "not for me" | `proposal_prepare_decision` |
 | `match_pass_reason` | "too far apart on kids" | `taste_note_add` |
@@ -226,6 +229,8 @@ Column **Agents** lists who may call a tool. The worker refuses anyone else.
 | `city_resolve` | X | G0 | Suki | free text to a canonical `city_key`, cached |
 | `bio_draft` | W | G1 | Suki | stores a draft shown as a card; only a tap saves it |
 | `dealbreaker_set` | W | G0 | Suki | hard filters the user stated |
+| `selfie_request` | R | G1 | Suki | renders the live-selfie button; the badge needs a match with their main photo |
+| `looking_for_show` | R | G1 | Suki | renders what Suki understands they want, only from what they told her |
 | `photo_request` | R | G0 | Suki | renders the upload button in chat |
 | `photo_list` | R | G0 | Suki | own photos and review state |
 | `photo_advice` | R | G0 | Suki | stored review tips for own photos |

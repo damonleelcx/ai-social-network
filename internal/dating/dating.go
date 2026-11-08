@@ -36,11 +36,19 @@ type Hooks struct {
 	SafetyScan func(ctx context.Context, matchID, reportID string)
 }
 
+// Scener draws a picture for a plan or a trip in the background (internal/scenes).
+type Scener interface {
+	Post(requestID string)
+	Trip(tripID string)
+}
+
 type Service struct {
 	Pool  *pgxpool.Pool
 	Chats *chatstore.Store
 	Learn Learner
 	Hooks Hooks
+	// Scenes gives plans and trips a picture. Nil leaves them with the poster's photo.
+	Scenes Scener
 	// Mod filters NSFW text. Nil means the word list alone.
 	Mod *moderation.Filter
 	// DateMinLead is the earliest a date can be set from now.

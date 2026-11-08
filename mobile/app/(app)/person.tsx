@@ -82,7 +82,7 @@ export default function PersonScreen() {
             <T v="display" color="#FFFFFF">
               {person.display_name}
             </T>
-            <T color="rgba(255,255,255,0.9)">{personLine(person)}</T>
+            <T color="rgba(255,255,255,0.9)">{[person.verified ? `✓ ${tr('Verified')}` : '', personLine(person)].filter(Boolean).join(' · ')}</T>
           </LinearGradient>
         </View>
         <View style={{ padding: space.lg, gap: space.lg }}>

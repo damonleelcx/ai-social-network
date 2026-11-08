@@ -1,5 +1,8 @@
 const api = require('./api');
-const { t } = require('./i18n');
+const i18n = require('./i18n');
+const { API_URL } = require('../config');
+
+const { t } = i18n;
 
 const PENDING = 'pending_ref';
 // Invite codes are 8 characters from the server's alphabet. Anything else in a link is ignored.
@@ -71,4 +74,29 @@ function fromMoments() {
   }
 }
 
-module.exports = { remember, pending, clearPending, prepare, message, timeline, fromMoments };
+// This person's poster, with their QR code and invite code, offered through WeChat's own image
+// menu: send to a friend, share to Moments, or save. Nothing about a reward is on it.
+function poster() {
+  return new Promise((resolve, reject) => {
+    wx.showLoading({ title: t('One moment...'), mask: true });
+    wx.downloadFile({
+      url: `${API_URL}/v1/referral/poster?lang=${i18n.current()}`,
+      header: api.headers(),
+      success: (r) => {
+        wx.hideLoading();
+        if (r.statusCode !== 200) return reject(new Error(t("The poster didn't load. Please try again.")));
+        if (!wx.showShareImageMenu) {
+          wx.previewImage({ urls: [r.tempFilePath] });
+          return resolve();
+        }
+        wx.showShareImageMenu({ path: r.tempFilePath, success: () => resolve(), fail: () => resolve() });
+      },
+      fail: () => {
+        wx.hideLoading();
+        reject(new Error(t("The poster didn't load. Please try again.")));
+      },
+    });
+  });
+}
+
+module.exports = { remember, pending, clearPending, prepare, message, timeline, fromMoments, poster };

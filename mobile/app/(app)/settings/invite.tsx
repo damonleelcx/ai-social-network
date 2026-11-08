@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import * as api from '@/api/endpoints';
 import type { ReferralStatus } from '@/api/types';
 import { Share } from '@/lib/dialogs';
+import { sharePoster } from '@/lib/poster';
 import { useTopic } from '@/state/live';
 import { space } from '@/theme/tokens';
 import { Backdrop, Page, ScreenHeader } from '@/ui/layout';
@@ -43,6 +44,18 @@ export default function InviteScreen() {
     }
   };
 
+  const [posting, setPosting] = useState(false);
+  const poster = async () => {
+    setPosting(true);
+    try {
+      await sharePoster(tr('Share my invite'));
+    } catch (e) {
+      showError(e);
+    } finally {
+      setPosting(false);
+    }
+  };
+
   return (
     <Backdrop>
       <ScreenHeader title={tr('Invite friends')} />
@@ -59,6 +72,8 @@ export default function InviteScreen() {
               <T v="small" soft>{tr('Your invite code')}</T>
               <T v="heading" selectable>{status.code}</T>
               <Button label={tr('Share my invite')} icon="share-outline" full onPress={share} />
+              <Button label={tr('Share a poster to WeChat Moments')} icon="image-outline" kind="secondary" full loading={posting} onPress={poster} />
+              <T v="caption" soft>{tr('The poster has your QR code and invite code. Pick WeChat, then Moments, or save it and post it anywhere.')}</T>
             </Glass>
             <Glass style={{ flexDirection: 'row', gap: space.md }}>
               <View style={{ flex: 1 }}>

@@ -22,6 +22,7 @@ const COPY = {
   checkInButton: 'Check in',
   checkedIn: 'Checked in today',
   sendInvite: 'Send to WeChat friends',
+  momentsPoster: 'Share a poster to Moments',
   credits: 'Credits',
   noBuying: "Credits can't be bought here right now. You can still use any you already have.",
   more: 'More',
@@ -63,6 +64,16 @@ Page({
   },
   onShareAppMessage() {
     return share.message();
+  },
+  onShareTimeline() {
+    return share.timeline();
+  },
+  async onPoster() {
+    try {
+      await share.poster();
+    } catch (e) {
+      showError(e);
+    }
   },
   async onPullDownRefresh() {
     await this.load();

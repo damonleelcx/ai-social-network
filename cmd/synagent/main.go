@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -37,8 +38,10 @@ import (
 	"github.com/damonleelcx/ai-social-network/internal/persona"
 	"github.com/damonleelcx/ai-social-network/internal/photostore"
 	"github.com/damonleelcx/ai-social-network/internal/places"
+	"github.com/damonleelcx/ai-social-network/internal/scenes"
 	"github.com/damonleelcx/ai-social-network/internal/translate"
 	"github.com/damonleelcx/ai-social-network/internal/tts"
+	"github.com/damonleelcx/ai-social-network/internal/verify"
 	"github.com/damonleelcx/ai-social-network/internal/workflows"
 )
 
@@ -115,6 +118,16 @@ func run(mode string) error {
 	model := &engine.Model{Client: client, Store: store, AccountDailyTokens: cfg.AccountDailyTokens, DeploymentDailyTokens: cfg.DeploymentDailyTokens}
 	plc := &places.Client{Pool: pool, NominatimURL: cfg.NominatimURL, OverpassURL: cfg.OverpassURL, PhotonURL: cfg.PhotonURL}
 	svc := &dating.Service{Pool: pool, Chats: chats, DateMinLead: cfg.DateMinLead}
+	// Pictures for plans and trips, drawn by the same provider's image model and kept for reuse.
+	var scn *scenes.Service
+	if imageURL := cfg.ImageURL; imageURL != "off" && cfg.LLMAPIKey != "" {
+		if imageURL == "" {
+			imageURL = strings.Replace(cfg.LLMBaseURL, "/compatible-mode/v1", "/api/v1/services/aigc/multimodal-generation/generation", 1)
+		}
+		scn = &scenes.Service{Pool: pool, Photos: photos, Model: model, FastLLM: cfg.LLMFastModel, ImageModel: cfg.ImageModel,
+			ImageURL: imageURL, ImageKey: cfg.LLMAPIKey, DailyCap: cfg.SceneDailyCap}
+		svc.Scenes = scn
+	}
 	bill := &billing.Service{Pool: pool, StripeKey: cfg.StripeSecretKey, WebhookSecret: cfg.StripeWebhookSecret, PublicOrigin: cfg.PublicOrigin}
 	bill.Rewards = &cfg.Rewards
 	if wc, err := billing.NewWeChat(cfg.WeChat); err != nil {
@@ -161,6 +174,8 @@ func run(mode string) error {
 		a.BeforeDelete = srv.BeforeDelete
 		srv.SpeechDailyChars = cfg.TTSDailyChars
 		srv.Translator = &translate.Service{Pool: pool, Model: model, LLM: cfg.LLMFastModel}
+		srv.Scenes = scn
+		srv.Verifier = &verify.Service{Pool: pool, Photos: photos, Model: model, LLM: cfg.LLMFastModel}
 		if cfg.TTSAPIKey != "" && cfg.TTSVoiceID != "" {
 			var voice tts.Synthesizer
 			var err error

@@ -13,3 +13,23 @@ button { margin: 14rpx 0 0 !important; width: 100% !important; font-size: 28rpx 
 button.primary { background: #ff5c8a !important; color: #fff !important; }
 button.plain { background: rgba(255,255,255,.14) !important; color: #fff !important; }
 button.danger { background: rgba(255,92,120,.22) !important; color: #ff9db0 !important; }
+
+/* Photo-first cards: someone Suki recommends, a plan to join, someone who wants to join yours. */
+.hero-card { padding: 0; overflow: hidden; border-radius: 32rpx; border: 1px solid rgba(255,255,255,.12); }
+.hero { position: relative; height: 600rpx; }
+.hero-img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.hero-empty { background: linear-gradient(160deg, #3b2a7a, #1b1033); }
+.hero-shade { position: absolute; left: 0; right: 0; bottom: 0; height: 60%; background: linear-gradient(180deg, rgba(8,4,24,0), rgba(8,4,24,.85)); }
+.hero-badges { position: absolute; left: 24rpx; top: 24rpx; right: 24rpx; display: flex; flex-wrap: wrap; }
+.badge { background: rgba(8,4,24,.55); border: 1px solid rgba(255,255,255,.18); color: #fff; font-size: 22rpx; font-weight: 700; border-radius: 999rpx; padding: 6rpx 18rpx; margin: 0 10rpx 10rpx 0; }
+.hero-text { position: absolute; left: 32rpx; right: 32rpx; bottom: 24rpx; }
+.hero-title { color: #fff; font-size: 44rpx; font-weight: 800; text-shadow: 0 2rpx 12rpx rgba(0,0,0,.35); }
+.hero-line { color: rgba(255,255,255,.9); font-size: 26rpx; margin-top: 4rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hero-body { padding: 28rpx 32rpx 32rpx; }
+.pitch-quote { font-style: italic; margin-bottom: 8rpx; }
+.hero-row { display: flex; align-items: center; }
+.hero-avatar { width: 96rpx; height: 96rpx; border-radius: 50%; border: 3rpx solid rgba(255,255,255,.85); margin-right: 20rpx; flex-shrink: 0; }
+.scene-strip { display: block; width: 100%; height: 360rpx; }
+.lf-head { color: #a99fc4; font-size: 24rpx; font-weight: 700; margin-top: 20rpx; }
+.lf-line { font-size: 28rpx; margin-top: 8rpx; }
+.lf-x { color: #a99fc4; padding: 0 8rpx 0 20rpx; }

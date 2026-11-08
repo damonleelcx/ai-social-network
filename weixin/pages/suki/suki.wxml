@@ -22,7 +22,7 @@
         <suki-avatar class="suki-face" mood="{{item.mood}}" mood-avatar="{{moodAvatar}}" size="84" />
         <view class="suki-col">
           <view wx:if="{{item.body}}" class="bubble suki-bubble">{{item.body}}<view class="ai-label">{{t.aiGenerated}}</view></view>
-          <suki-card wx:for="{{item.cards}}" wx:for-item="card" wx:for-index="i" wx:key="i" card="{{card}}" />
+          <suki-card wx:for="{{item.cards}}" wx:for-item="card" wx:for-index="i" wx:key="i" card="{{card}}" bind:ask="onCardAsk" />
           <view wx:if="{{speaker && item.body}}" class="speaker {{clip === item.seq ? 'on' : ''}}" aria-role="button" aria-label="{{clip === item.seq ? (phase === 'playing' ? t.stop : t.cancelVoice) : t.hear}}" data-seq="{{item.seq}}" bindtap="onSpeak">{{clip === item.seq ? (phase === 'playing' ? '■' : '…') : '▶'}}</view>
         </view>
       </view>

@@ -165,6 +165,17 @@ export const people = {
     api<{ lang: string; translated: boolean; words: PersonWords }>(`/v1/people/${id}/translation?lang=${encodeURIComponent(lang)}`),
 };
 
+export type LookingFor = {
+  must: { seeking: string[]; age_min?: number; age_max?: number; goal?: string; city?: string };
+  red_flags: Record<string, string[]>;
+  nice: { id: string; note: string }[];
+};
+
+export const lookingFor = {
+  get: () => api<LookingFor>('/v1/looking-for'),
+  dropRedFlag: (field: string) => api<Ok>(`/v1/looking-for/red-flags/${field}`, { method: 'DELETE' }),
+};
+
 export const groups = {
   mine: async () => (await api<{ requests: BuddyRequest[] | null }>('/v1/groups')).requests ?? [],
   chat: async (id: string, after = 0) => {

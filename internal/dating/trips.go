@@ -44,6 +44,8 @@ type Trip struct {
 	Going int `json:"going"`
 	// Plans is how many open plans there are there now that this person could join.
 	Plans int `json:"plans"`
+	// Scene is the key of the city's picture, once it's drawn.
+	Scene string `json:"scene,omitempty"`
 }
 
 // TripCity is a city with how many people are travelling there soon.
@@ -129,6 +131,9 @@ func (s *Service) AddTrip(ctx context.Context, userID string, city *places.City,
 		return nil, err
 	}
 	s.notifyUser(ctx, userID, "trips")
+	if s.Scenes != nil {
+		s.Scenes.Trip(id)
+	}
 	return s.trip(ctx, id, userID)
 }
 
@@ -139,7 +144,8 @@ var tripCols = `t.id, t.city_name, to_char(t.starts_on,'YYYY-MM-DD'), to_char(t.
 	  WHERE o.city_key=t.city_key AND o.user_id<>$2 AND o.starts_on<=t.ends_on AND o.ends_on>=t.starts_on AND o.ends_on>=current_date
 	    AND p.status<>'held' AND u.deleted_at IS NULL
 	    AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.blocker_id=$2 AND b.blocked_id=o.user_id) OR (b.blocker_id=o.user_id AND b.blocked_id=$2))),
-	(SELECT count(*) FROM buddy_requests r JOIN profiles me ON me.user_id=$2 WHERE r.city_key=t.city_key AND ` + tripPlanVisible + `)`
+	(SELECT count(*) FROM buddy_requests r JOIN profiles me ON me.user_id=$2 WHERE r.city_key=t.city_key AND ` + tripPlanVisible + `),
+	coalesce((SELECT si.key FROM scene_images si WHERE si.key=t.scene_key AND si.status='ready'),'')`
 
 // tripPlanVisible is buddyVisible for the plans in a trip's city: the same rule, with $2 as
 // the viewer.
@@ -147,7 +153,7 @@ var tripPlanVisible = strings.ReplaceAll(buddyVisible, "$1", "$2")
 
 func scanTrip(row pgx.Row) (*Trip, error) {
 	var t Trip
-	err := row.Scan(&t.ID, &t.CityName, &t.StartsOn, &t.EndsOn, &t.Note, &t.Going, &t.Plans)
+	err := row.Scan(&t.ID, &t.CityName, &t.StartsOn, &t.EndsOn, &t.Note, &t.Going, &t.Plans, &t.Scene)
 	return &t, err
 }
 

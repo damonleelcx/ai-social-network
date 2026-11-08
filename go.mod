@@ -9,6 +9,7 @@ require (
 	github.com/coder/websocket v1.8.15
 	github.com/jackc/pgx/v5 v5.11.0
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
+	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	go.mongodb.org/mongo-driver/v2 v2.9.2
 	golang.org/x/crypto v0.57.0
 	golang.org/x/image v0.45.0
