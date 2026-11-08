@@ -1,4 +1,4 @@
-# HTTPS for suki.zhiyuwujie.top. Caddy takes ports 80 and 443 on the node and gets
+# HTTPS for suki.zhiyuwujie.top and zhuanzuya.zhiyuwujie.top. Caddy takes ports 80 and 443 on the node and gets
 # its certificate from Let's Encrypt itself; certificates persist on the node.
 apiVersion: v1
 kind: ConfigMap
@@ -15,6 +15,11 @@ data:
       reverse_proxy synagent-web.synagent.svc.cluster.local:80 {
         flush_interval -1
       }
+    }
+    # 转租鸭 landing page (repo damonleelcx/zhuanzuya, deploy/k8s/site.yaml)
+    zhuanzuya.zhiyuwujie.top {
+      encode gzip
+      reverse_proxy site.zhuanzuya.svc.cluster.local:80
     }
 ---
 apiVersion: apps/v1
