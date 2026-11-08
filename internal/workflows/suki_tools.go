@@ -406,6 +406,16 @@ func registerSukiTools() {
 			return map[string]any{"saved": tag.RowsAffected() == 1}, nil
 		})
 
+	add("selfie_request", "Show the button that lets this person take a live selfie to get a verified badge: it's compared with their main photo and thrown away. Offer it when they ask how to look more trustworthy, or once they have a photo.", noArgs, tools.Read,
+		func(context.Context, *tools.Env, map[string]any) (map[string]any, error) {
+			return card("selfie"), nil
+		})
+
+	add("looking_for_show", "Show this person the card with what you understand they're looking for: must-haves, red flags and the notes you keep on what they like. They can correct it there or by telling you. Built only from what they told you, never from anything hidden.", noArgs, tools.Read,
+		func(context.Context, *tools.Env, map[string]any) (map[string]any, error) {
+			return card("looking_for"), nil
+		})
+
 	add("memory_list", "Read the notes you keep about this person, with ids.", noArgs, tools.Read,
 		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
 			rows, err := d.Pool.Query(ctx, `SELECT id, content FROM memories WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50`, env.UserID)
@@ -779,13 +789,14 @@ func registerSukiTools() {
 			return card("buy_credits"), nil
 		})
 
-	add("invite_friends", "This person's invite link and code, what they earn for each friend, and how many friends have joined.", noArgs, tools.Read,
+	add("invite_friends", "This person's invite link and code, what they earn for each friend, and how many friends have joined. It also shows them a card with buttons to share their invite and a poster for WeChat Moments.", noArgs, tools.Read,
 		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
 			st, err := d.Billing.ReferralStatus(ctx, env.UserID)
 			if err != nil {
 				return nil, err
 			}
-			return map[string]any{"link": st.Link, "code": st.Code, "credits_per_friend": st.CreditsPerFriend, "earned_when": "the friend signs up with the link or code and finishes their profile", "friends_joined": st.Joined, "credits_earned": st.CreditsEarned}, nil
+			return map[string]any{"link": st.Link, "code": st.Code, "credits_per_friend": st.CreditsPerFriend, "earned_when": "the friend signs up with the link or code and finishes their profile", "friends_joined": st.Joined, "credits_earned": st.CreditsEarned,
+				"card": map[string]any{"kind": "invite"}}, nil
 		})
 
 	add("app_explain", "A truthful general explanation of how matching works, to put in your own words.", noArgs, tools.Read,

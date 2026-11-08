@@ -84,6 +84,8 @@ type BuddyRequest struct {
 	Going   int              `json:"going"`
 	Joined  bool             `json:"joined,omitempty"`
 	Members []profile.Public `json:"members,omitempty"`
+	// Scene is the key of a picture of what the plan is about, once it's drawn (/v1/scenes/<key>.jpg).
+	Scene string `json:"scene,omitempty"`
 }
 
 // Group says whether people join this plan at once rather than being picked.
@@ -213,6 +215,9 @@ func (s *Service) PostBuddy(ctx context.Context, userID string, in BuddyInput) (
 		return nil, err
 	}
 	s.tellNearby(ctx, userID, id, cityKey, in, p)
+	if s.Scenes != nil {
+		s.Scenes.Post(id)
+	}
 	s.notifyUser(ctx, userID, "buddies")
 	return s.buddyRequest(ctx, id, userID)
 }
@@ -264,12 +269,13 @@ func (s *Service) tellNearby(ctx context.Context, userID, requestID, cityKey str
 const buddyCols = `r.id, r.user_id, r.kind, r.note, r.when_text, r.city_name, r.same_gender,
 	CASE WHEN r.status='open' AND r.expires_at<=now() THEN 'closed' ELSE r.status END,
 	coalesce(r.match_id::text,''), r.created_at, r.expires_at, r.spots, r.place,
-	1 + (SELECT count(*) FROM buddy_members bm WHERE bm.request_id=r.id)`
+	1 + (SELECT count(*) FROM buddy_members bm WHERE bm.request_id=r.id),
+	coalesce((SELECT si.key FROM scene_images si WHERE si.key=r.scene_key AND si.status='ready'),'')`
 
 // buddyDest is where buddyCols scan to, with any extra columns after them.
 func buddyDest(b *BuddyRequest, owner *string, extra ...any) []any {
 	return append([]any{&b.ID, owner, &b.Kind, &b.Note, &b.When, &b.CityName, &b.SameGender, &b.Status, &b.MatchID, &b.CreatedAt, &b.ExpiresAt,
-		&b.Spots, &b.Place, &b.Going}, extra...)
+		&b.Spots, &b.Place, &b.Going, &b.Scene}, extra...)
 }
 
 func scanBuddy(row pgx.Row) (*BuddyRequest, string, error) {

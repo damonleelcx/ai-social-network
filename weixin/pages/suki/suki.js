@@ -82,6 +82,9 @@ Page({
   onShareAppMessage() {
     return share.message();
   },
+  onShareTimeline() {
+    return share.timeline();
+  },
   onHide() {
     this.focused = false;
     voice.stop();
@@ -158,6 +161,10 @@ Page({
   },
   onReply(e) {
     this.send(e.currentTarget.dataset.text);
+  },
+  // A card asked Suki something on this person's behalf, such as more about someone introduced.
+  onCardAsk(e) {
+    if (e.detail && e.detail.text) this.send(e.detail.text);
   },
   onSend() {
     const text = this.data.draft.trim();

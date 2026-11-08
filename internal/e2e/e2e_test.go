@@ -38,7 +38,9 @@ import (
 	"github.com/damonleelcx/ai-social-network/internal/mail"
 	"github.com/damonleelcx/ai-social-network/internal/photostore"
 	"github.com/damonleelcx/ai-social-network/internal/places"
+	"github.com/damonleelcx/ai-social-network/internal/scenes"
 	"github.com/damonleelcx/ai-social-network/internal/translate"
+	"github.com/damonleelcx/ai-social-network/internal/verify"
 	"github.com/damonleelcx/ai-social-network/internal/workflows"
 )
 
@@ -76,6 +78,7 @@ func (c *capturedMail) lastCode(t *testing.T, to string) string {
 }
 
 type env struct {
+	images *fakeImages
 	api      *httptest.Server
 	pool     *pgxpool.Pool
 	chats    *chatstore.Store
@@ -167,15 +170,21 @@ func setup(t *testing.T) *env {
 	photos := &photostore.Disk{Dir: t.TempDir()}
 	plc := &places.Client{Pool: pool, NominatimURL: geo.URL, OverpassURL: geo.URL + "/overpass"}
 	svc := &dating.Service{Pool: pool, Chats: chats, DateMinLead: time.Millisecond}
+	images := &fakeImages{}
+	imgSrv := httptest.NewServer(images)
+	images.url = imgSrv.URL
+	scn := &scenes.Service{Pool: pool, Photos: photos, Model: model, FastLLM: "fast", ImageModel: "fake", ImageURL: imgSrv.URL + "/gen", ImageKey: "test", DailyCap: 100}
+	svc.Scenes = scn
 	bill := &billing.Service{Pool: pool, PublicOrigin: "http://test"}
 	workflows.Init(&workflows.Deps{Billing: bill, Pool: pool, Store: store, Model: model, Chats: chats, Photos: photos, Places: plc, Dating: svc, FastModel: "fast", DebriefDelay: time.Millisecond})
 	m := &capturedMail{}
 	a := &auth.Service{Pool: pool, Mailer: m, PublicOrigin: "http://test", SessionTTL: time.Hour}
 	hub := httpapi.NewHub()
 	srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill,
-		Translator: &translate.Service{Pool: pool, Model: model, LLM: "fast"}}
+		Translator: &translate.Service{Pool: pool, Model: model, LLM: "fast"}, Scenes: scn,
+		Verifier: &verify.Service{Pool: pool, Photos: photos, Model: model, LLM: "fast"}}
 	a.BeforeDelete = srv.BeforeDelete
-	e := &env{billing: bill, pool: pool, chats: chats, mail: m, bodies: &bytes.Buffer{}, store: store, model: model, svc: svc, fake: fake, cancel: cancel, photos: photos}
+	e := &env{images: images, billing: bill, pool: pool, chats: chats, mail: m, bodies: &bytes.Buffer{}, store: store, model: model, svc: svc, fake: fake, cancel: cancel, photos: photos}
 	e.srv, e.auth = srv, a
 	// Every response body is kept, so the test can search all of them for scores.
 	e.handler = srv.Handler()

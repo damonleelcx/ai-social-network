@@ -4,6 +4,11 @@ const i18n = require('../../lib/i18n');
 const person = require('../../lib/person');
 const { showError, confirm } = require('../../lib/format');
 const pay = require('../../lib/pay');
+const share = require('../../lib/share');
+const { API_URL } = require('../../config');
+
+// A picture of what a plan is about. It shows no one, so it loads without signing in.
+const sceneSrc = (key) => (key ? `${API_URL}/v1/scenes/${key}.jpg` : '');
 
 const { t } = i18n;
 
@@ -39,7 +44,48 @@ const COPY = {
   addTrip: 'Add the trip',
   tripHint: "While you're there, plans in this city reach you, and you can post your own.",
   tripGone: 'This trip was removed.',
+  recommends: 'Suki recommends',
+  sendInvite: 'Send to WeChat friends',
+  momentsPoster: 'Share a poster to Moments',
+  inviteLine: 'Invite friends to find company with you.',
+  lookingTitle: "What I think you're looking for",
+  lookingHint: "Only from what you've told me. Tap ✕ to take something out, or tell me what to change.",
+  must: 'Must-haves',
+  redFlags: 'Red flags',
+  nice: 'Nice to have',
+  nothingYet: 'Nothing yet.',
+  changeSomething: 'Change something',
+  selfieTitle: 'Get the verified badge',
+  selfieHint: "One face check: take a selfie now, facing the camera in good light. Our AI provider compares it with your main photo, then it's deleted and only the result is kept. Tapping the button means you agree to this check.",
+  takeSelfie: 'Agree and take a selfie',
+  verifiedNow: "You're verified.",
+  verified: 'Verified',
+  wantsToJoin: 'Wants to join you',
 };
+
+const GENDERS = { woman: 'Woman', man: 'Man', nonbinary: 'Nonbinary', other: 'Other' };
+const FLAGS = { smoking: ['Smokes', person.HABITS], drinking: ['Drinks', person.HABITS], kids: ['Kids', person.KIDS], wants_kids: ['Future kids', person.WANTS_KIDS], religion: ['Religion', null], politics: ['Politics', null] };
+
+// What Suki understands someone wants, as lines of words, from what they told her and nothing else.
+function lookingLines(lf) {
+  const m = lf.must || {};
+  const must = [
+    m.seeking && m.seeking.length ? t('Meeting: {who}', { who: m.seeking.map((g) => t(GENDERS[g] || g)).join(', ') }) : '',
+    m.age_min && m.age_max ? t('Aged {min} to {max}', { min: m.age_min, max: m.age_max }) : '',
+    m.goal ? t('Looking for: {goal}', { goal: t(person.GOALS[m.goal] || m.goal) }) : '',
+    m.city ? t('In or near {city}', { city: m.city }) : '',
+  ].filter(Boolean);
+  const flags = Object.keys(lf.red_flags || {}).map((field) => {
+    const [name, options] = FLAGS[field] || [field, null];
+    const values = lf.red_flags[field].map((v) => (options && options[v] ? t(options[v]) : v)).join(', ');
+    return { field, text: `${t(name)}: ${values}` };
+  });
+  return { must, flags, nice: lf.nice || [] };
+}
+
+// Name and age, then work and city, for over a photo.
+const heroTitle = (p) => (p ? [p.display_name, p.age ? String(p.age) : ''].filter(Boolean).join(', ') : '');
+const heroLine = (p) => (p ? [p.occupation, p.city_name].filter(Boolean).join(' · ') : '');
 const CONFIRM = {
   remove_photo: ['Remove this photo?', 'It comes off your profile right away.'],
   unmatch: ['Unmatch?', 'The chat ends for both of you, and any open date plan is cancelled.'],
@@ -80,7 +126,7 @@ const PAGES = {
 
 Component({
   properties: { card: { type: Object, value: {} }, intro: { type: Boolean, value: false } },
-  data: { t: i18n.strings(COPY), packs: [], item: null, photo: '', state: '', error: '', gone: false, offerLine: '', activityText: '', balanceText: '', groupText: '', placeText: '', datesText: '', tripText: '' },
+  data: { t: i18n.strings(COPY), packs: [], item: null, photo: '', state: '', error: '', gone: false, offerLine: '', activityText: '', balanceText: '', groupText: '', placeText: '', datesText: '', tripText: '', heroTitle: '', heroLine: '', confirmLabel: '', scene: '', looking: null, askLabel: '' },
   lifetimes: {
     attached() {
       i18n.attach(this, COPY);
@@ -101,7 +147,7 @@ Component({
       try {
         if (c.kind === 'proposal') {
           const item = await api.proposals.get(c.proposal_id);
-          this.setData({ item, state: item.my_decision || '' });
+          this.setData({ item, state: item.my_decision || '', heroTitle: heroTitle(item.person), heroLine: heroLine(item.person), askLabel: t('Ask Suki about {name}', { name: item.person.display_name }) });
           this.photo(item.person);
         } else if (c.kind === 'buddy_request' || c.kind === 'group') {
           const item = await api.buddies.get(c.request_id);
@@ -110,13 +156,16 @@ Component({
             activityText: person.activity(item.kind),
             groupText: item.spots > 1 ? groupLine(item.going, item.spots) : '',
             placeText: [item.place, item.city_name].filter(Boolean).join(' · '),
+            heroTitle: heroTitle(item.person),
+            heroLine: heroLine(item.person),
+            scene: sceneSrc(item.scene),
           });
           this.photo(item.person);
         } else if (c.kind === 'trip_post') {
           this.setData({ datesText: dates(c.starts_on, c.ends_on) });
         } else if (c.kind === 'trip') {
           const item = await api.trips.get(c.trip_id);
-          this.setData({ item, datesText: dates(item.starts_on, item.ends_on), tripText: tripLine(item) });
+          this.setData({ item, datesText: dates(item.starts_on, item.ends_on), tripText: tripLine(item), scene: sceneSrc(item.scene) });
         } else if (c.kind === 'buddy_post') {
           this.setData({
             activityText: person.activity(c.activity),
@@ -133,8 +182,12 @@ Component({
             item: Object.assign({}, post, { person: offer ? offer.person : null }),
             activityText: person.activity(post.kind),
             offerLine: offer ? t('{name} wants to go too', { name: offer.person.display_name }) : '',
+            heroTitle: heroTitle(offer && offer.person),
+            heroLine: heroLine(offer && offer.person),
           });
           if (offer) this.photo(offer.person);
+        } else if (c.kind === 'looking_for') {
+          this.setData({ looking: lookingLines(await api.lookingFor.get()) });
         } else if (c.kind === 'confirm') {
           this.setData({ confirmLabel: t(c.label) });
         } else if (c.kind === 'buy_credits') {
@@ -154,6 +207,11 @@ Component({
     onPreview() {
       const person = this.data.item && this.data.item.person;
       if (person) api.previewPhotos(person.photo_ids);
+    },
+    // Asks Suki in the chat, which is where everything about a person is talked through.
+    onAsk() {
+      const name = this.data.item && this.data.item.person ? this.data.item.person.display_name : '';
+      this.triggerEvent('ask', { text: t('Tell me more about {name}. What should I know before I decide?', { name }) }, { bubbles: true, composed: true });
     },
     onProfile() {
       wx.navigateTo({ url: '/pages/person/person?proposal=' + this.data.card.proposal_id });
@@ -219,6 +277,40 @@ Component({
           if (!offered) this.onOpenGroup();
         } else this.setData({ 'item.offered': !offered });
       });
+    },
+    async onDropFlag(e) {
+      try {
+        await api.lookingFor.dropRedFlag(e.currentTarget.dataset.field);
+        this.setData({ looking: lookingLines(await api.lookingFor.get()) });
+      } catch (err) {
+        showError(err);
+      }
+    },
+    async onDropNote(e) {
+      try {
+        await api.memories.remove(e.currentTarget.dataset.id);
+        this.setData({ looking: lookingLines(await api.lookingFor.get()) });
+      } catch (err) {
+        showError(err);
+      }
+    },
+    onChangeLooking() {
+      this.triggerEvent('ask', { text: t("I'd like to change what I'm looking for.") }, { bubbles: true, composed: true });
+    },
+    onSelfie() {
+      this.run('', async () => {
+        const r = await api.verifySelfie();
+        if (!r) return;
+        if (r.verified) this.setData({ state: 'done' });
+        else this.setData({ error: t(r.reason || "I couldn't be sure it's you. Try again facing the camera in good light, without sunglasses or a mask.") });
+      });
+    },
+    async onPoster() {
+      try {
+        await share.poster();
+      } catch (e) {
+        showError(e);
+      }
     },
     onOpenGroup() {
       wx.navigateTo({ url: '/pages/group/group?id=' + this.data.card.request_id });

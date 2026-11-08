@@ -11,6 +11,8 @@ import { Button, ErrorText, Glass, IconButton, Pill, T } from '@/ui/primitives';
 import { confirm, Sheet, SheetAction, showError } from '@/ui/sheet';
 import { tr } from '@/i18n';
 import { ReportSheet } from './ReportSheet';
+import { monthDay } from '@/lib/format';
+import { HeroCard, PhotoBadge } from '@/ui/HeroCard';
 
 export const KINDS: Record<string, string> = {
   movie: 'Movie',
@@ -76,21 +78,15 @@ export const planOf = (r: BuddyRequest, city?: boolean) => ({
   group: r.spots > 1 ? { going: r.going, spots: r.spots } : undefined,
 });
 
-/** Who they are, with the report and block everyone in the app can always reach. */
-export function PersonRow({ person, onBlocked }: { person: Person; onBlocked: () => void }) {
+/** The report and block everyone in the app can always reach, behind a ⋯ button. */
+export function PersonMenu({ person, onBlocked, onPhoto }: { person: Person; onBlocked: () => void; onPhoto?: boolean }) {
   const live = useLive();
   const [menu, setMenu] = useState(false);
   const [reporting, setReporting] = useState(false);
+  const button = <IconButton icon="ellipsis-horizontal" label={tr('More')} color={onPhoto ? '#fff' : undefined} onPress={() => setMenu(true)} />;
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }}>
-      <PersonAvatar id={person.photo_ids?.[0]} size={44} />
-      <View style={{ flex: 1 }}>
-        <T v="subheading">{person.display_name}</T>
-        <T v="small" soft>
-          {[person.age ? String(person.age) : '', person.occupation].filter(Boolean).join(' · ')}
-        </T>
-      </View>
-      <IconButton icon="ellipsis-horizontal" label={tr('More')} onPress={() => setMenu(true)} />
+    <>
+      {onPhoto ? <View style={{ backgroundColor: 'rgba(8,4,24,0.45)', borderRadius: 999 }}>{button}</View> : button}
       <Sheet visible={menu} onClose={() => setMenu(false)}>
         <SheetAction
           icon="flag-outline"
@@ -128,6 +124,52 @@ export function PersonRow({ person, onBlocked }: { person: Person; onBlocked: ()
           Alert.alert(tr('Thank you for telling us'), tr('A person on our team will look at this.'));
         }}
       />
+    </>
+  );
+}
+
+/** Who they are, small: for lists such as who's in a group. */
+export function PersonRow({ person, onBlocked }: { person: Person; onBlocked: () => void }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }}>
+      <PersonAvatar id={person.photo_ids?.[0]} size={44} />
+      <View style={{ flex: 1 }}>
+        <T v="subheading">{person.display_name}</T>
+        <T v="small" soft>
+          {[person.age ? String(person.age) : '', person.occupation].filter(Boolean).join(' · ')}
+        </T>
+      </View>
+      <PersonMenu person={person} onBlocked={onBlocked} />
+    </View>
+  );
+}
+
+/** Their name and age, and their work and city, for over a photo. */
+const heroTitle = (p: Person) => [p.display_name, p.age ? String(p.age) : ''].filter(Boolean).join(', ');
+const heroLine = (p: Person) => [p.occupation, p.city_name].filter(Boolean).join(' · ');
+
+/** What kind of plan, and how full a group is, as labels over the photo. */
+function PlanBadges({ r }: { r: BuddyRequest }) {
+  return (
+    <>
+      {r.person?.verified ? <PhotoBadge label={tr('Verified')} /> : null}
+      <PhotoBadge label={tr(KINDS[r.kind] ?? 'Something else')} />
+      {r.spots > 1 ? <PhotoBadge label={groupLine(r.going, r.spots)} /> : null}
+    </>
+  );
+}
+
+/** When, where and what, under the photo. */
+function PlanBody({ r, city }: { r: BuddyRequest; city?: boolean }) {
+  return (
+    <View style={{ gap: 6 }}>
+      <T v="subheading">{r.when}</T>
+      {r.place || (city && r.city_name) ? (
+        <T v="small" soft>
+          {[r.place, city ? r.city_name : ''].filter(Boolean).join(' · ')}
+        </T>
+      ) : null}
+      {r.note ? <T>{r.note}</T> : null}
     </View>
   );
 }
@@ -301,9 +343,15 @@ export function BuddyRequestCard({ id }: { id: string }) {
     }
   };
   return (
-    <Glass style={{ gap: space.md }}>
-      <PersonRow person={person} onBlocked={() => setGone(true)} />
-      <Plan {...planOf(request, true)} />
+    <HeroCard
+      photo={person.photo_ids?.[0]}
+      scene={request.scene}
+      title={heroTitle(person)}
+      subtitle={heroLine(person)}
+      badges={<PlanBadges r={request} />}
+      corner={<PersonMenu person={person} onBlocked={() => setGone(true)} onPhoto />}
+    >
+      <PlanBody r={request} city />
       {request.offered && !group ? <T v="small" soft>{tr("{name} will see you're in, and picks who to go with.", { name: person.display_name })}</T> : null}
       {request.offered && group ? (
         <Button label={tr('Open the group chat')} icon="chatbubbles" small onPress={() => router.push(`/group/${id}`)} />
@@ -316,7 +364,7 @@ export function BuddyRequestCard({ id }: { id: string }) {
         loading={busy}
         onPress={toggle}
       />
-    </Glass>
+    </HeroCard>
   );
 }
 
@@ -332,9 +380,14 @@ export function BuddyOfferCard({ id, userId }: { id: string; userId: string }) {
   const person = request.offers?.find((o) => o.person.user_id === userId)?.person;
   if (!person) return null;
   return (
-    <Glass style={{ gap: space.md }}>
-      <PersonRow person={person} onBlocked={() => setGone(true)} />
-      <Plan {...planOf(request)} />
+    <HeroCard
+      photo={person.photo_ids?.[0]}
+      title={heroTitle(person)}
+      subtitle={heroLine(person)}
+      badges={<PhotoBadge label={tr('Wants to join you')} />}
+      corner={<PersonMenu person={person} onBlocked={() => setGone(true)} onPhoto />}
+    >
+      <PlanBody r={request} />
       <Button
         label={tr('Pick them')}
         icon="checkmark"
@@ -355,7 +408,7 @@ export function BuddyOfferCard({ id, userId }: { id: string; userId: string }) {
           }
         }}
       />
-    </Glass>
+    </HeroCard>
   );
 }
 
@@ -364,6 +417,14 @@ export function GroupCard({ id }: { id: string }) {
   const { request, gone } = useBuddyRequest(id);
   if (gone) return <Closed label={tr('This plan has closed.')} />;
   if (!request) return null;
+  if (request.scene) {
+    return (
+      <HeroCard scene={request.scene} title={request.when} subtitle={[request.place, request.city_name].filter(Boolean).join(' · ')} badges={<PlanBadges r={request} />} height={220}>
+        {request.note ? <T>{request.note}</T> : null}
+        <Button label={tr('Open the group chat')} icon="chatbubbles" small onPress={() => router.push(`/group/${id}`)} />
+      </HeroCard>
+    );
+  }
   return (
     <Glass style={{ gap: space.md }}>
       <Plan {...planOf(request, true)} />
@@ -374,7 +435,7 @@ export function GroupCard({ id }: { id: string }) {
 
 const dayLabel = (d: string) => {
   const [y, m, day] = d.split('-').map(Number);
-  return new Date(y, m - 1, day).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return monthDay(new Date(y, m - 1, day));
 };
 export const tripDates = (from: string, to: string) => (from === to ? dayLabel(from) : `${dayLabel(from)} – ${dayLabel(to)}`);
 
@@ -415,6 +476,18 @@ export function TripPostCard({ card }: { card: Extract<Card, { kind: 'trip_post'
 }
 
 function TripView({ trip }: { trip: Trip }) {
+  const counts = [
+    trip.going === 1 ? tr('1 other person is going then') : tr('{n} other people are going then', { n: String(trip.going) }),
+    trip.plans === 1 ? tr('1 plan to join there') : tr('{n} plans to join there', { n: String(trip.plans) }),
+  ].join(' · ');
+  if (trip.scene) {
+    return (
+      <HeroCard scene={trip.scene} title={trip.city_name} subtitle={tripDates(trip.starts_on, trip.ends_on)} badges={<PhotoBadge label={tr('Trip')} />} height={220}>
+        {trip.note ? <T>{trip.note}</T> : null}
+        <T v="small" soft>{counts}</T>
+      </HeroCard>
+    );
+  }
   return (
     <Glass style={{ gap: space.sm }}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>

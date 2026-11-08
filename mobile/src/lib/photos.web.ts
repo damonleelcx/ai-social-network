@@ -33,3 +33,22 @@ export async function pickAndUploadPhoto(): Promise<{ id: string; status: string
   if (!res.ok) throw handleFailure(res.status, typeof data?.error === 'string' ? data.error : '', sentWith);
   return data;
 }
+
+/** photos.ts's selfie, from the browser's camera where it offers one. */
+export async function takeVerificationSelfie(): Promise<{ verified: boolean; reason?: string } | null> {
+  const shot = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], cameraType: ImagePicker.CameraType.front, quality: 1, exif: false });
+  if (shot.canceled || !shot.assets?.[0]) return null;
+  const rendered = await ImageManipulator.manipulate(shot.assets[0].uri).resize({ width: 1080 }).renderAsync();
+  const saved = await rendered.saveAsync({ format: SaveFormat.JPEG, compress: 0.86 });
+  const sentWith = getToken();
+  let res: Response;
+  try {
+    const body = await (await fetch(saved.uri)).blob();
+    res = await fetch(`${API_URL}/v1/verify/selfie`, { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'image/jpeg' }, body });
+  } catch {
+    throw new ApiError(0, OFFLINE_MESSAGE);
+  }
+  const data = await res.json().catch(() => undefined);
+  if (!res.ok) throw handleFailure(res.status, typeof data?.error === 'string' ? data.error : '', sentWith);
+  return data;
+}

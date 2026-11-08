@@ -82,6 +82,9 @@ export type Card =
       city_name?: string;
     }
   | { kind: 'group'; request_id: string }
+  | { kind: 'invite' }
+  | { kind: 'looking_for' }
+  | { kind: 'selfie' }
   | { kind: 'trip_post'; city: string; starts_on: string; ends_on: string; note?: string }
   | { kind: 'trip'; trip_id: string }
   | { kind: 'buddy_request'; request_id: string }
@@ -119,6 +122,8 @@ export type Message = {
 };
 
 export type Person = {
+  /** A live selfie matched their main photo. */
+  verified?: boolean;
   user_id: string;
   display_name: string;
   age: number;
@@ -213,6 +218,8 @@ export type BuddyRequest = {
   going: number;
   joined?: boolean;
   members?: Person[];
+  /** A picture of what the plan is about, once drawn. */
+  scene?: string;
 };
 
 export type GroupMessage = {
@@ -237,6 +244,8 @@ export type Trip = {
   going: number;
   /** Open plans there they could join. */
   plans: number;
+  /** The city's picture, once drawn. */
+  scene?: string;
 };
 
 export type Hint = { id: string; body: string; suggestions: string[] | null; created_at: string };

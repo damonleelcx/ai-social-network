@@ -131,7 +131,43 @@ function uploadPhoto() {
   });
 }
 
+// A selfie from the front camera for the verified badge. The server compares it with their
+// main photo and doesn't keep it. Resolves null if they closed the camera.
+function verifySelfie() {
+  return new Promise((resolve, reject) => {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['camera'],
+      camera: 'front',
+      sizeType: ['compressed'],
+      success(picked) {
+        wx.getFileSystemManager().readFile({
+          filePath: picked.tempFiles[0].tempFilePath,
+          success(file) {
+            wx.request({
+              url: API_URL + '/v1/verify/selfie',
+              method: 'POST',
+              data: file.data,
+              timeout: 60000,
+              header: headers({ 'Content-Type': 'image/jpeg' }),
+              success(res) {
+                if (res.statusCode >= 200 && res.statusCode < 300) resolve(res.data);
+                else reject(failure(res.statusCode, res.data && res.data.error));
+              },
+              fail: () => reject(new Error(t("That photo didn't upload. Please try again."))),
+            });
+          },
+          fail: () => reject(new Error(t("I can't read that photo."))),
+        });
+      },
+      fail: () => resolve(null),
+    });
+  });
+}
+
 module.exports = {
+  verifySelfie,
   API_URL,
   getToken: () => token,
   setToken,
@@ -211,6 +247,10 @@ module.exports = {
     withdraw: (id) => del(`/v1/buddies/${id}/offer`),
     pick: async (id, user_id) => (await post(`/v1/buddies/${id}/pick`, { user_id })).match_id,
     close: (id) => post(`/v1/buddies/${id}/close`),
+  },
+  lookingFor: {
+    get: () => get('/v1/looking-for'),
+    dropRedFlag: (field) => del(`/v1/looking-for/red-flags/${field}`),
   },
   people: {
     translation: (id, lang) => get(`/v1/people/${id}/translation?lang=${encodeURIComponent(lang)}`),
