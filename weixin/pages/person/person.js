@@ -15,10 +15,24 @@ const COPY = {
   yes: 'Yes',
   passed: 'You passed on this one.',
   ended: 'This introduction has ended.',
+  translatedBy: 'Translated by Suki',
+  ownWords: 'Their own words',
+  showOriginal: 'Show original',
+  showTranslation: 'Show translation',
 };
 
+// What someone wrote about themselves, swapped for the reader's language when there is a translation.
+function inLanguage(who, words) {
+  if (!words) return who;
+  const out = Object.assign({}, who);
+  ['bio', 'city_name', 'occupation', 'education', 'interests', 'prompts'].forEach((k) => {
+    if (words[k] !== undefined) out[k] = words[k];
+  });
+  return out;
+}
+
 Page({
-  data: { t: i18n.strings(COPY), person: null, proposal: null, photos: [], line: '', details: [], open: false, waiting: '', chatLabel: '', chatId: '', busy: '', error: '' },
+  data: { t: i18n.strings(COPY), translated: false, original: false, person: null, proposal: null, photos: [], line: '', details: [], open: false, waiting: '', chatLabel: '', chatId: '', busy: '', error: '' },
   onLoad(q) {
     this.q = q;
     this.off = live.on((topic) => {
@@ -31,6 +45,26 @@ Page({
   },
   onShow() {
     i18n.apply(this, COPY, 'View profile');
+  },
+  // Their words in this reader's language. Until it arrives, or if it fails, they read as written.
+  async translate(who) {
+    this.own = who;
+    try {
+      const r = await api.people.translation(who.user_id, i18n.current());
+      if (!r.translated || this.own !== who) return;
+      this.words = r.words;
+      this.show();
+    } catch (_) {
+      // Their own words stay.
+    }
+  },
+  show() {
+    const who = this.data.original ? this.own : inLanguage(this.own, this.words);
+    this.setData({ translated: !!this.words, person: who, line: person.line(who), details: person.details(who) });
+  },
+  onToggleOriginal() {
+    this.setData({ original: !this.data.original });
+    this.show();
   },
   async load() {
     try {
@@ -53,6 +87,7 @@ Page({
       });
       wx.setNavigationBarTitle({ title: name });
       this.showPhotos(who.photo_ids || []);
+      this.translate(who);
     } catch (e) {
       if (!this.data.person) this.setData({ error: e.message });
       else showError(e);

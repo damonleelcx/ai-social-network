@@ -18,6 +18,7 @@ type fakeLLM struct {
 	down       atomic.Bool
 	holdMain   atomic.Bool
 	visionNude atomic.Bool
+	translations atomic.Int64
 	verdict    atomic.Value // what the Critic rules, when set
 }
 
@@ -109,6 +110,31 @@ func (f *fakeLLM) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		default:
 			reply(w, `{}`, nil)
 		}
+		return
+	}
+	if strings.Contains(sys, "Translate the JSON values a person wrote") {
+		// Every value comes back marked, so a test can tell translated words from the original.
+		f.translations.Add(1)
+		var v any
+		_ = json.Unmarshal([]byte(user), &v)
+		var mark func(any) any
+		mark = func(x any) any {
+			switch t := x.(type) {
+			case string:
+				return "译:" + t
+			case []any:
+				for i := range t {
+					t[i] = mark(t[i])
+				}
+			case map[string]any:
+				for k := range t {
+					t[k] = mark(t[k])
+				}
+			}
+			return x
+		}
+		out, _ := json.Marshal(mark(v))
+		reply(w, string(out), nil)
 		return
 	}
 	if strings.Contains(sys, "Classify a message") {

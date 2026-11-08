@@ -38,6 +38,7 @@ import (
 	"github.com/damonleelcx/ai-social-network/internal/mail"
 	"github.com/damonleelcx/ai-social-network/internal/photostore"
 	"github.com/damonleelcx/ai-social-network/internal/places"
+	"github.com/damonleelcx/ai-social-network/internal/translate"
 	"github.com/damonleelcx/ai-social-network/internal/workflows"
 )
 
@@ -171,7 +172,8 @@ func setup(t *testing.T) *env {
 	m := &capturedMail{}
 	a := &auth.Service{Pool: pool, Mailer: m, PublicOrigin: "http://test", SessionTTL: time.Hour}
 	hub := httpapi.NewHub()
-	srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill}
+	srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill,
+		Translator: &translate.Service{Pool: pool, Model: model, LLM: "fast"}}
 	a.BeforeDelete = srv.BeforeDelete
 	e := &env{billing: bill, pool: pool, chats: chats, mail: m, bodies: &bytes.Buffer{}, store: store, model: model, svc: svc, fake: fake, cancel: cancel, photos: photos}
 	e.srv, e.auth = srv, a

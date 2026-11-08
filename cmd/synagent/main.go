@@ -37,6 +37,7 @@ import (
 	"github.com/damonleelcx/ai-social-network/internal/persona"
 	"github.com/damonleelcx/ai-social-network/internal/photostore"
 	"github.com/damonleelcx/ai-social-network/internal/places"
+	"github.com/damonleelcx/ai-social-network/internal/translate"
 	"github.com/damonleelcx/ai-social-network/internal/tts"
 	"github.com/damonleelcx/ai-social-network/internal/workflows"
 )
@@ -153,6 +154,7 @@ func run(mode string) error {
 		}
 		a.BeforeDelete = srv.BeforeDelete
 		srv.SpeechDailyChars = cfg.TTSDailyChars
+		srv.Translator = &translate.Service{Pool: pool, Model: model, LLM: cfg.LLMFastModel}
 		if cfg.TTSAPIKey != "" && cfg.TTSVoiceID != "" {
 			var voice tts.Synthesizer
 			var err error

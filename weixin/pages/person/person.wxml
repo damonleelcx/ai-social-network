@@ -28,6 +28,7 @@
     <view wx:elif="{{proposal && !open && !chatId}}" class="soft gap">{{t.ended}}</view>
     <button wx:if="{{chatId}}" class="primary" bindtap="onChat">{{chatLabel}}</button>
 
+    <view wx:if="{{translated}}" class="soft" style="font-size: 24rpx; margin: 8rpx 4rpx 16rpx;">{{original ? t.ownWords : t.translatedBy}} · <text class="link" bindtap="onToggleOriginal">{{original ? t.showTranslation : t.showOriginal}}</text></view>
     <view wx:if="{{person.bio}}" class="card gap">{{person.bio}}</view>
 
     <view wx:for="{{person.prompts}}" wx:key="q" class="card">

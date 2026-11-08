@@ -31,6 +31,7 @@ import (
 	"github.com/damonleelcx/ai-social-network/internal/photostore"
 	"github.com/damonleelcx/ai-social-network/internal/places"
 	"github.com/damonleelcx/ai-social-network/internal/profile"
+	"github.com/damonleelcx/ai-social-network/internal/translate"
 	"github.com/damonleelcx/ai-social-network/internal/tts"
 	"github.com/damonleelcx/ai-social-network/internal/workflows"
 )
@@ -59,6 +60,8 @@ type Server struct {
 	Peer *Peer
 	// Region is this copy: "us" (default) or "cn", which serves the China site.
 	Region string
+	// Translator puts profiles into the reader's language. Nil turns that off.
+	Translator *translate.Service
 	limit            limiter
 	mapCache         userMapCache
 }
@@ -382,6 +385,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("DELETE /v1/buddies/{id}/offer", v(s.buddyWithdraw))
 	m.HandleFunc("POST /v1/buddies/{id}/pick", v(lim("buddy_pick", 30, time.Hour, s.buddyPick)))
 	m.HandleFunc("POST /v1/buddies/{id}/close", v(s.buddyClose))
+	m.HandleFunc("GET /v1/people/{id}/translation", v(lim("translate", 120, time.Hour, s.personTranslation)))
 	m.HandleFunc("GET /v1/groups", v(s.groupsMine))
 	m.HandleFunc("GET /v1/groups/{id}/messages", v(s.groupMessages))
 	m.HandleFunc("POST /v1/groups/{id}/messages", v(lim("group_chat", 60, time.Minute, s.groupSend)))
@@ -1405,6 +1409,43 @@ func (s *Server) buddyClose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, map[string]any{"ok": true})
+}
+
+// ── Translation ──
+
+// personTranslation is what someone wrote about themselves, in the reader's language. Only for
+// someone the reader was introduced to or matched with: the profile pages that open from those.
+func (s *Server) personTranslation(w http.ResponseWriter, r *http.Request) {
+	if s.Translator == nil {
+		fail(w, 404, "not found")
+		return
+	}
+	reader, person, lang := userOf(r).ID, r.PathValue("id"), r.URL.Query().Get("lang")
+	if _, ok := translate.Languages[lang]; !ok {
+		fail(w, 422, "unknown language")
+		return
+	}
+	var known bool
+	err := s.Pool.QueryRow(r.Context(), `SELECT EXISTS (SELECT 1 FROM proposals WHERE user_a=least($1::uuid,$2::uuid) AND user_b=greatest($1::uuid,$2::uuid))
+		AND NOT EXISTS (SELECT 1 FROM blocks WHERE (blocker_id=$1 AND blocked_id=$2) OR (blocker_id=$2 AND blocked_id=$1))`, reader, person).Scan(&known)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	if !known || reader == person {
+		fail(w, 404, "not found")
+		return
+	}
+	p, err := profile.Get(r.Context(), s.Pool, person)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	out, changed, err := s.Translator.Profile(r.Context(), reader, person, lang, translate.WordsOf(p.Public(nil)))
+	if err != nil {
+		slog.Warn("translate profile", "err", err)
+	}
+	writeJSON(w, 200, map[string]any{"lang": lang, "translated": changed, "words": out})
 }
 
 // ── Group plans and trips ──

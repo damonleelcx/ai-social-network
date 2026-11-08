@@ -212,6 +212,9 @@ module.exports = {
     pick: async (id, user_id) => (await post(`/v1/buddies/${id}/pick`, { user_id })).match_id,
     close: (id) => post(`/v1/buddies/${id}/close`),
   },
+  people: {
+    translation: (id, lang) => get(`/v1/people/${id}/translation?lang=${encodeURIComponent(lang)}`),
+  },
   groups: {
     chat: (id, after) => get(`/v1/groups/${id}/messages${after ? '?after=' + after : ''}`),
     send: async (id, text) => (await post(`/v1/groups/${id}/messages`, { text, client_id: clientId() })).message,
