@@ -91,7 +91,11 @@ func newLanding(footer string, china bool) http.Handler {
 		h := w.Header()
 		// File names aren't hashed, and the page, its styles and its scripts have to change
 		// together, so those revalidate every time. An unchanged file costs a 304.
-		if strings.HasPrefix(a.ctype, "text/") {
+		// Vendored code has its version in its name, so a new version is a new URL and the old
+		// one never changes: browsers keep it, and a return visit skips half a megabyte.
+		if strings.HasPrefix(name, "/landing/vendor/") {
+			h.Set("Cache-Control", "public, max-age=31536000, immutable")
+		} else if strings.HasPrefix(a.ctype, "text/") {
 			h.Set("Cache-Control", "no-cache")
 		} else {
 			h.Set("Cache-Control", "public, max-age=3600")

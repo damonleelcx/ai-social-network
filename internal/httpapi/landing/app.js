@@ -232,6 +232,7 @@ import('./scene.js')
       theme: root.dataset.theme,
       stepCount: STEPS.length,
       onStep: setStep,
+      onReady: () => root.classList.remove('world-pending'),
     });
     onTheme = world.setTheme;
     goToStep = (i) => (root.classList.contains('flat-crt') ? setStep(i) : world.scrollToStep(i));
@@ -239,5 +240,6 @@ import('./scene.js')
   .catch((err) => {
     console.warn('3D world unavailable, using the flat page.', err);
     root.classList.add('no-webgl');
+    root.classList.remove('world-pending');
     flat();
   });
