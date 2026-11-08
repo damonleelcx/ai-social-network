@@ -16,6 +16,8 @@
     try { saved = localStorage.getItem('synagent.theme'); } catch (e) {}
     var theme = saved === 'light' || saved === 'dark' ? saved : matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
     document.documentElement.dataset.theme = theme;
+    // Cleared by the 3D world's first frame, or when it can't run.
+    document.documentElement.classList.add('world-pending');
     // A shared ?lang= link, else what they chose here, else the browser's language.
     var lang = new URLSearchParams(location.search).get('lang');
     try { lang = lang || localStorage.getItem('synagent.lang'); } catch (e) {}
@@ -37,6 +39,11 @@
 </script>
 <link rel="stylesheet" href="/landing/style.css">
 <script type="module" src="/landing/app.js"></script>
+<!-- Fetched now, side by side, rather than one after another as each script asks for the next:
+     from far away, that chain is what kept the 3D world from showing up. -->
+<link rel="modulepreload" href="/landing/i18n.js">
+<link rel="modulepreload" href="/landing/scene.js">
+<link rel="modulepreload" href="/landing/vendor/three-0.187.0.js">
 </head>
 <body>
 <a class="skip" href="#how">Skip to how it works</a>

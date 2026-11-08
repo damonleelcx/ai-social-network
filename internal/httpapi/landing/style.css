@@ -82,6 +82,9 @@ img { image-rendering: pixelated; }
 
 #world { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100lvh; z-index: 0; image-rendering: pixelated; display: block; }
 .no-webgl #world { display: none; }
+.world-pending #world { opacity: 0; }
+#world { transition: opacity .6s steps(6); }
+.world-pending body, .world-pending .hero,
 .no-webgl body, .no-webgl .hero { background-image: radial-gradient(var(--line-soft) 1px, transparent 1px); background-size: 8px 8px; }
 
 .spr { display: inline-block; width: 1em; height: 1em; vertical-align: -.12em; flex: none; }

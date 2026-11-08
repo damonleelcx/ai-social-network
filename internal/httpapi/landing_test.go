@@ -46,7 +46,7 @@ func TestLandingAssetsResolve(t *testing.T) {
 	for _, m := range regexp.MustCompile(`url\((fonts/[\w.-]+|img/[\w.-]+)\)`).FindAllStringSubmatch(css, -1) {
 		urls = append(urls, "/landing/"+m[1])
 	}
-	urls = append(urls, "/landing/scene.js", "/landing/vendor/three.js", "/landing/img/suki.png", "/landing/img/suki-mono.png")
+	urls = append(urls, "/landing/scene.js", "/landing/vendor/three-0.187.0.js", "/landing/img/suki.png", "/landing/img/suki-mono.png")
 	for _, u := range urls {
 		w := getLanding(t, u)
 		if w.Code != 200 || w.Header().Get("Content-Type") == "" {
@@ -88,9 +88,19 @@ func TestLandingLanguages(t *testing.T) {
 
 // A new page with last hour's stylesheet renders broken, so the two can't be cached apart.
 func TestLandingCodeIsNeverStale(t *testing.T) {
-	for _, f := range []string{"/", "/landing/style.css", "/landing/app.js", "/landing/scene.js", "/landing/vendor/three.js"} {
+	for _, f := range []string{"/", "/landing/style.css", "/landing/app.js", "/landing/scene.js", "/landing/i18n.js"} {
 		if got := getLanding(t, f).Header().Get("Cache-Control"); got != "no-cache" {
 			t.Errorf("%s: Cache-Control %q", f, got)
+		}
+	}
+	// three.js is named by its version, so it can be kept, and the page asks for it early.
+	if got := getLanding(t, "/landing/vendor/three-0.187.0.js").Header().Get("Cache-Control"); got != "public, max-age=31536000, immutable" {
+		t.Errorf("three.js: Cache-Control %q", got)
+	}
+	page := getLanding(t, "/").Body.String()
+	for _, f := range []string{"/landing/scene.js", "/landing/vendor/three-0.187.0.js", "/landing/i18n.js"} {
+		if !strings.Contains(page, `<link rel="modulepreload" href="`+f+`">`) {
+			t.Errorf("%s isn't preloaded", f)
 		}
 	}
 	if got := getLanding(t, "/landing/img/suki.png").Header().Get("Cache-Control"); got != "public, max-age=3600" {

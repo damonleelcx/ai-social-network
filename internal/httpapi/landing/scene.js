@@ -11,7 +11,7 @@ import {
   MeshBasicMaterial, MeshLambertMaterial, NearestFilter, Object3D, OrthographicCamera, PerspectiveCamera, PlaneGeometry,
   PointLight, Points, PointsMaterial, RepeatWrapping, Scene, ShaderMaterial, SphereGeometry, Vector3, WebGLRenderTarget,
   WebGLRenderer,
-} from './vendor/three.js';
+} from './vendor/three-0.187.0.js';
 
 ColorManagement.enabled = false;
 
@@ -370,7 +370,7 @@ const smooth = (a, b, v) => {
 };
 const mix = (a, b, t) => a + (b - a) * t;
 
-export function createWorld({ canvas, screen, stage, forge, forgeHead, finale, reduced, theme, stepCount, onStep }) {
+export function createWorld({ canvas, screen, stage, forge, forgeHead, finale, reduced, theme, stepCount, onStep, onReady }) {
   const renderer = new WebGLRenderer({ canvas, antialias: false, powerPreference: 'low-power' });
   renderer.outputColorSpace = LinearSRGBColorSpace;
   renderer.setPixelRatio(1);
@@ -613,6 +613,10 @@ export function createWorld({ canvas, screen, stage, forge, forgeHead, finale, r
       renderer.render(scene, camera);
       renderer.setRenderTarget(null);
       renderer.render(postScene, postCam);
+      if (onReady) {
+        onReady();
+        onReady = null;
+      }
     }
     dirty = false;
   }
