@@ -373,6 +373,11 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /v1/billing/stripe", s.stripeWebhook)
 	m.HandleFunc("POST /v1/credits/wechat/prepay", v(lim("checkout", 20, time.Hour, s.wechatPrepay)))
 	m.HandleFunc("POST /v1/billing/wechat", s.wechatNotify)
+	m.HandleFunc("POST /v1/credits/wechat/virtual", v(lim("checkout", 20, time.Hour, s.xpayOrder)))
+	m.HandleFunc("POST /v1/credits/wechat/virtual/check", v(lim("xpay_check", 60, time.Hour, s.xpayCheck)))
+	// The mini program's message push URL: WeChat's virtual payment delivery notices.
+	m.HandleFunc("GET /v1/billing/wechat/push", s.xpayPushVerify)
+	m.HandleFunc("POST /v1/billing/wechat/push", s.xpayPush)
 	m.HandleFunc("POST /v1/credits/google/verify", v(lim("google-verify", 60, time.Hour, s.googleVerify)))
 	m.HandleFunc("GET /credits/done", s.creditsDone)
 
@@ -1275,6 +1280,80 @@ func (s *Server) googleVerify(w http.ResponseWriter, r *http.Request) {
 	}
 	s.announcePaid(r, res.Paid)
 	writeJSON(w, 200, map[string]any{"pending": res.Pending})
+}
+
+func (s *Server) xpayOrder(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		Package string `json:"package"`
+		Code    string `json:"code"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	o, err := s.Billing.XPayOrder(r.Context(), userOf(r).ID, b.Package, b.Code)
+	var ue *billing.UserError
+	if errors.As(err, &ue) {
+		fail(w, 422, ue.Msg)
+		return
+	}
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, o)
+}
+
+func (s *Server) xpayCheck(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		Order string `json:"order"`
+	}
+	if !read(w, r, &b) {
+		return
+	}
+	paid, err := s.Billing.CheckXPayOrder(r.Context(), userOf(r).ID, b.Order)
+	var ue *billing.UserError
+	if errors.As(err, &ue) {
+		fail(w, 422, ue.Msg)
+		return
+	}
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	s.announcePaid(r, paid)
+	writeJSON(w, 200, map[string]any{"paid": paid != nil})
+}
+
+// xpayPushVerify answers WeChat's check when the message push URL is saved in the console.
+func (s *Server) xpayPushVerify(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	if s.Billing.XPay == nil || !s.Billing.XPay.VerifyPushURL(q.Get("signature"), q.Get("timestamp"), q.Get("nonce")) {
+		fail(w, 403, "bad signature")
+		return
+	}
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	_, _ = io.WriteString(w, q.Get("echostr"))
+}
+
+// xpayPush takes WeChat's message push. Anything but ErrCode 0 has WeChat send it again.
+func (s *Server) xpayPush(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 1<<20))
+	if err != nil {
+		fail(w, 400, "too large")
+		return
+	}
+	paid, err := s.Billing.HandleXPayPush(r.Context(), body, billing.PushQuery(r.URL.Query().Get))
+	if errors.Is(err, billing.ErrBadPush) {
+		fail(w, 403, "bad signature")
+		return
+	}
+	if err != nil {
+		slog.Error("wechat virtual payment notice", "err", err)
+		writeJSON(w, 200, map[string]any{"ErrCode": 1, "ErrMsg": "try again"})
+		return
+	}
+	s.announcePaid(r, paid)
+	writeJSON(w, 200, map[string]any{"ErrCode": 0, "ErrMsg": "Success"})
 }
 
 // wechatNotify answers anything but 2xx to have WeChat send it again.

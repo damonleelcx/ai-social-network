@@ -24,6 +24,13 @@ type WeChat struct {
 }
 
 func (w *WeChat) OpenID(ctx context.Context, code string) (string, error) {
+	openid, _, err := w.Session(ctx, code)
+	return openid, err
+}
+
+// Session also returns the session_key WeChat issued for this login. Virtual payment needs it
+// to sign the payment request; it is used once and never stored.
+func (w *WeChat) Session(ctx context.Context, code string) (openid, sessionKey string, err error) {
 	base := w.URL
 	if base == "" {
 		base = "https://api.weixin.qq.com"
@@ -31,7 +38,7 @@ func (w *WeChat) OpenID(ctx context.Context, code string) (string, error) {
 	q := url.Values{"appid": {w.AppID}, "secret": {w.AppSecret}, "js_code": {code}, "grant_type": {"authorization_code"}}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, base+"/sns/jscode2session?"+q.Encode(), nil)
 	if err != nil {
-		return "", errors.New("wechat login: bad request")
+		return "", "", errors.New("wechat login: bad request")
 	}
 	client := w.HTTP
 	if client == nil {
@@ -40,17 +47,18 @@ func (w *WeChat) OpenID(ctx context.Context, code string) (string, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		// This error quotes the URL, and the URL holds the app secret.
-		return "", errors.New("wechat login: can't reach WeChat")
+		return "", "", errors.New("wechat login: can't reach WeChat")
 	}
 	defer resp.Body.Close()
 	var out struct {
-		OpenID string `json:"openid"`
+		OpenID     string `json:"openid"`
+		SessionKey string `json:"session_key"`
 	}
 	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<16)).Decode(&out); err != nil {
-		return "", errors.New("wechat login: unreadable answer")
+		return "", "", errors.New("wechat login: unreadable answer")
 	}
 	if out.OpenID == "" {
-		return "", ErrRejected
+		return "", "", ErrRejected
 	}
-	return out.OpenID, nil
+	return out.OpenID, out.SessionKey, nil
 }
