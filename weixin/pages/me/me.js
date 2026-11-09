@@ -35,6 +35,13 @@ const COPY = {
   blocked: 'Blocked people',
   account: 'Account',
   accountHint: 'Password, sessions, your data, legal',
+  guestTitle: 'Your profile lives here',
+  guestBody: 'Sign in to set up your profile and photos, invite friends and see your credits.',
+  signIn: 'Sign in',
+  language: 'Language',
+  terms: 'Terms',
+  privacy: 'Privacy policy',
+  contact: 'Contact',
 };
 const REASON = { purchase: 'Bought credits', turn: 'Message to Suki', referral: 'A friend joined', invited: 'Joined through a friend', checkin: 'Daily check-in', refund: "Refund: Suki couldn't answer", grant: 'Added by SynAgent' };
 const SCREENS = {
@@ -48,7 +55,7 @@ const SCREENS = {
 };
 
 Page({
-  data: { t: i18n.strings(COPY), user: {}, displayName: '', canPause: false, paused: false, pausing: false, photos: [], mainPhoto: '', invite: null, joinedText: '', checkin: null, checkinText: '', checking: false, credits: null, balanceText: '', creditsText: '', usage: [], packs: [], buying: false, unread: 0 },
+  data: { t: i18n.strings(COPY), guest: false, user: {}, displayName: '', canPause: false, paused: false, pausing: false, photos: [], mainPhoto: '', invite: null, joinedText: '', checkin: null, checkinText: '', checking: false, credits: null, balanceText: '', creditsText: '', usage: [], packs: [], buying: false, unread: 0 },
   onLoad() {
     this.off = live.on((topic) => {
       if (topic === 'credits' || topic === 'photos' || topic === 'notification' || topic === 'reconnect') this.load();
@@ -60,7 +67,21 @@ Page({
   onShow() {
     i18n.apply(this, COPY, 'Me');
     i18n.tabs();
-    if (api.getToken()) this.load();
+    this.setData({ guest: !api.getToken() });
+    if (!this.data.guest) this.load();
+  },
+  onSignIn() {
+    wx.navigateTo({ url: '/pages/login/login' });
+  },
+  onLegal(e) {
+    wx.navigateTo({ url: '/pages/legal/legal?page=' + e.currentTarget.dataset.page });
+  },
+  onLanguage() {
+    const list = i18n.LANGUAGES;
+    wx.showActionSheet({
+      itemList: list.map((l) => l.label),
+      success: (r) => i18n.setLanguage(list[r.tapIndex].value),
+    });
   },
   onShareAppMessage() {
     return share.message();
@@ -76,10 +97,11 @@ Page({
     }
   },
   async onPullDownRefresh() {
-    await this.load();
+    if (!this.data.guest) await this.load();
     wx.stopPullDownRefresh();
   },
   async load() {
+    if (!api.getToken()) return;
     try {
       const [me, photos, credits, usage, notifications] = await Promise.all([api.auth.me(), api.photos.list(), api.credits.status(), api.credits.usage(), api.notifications.list()]);
       const profile = me.profile || {};

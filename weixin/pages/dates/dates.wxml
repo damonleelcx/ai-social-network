@@ -24,5 +24,9 @@
     <view class="soft">{{item.statusText}}<text wx:if="{{item.whenText}}"> · {{item.whenText}}</text></view>
     <view wx:if="{{item.venue}}">{{item.venue.name}}</view>
   </view>
-  <suki-says wx:if="{{loaded && !dates.length && !posts.length}}" face="playful" size="264" title="{{t.emptyTitle}}" body="{{t.emptyBody}}" />
+  <block wx:if="{{guest}}">
+    <suki-says face="playful" size="264" title="{{t.guestTitle}}" body="{{t.guestBody}}" />
+    <button class="primary" bindtap="onSignIn">{{t.signIn}}</button>
+  </block>
+  <suki-says wx:elif="{{loaded && !dates.length && !posts.length}}" face="playful" size="264" title="{{t.emptyTitle}}" body="{{t.emptyBody}}" />
 </view>

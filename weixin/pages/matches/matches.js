@@ -13,10 +13,13 @@ const COPY = {
   loading: 'Checking on your introductions...',
   emptyTitle: 'Nobody here yet',
   emptyBody: "I'm looking. When I find someone worth your time, I'll bring them right here. The more you tell me, the better I get.",
+  guestTitle: 'Your introductions live here',
+  guestBody: "When I find someone worth your time, I'll bring them here. Sign in so I know who you are.",
+  signIn: 'Sign in',
 };
 
 Page({
-  data: { t: i18n.strings(COPY), matches: [], proposals: [], loaded: false },
+  data: { t: i18n.strings(COPY), guest: false, matches: [], proposals: [], loaded: false },
   onLoad() {
     this.off = live.on((topic) => {
       if (topic === 'matches' || topic === 'proposals' || topic === 'reconnect' || topic.startsWith('chat:')) this.load();
@@ -28,13 +31,21 @@ Page({
   onShow() {
     i18n.apply(this, COPY, 'Matches');
     i18n.tabs();
+    if (!api.getToken()) {
+      this.setData({ guest: true, loaded: true });
+      return;
+    }
     this.load();
   },
+  onSignIn() {
+    wx.navigateTo({ url: '/pages/login/login' });
+  },
   async onPullDownRefresh() {
-    await this.load();
+    if (!this.data.guest) await this.load();
     wx.stopPullDownRefresh();
   },
   async load() {
+    if (!api.getToken()) return;
     try {
       const [all, proposals] = await Promise.all([api.matches.list(), api.proposals.list()]);
       const matches = all.filter((m) => m.status === 'active').map((m) => Object.assign({}, m, {

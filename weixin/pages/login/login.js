@@ -83,8 +83,7 @@ Page({
   },
   onLegal(e) {
     const page = e.currentTarget.dataset.page;
-    // A web-view needs a filed business domain, so the address goes to the clipboard.
-    if (page) wx.setClipboardData({ data: `${api.API_URL}/legal/${page}?lang=${i18n.current()}` });
+    if (page) wx.navigateTo({ url: '/pages/legal/legal?page=' + page });
   },
   onSwitch() {
     this.setData({ mode: this.data.mode === 'signup' ? 'signin' : 'signup', error: '' });
@@ -105,7 +104,8 @@ Page({
   enter() {
     live.connect();
     settings.load().catch(() => {});
-    wx.switchTab({ url: '/pages/suki/suki' });
+    // Every tab may have been opened as a visitor, so they all start again.
+    wx.reLaunch({ url: '/pages/suki/suki' });
   },
   after(res) {
     api.setToken(res.token);
