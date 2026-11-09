@@ -21,7 +21,6 @@ const COPY = {
   exportData: 'Export my data',
   sendFile: 'Send the file to a WeChat chat',
   legal: 'Legal',
-  legalHint: 'Tapping one copies its link, so you can open it in a browser.',
   terms: 'Terms',
   privacy: 'Privacy policy',
   contact: 'Contact',
@@ -163,8 +162,7 @@ Page({
     wx.getFileSystemManager().unlink({ filePath: this.data.exportPath, fail: () => {} });
   },
   onLegal(e) {
-    // A web-view needs a filed business domain, so the address goes to the clipboard.
-    wx.setClipboardData({ data: `${api.API_URL}/legal/${e.currentTarget.dataset.page}?lang=${i18n.current()}` });
+    wx.navigateTo({ url: '/pages/legal/legal?page=' + e.currentTarget.dataset.page });
   },
   leave() {
     api.setToken('');

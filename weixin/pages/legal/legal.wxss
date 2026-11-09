@@ -1,0 +1,5 @@
+.legal {
+  font-size: 15px;
+  color: #f1ecfb;
+  padding-bottom: 48px;
+}

@@ -24,6 +24,13 @@ const COPY = {
   cancelVoice: 'Getting Suki’s voice. Tap to cancel',
   momentsTitle: "Hi, I'm Suki!",
   momentsBody: 'I help you find company for a meal, a film, a walk or a trip, and introduce you to people worth meeting. Tap the button below to open SynAgent and say hi.',
+  guestBody: 'Have a look around. When you want to talk to me, sign in and we can start.',
+  whatIDo: 'What I can do for you',
+  doCompany: 'Find company for a meal, a film, a walk or a trip',
+  doIntro: 'Introduce you to people worth meeting, one at a time',
+  doPlan: 'Plan the meetup: a place you both like and a time that works',
+  doSafe: 'Keep it safe: report or block anyone, any time',
+  signInToChat: 'Sign in to chat with Suki',
 };
 
 function shape(m) {
@@ -48,7 +55,7 @@ function newestSpeakable(messages) {
 }
 
 Page({
-  data: { t: i18n.strings(COPY), moments: false, messages: [], thinking: false, draft: '', replies: [], bottom: '', loaded: false, speaker: false, clip: null, phase: null, moodAvatar: true, headerMood: 'happy' },
+  data: { t: i18n.strings(COPY), guest: false, moments: false, messages: [], thinking: false, draft: '', replies: [], bottom: '', loaded: false, speaker: false, clip: null, phase: null, moodAvatar: true, headerMood: 'happy' },
   onLoad() {
     // Opened from Moments: no sign-in and no navigation here, just a hello. WeChat shows its
     // own button to open the full mini program, which keeps the link's invite code.
@@ -57,8 +64,9 @@ Page({
       return;
     }
     wx.showShareMenu({ menus: ['shareAppMessage', 'shareTimeline'], fail: () => {} });
+    // Not signed in: they can look around, and sign in when they choose to.
     if (!api.getToken()) {
-      wx.reLaunch({ url: '/pages/login/login' });
+      this.setData({ guest: true, loaded: true });
       return;
     }
     this.off = live.on((topic) => {
@@ -128,6 +136,7 @@ Page({
     else voice.play(seq, { tapped: true }).catch(showError);
   },
   async load() {
+    if (!api.getToken()) return;
     const last = this.data.messages[this.data.messages.length - 1];
     try {
       const r = await api.suki.messages(last ? last.seq : 0);
@@ -163,7 +172,14 @@ Page({
     clearInterval(this.poll);
     this.poll = null;
   },
+  onSignIn() {
+    wx.navigateTo({ url: '/pages/login/login' });
+  },
+  onLegal(e) {
+    wx.navigateTo({ url: '/pages/legal/legal?page=' + e.currentTarget.dataset.page });
+  },
   onSettings() {
+    if (this.data.guest) return this.onSignIn();
     wx.navigateTo({ url: '/pages/settings/suki/suki' });
   },
   onInput(e) {
@@ -177,6 +193,7 @@ Page({
     if (e.detail && e.detail.text) this.send(e.detail.text);
   },
   onSend() {
+    if (this.data.guest) return this.onSignIn();
     const text = this.data.draft.trim();
     if (!text) return;
     this.setData({ draft: '' });

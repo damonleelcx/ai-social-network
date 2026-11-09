@@ -1,0 +1,9 @@
+<view class="page legal">
+  <view wx:if="{{state === 'loading'}}" class="soft">{{t.loading}}</view>
+  <block wx:elif="{{state === 'failed'}}">
+    <view class="soft">{{t.failed}}</view>
+    <button class="primary" bindtap="onRetry">{{t.retry}}</button>
+    <button class="plain" bindtap="onCopy">{{t.copy}}</button>
+  </block>
+  <rich-text wx:else nodes="{{html}}" user-select="{{true}}"></rich-text>
+</view>

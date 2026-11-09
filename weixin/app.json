@@ -15,7 +15,8 @@
     "pages/settings/account/account",
     "pages/settings/blocked/blocked",
     "pages/settings/suki/suki",
-    "pages/settings/memory/memory"
+    "pages/settings/memory/memory",
+    "pages/legal/legal"
   ],
   "window": {
     "navigationBarTitleText": "SynAgent",

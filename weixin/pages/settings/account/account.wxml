@@ -35,7 +35,6 @@
   <button wx:if="{{exportPath}}" class="primary" bindtap="onSendFile">{{t.sendFile}}</button>
 
   <view class="section">{{t.legal}}</view>
-  <view class="soft">{{t.legalHint}}</view>
   <button class="plain" data-page="terms" bindtap="onLegal">{{t.terms}}</button>
   <button class="plain" data-page="privacy" bindtap="onLegal">{{t.privacy}}</button>
   <button class="plain" data-page="contact" bindtap="onLegal">{{t.contact}}</button>

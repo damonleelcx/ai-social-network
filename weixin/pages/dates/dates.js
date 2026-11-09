@@ -17,12 +17,15 @@ const COPY = {
   loading: 'Checking your calendar...',
   emptyTitle: 'No dates yet',
   emptyBody: "When a chat feels ready, tap Plan a date, or just ask me. I'll find a spot you'd both like.",
+  guestTitle: 'Your plans live here',
+  guestBody: 'Meetups and the plans you post show up here once you sign in.',
+  signIn: 'Sign in',
 };
 const STATUS = { searching: 'Looking for places', voting: 'Choosing a place', scheduling: 'Finding a time', confirmed: 'On!', completed: 'Finished', cancelled: 'Cancelled' };
 const POST = { open: 'Open to join', filled: 'Picked', closed: 'Taken down' };
 
 Page({
-  data: { t: i18n.strings(COPY), dates: [], posts: [], loaded: false },
+  data: { t: i18n.strings(COPY), guest: false, dates: [], posts: [], loaded: false },
   onLoad() {
     this.off = live.on((topic) => {
       if (topic === 'dates' || topic === 'buddies' || topic === 'reconnect') this.load();
@@ -34,13 +37,21 @@ Page({
   onShow() {
     i18n.apply(this, COPY, 'Dates');
     i18n.tabs();
+    if (!api.getToken()) {
+      this.setData({ guest: true, loaded: true });
+      return;
+    }
     this.load();
   },
+  onSignIn() {
+    wx.navigateTo({ url: '/pages/login/login' });
+  },
   async onPullDownRefresh() {
-    await this.load();
+    if (!this.data.guest) await this.load();
     wx.stopPullDownRefresh();
   },
   async load() {
+    if (!api.getToken()) return;
     try {
       const [dates, posts] = await Promise.all([api.dates.list(), api.buddies.mine()]);
       this.setData({

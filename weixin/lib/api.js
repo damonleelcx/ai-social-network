@@ -281,7 +281,6 @@ module.exports = {
       return s;
     },
     usage: async () => (await get('/v1/credits/usage')).usage || [],
-    wechatPrepay: (pack, code) => post('/v1/credits/wechat/prepay', { package: pack, code }),
     wechatVirtual: (pack, code) => post('/v1/credits/wechat/virtual', { package: pack, code }),
     wechatVirtualCheck: (order) => post('/v1/credits/wechat/virtual/check', { order }),
   },

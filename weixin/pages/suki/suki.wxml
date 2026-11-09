@@ -8,10 +8,21 @@
       <view class="suki-name">Suki</view>
       <view class="{{thinking ? 'suki-busy' : 'soft'}}">{{thinking ? t.thinkingHeader : t.winggirl}}</view>
     </view>
-    <view class="suki-settings" aria-role="button" aria-label="{{t.settings}}" bindtap="onSettings">···</view>
+    <view wx:if="{{!guest}}" class="suki-settings" aria-role="button" aria-label="{{t.settings}}" bindtap="onSettings">···</view>
   </view>
   <scroll-view class="chat-list" scroll-y scroll-into-view="{{bottom}}" scroll-with-animation>
-    <suki-says wx:if="{{!loaded}}" face="thinking" size="144" dots body="{{t.loading}}" />
+    <block wx:if="{{guest}}">
+      <suki-says face="chibi" size="296" title="{{t.hi}}" body="{{t.guestBody}}" />
+      <view class="card guest">
+        <view class="title">{{t.whatIDo}}</view>
+        <view class="guest-row"><text class="guest-dot">●</text>{{t.doCompany}}</view>
+        <view class="guest-row"><text class="guest-dot">●</text>{{t.doIntro}}</view>
+        <view class="guest-row"><text class="guest-dot">●</text>{{t.doPlan}}</view>
+        <view class="guest-row"><text class="guest-dot">●</text>{{t.doSafe}}</view>
+      </view>
+      <button class="primary" bindtap="onSignIn">{{t.signInToChat}}</button>
+    </block>
+    <suki-says wx:elif="{{!loaded}}" face="thinking" size="144" dots body="{{t.loading}}" />
     <suki-says wx:elif="{{!messages.length && !thinking}}" face="chibi" size="296" title="{{t.hi}}" body="{{t.hiBody}}" />
     <block wx:for="{{messages}}" wx:key="seq">
       <view wx:if="{{item.role === 'event'}}" class="note">{{item.body}}</view>
@@ -37,7 +48,8 @@
     <view wx:for="{{replies}}" wx:key="*this" class="chip" data-text="{{item}}" bindtap="onReply">{{item}}</view>
   </view>
   <view class="composer">
-    <input class="input" placeholder="{{t.placeholder}}" value="{{draft}}" confirm-type="send" adjust-position bindinput="onInput" bindconfirm="onSend" />
+    <view wx:if="{{guest}}" class="input soft" bindtap="onSignIn">{{t.placeholder}}</view>
+    <input wx:else class="input" placeholder="{{t.placeholder}}" value="{{draft}}" confirm-type="send" adjust-position bindinput="onInput" bindconfirm="onSend" />
     <view class="send" bindtap="onSend">{{t.send}}</view>
   </view>
 </view>

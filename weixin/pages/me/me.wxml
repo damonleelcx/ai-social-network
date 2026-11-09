@@ -1,101 +1,124 @@
 <view class="page">
-  <view class="card row">
-    <image wx:if="{{photos.length}}" class="me-photo" src="{{mainPhoto}}" mode="aspectFill" />
-    <suki-avatar wx:else mood="pouty" size="144" ring="6" />
-    <view class="grow me-words">
-      <view class="title">{{displayName}}</view>
-      <view wx:if="{{user.has_password}}" class="soft">{{user.email}}</view>
-      <view wx:if="{{!photos.length}}" class="soft">{{t.noPhoto}}</view>
+  <block wx:if="{{guest}}">
+    <suki-says face="chibi" size="264" title="{{t.guestTitle}}" body="{{t.guestBody}}" />
+    <button class="primary" bindtap="onSignIn">{{t.signIn}}</button>
+    <view class="section">{{t.more}}</view>
+    <view class="nav-row" bindtap="onLanguage">
+      <view class="grow">{{t.language}}</view>
+      <view class="arrow">›</view>
     </view>
-  </view>
-
-  <view class="nav-row" data-screen="edit" bindtap="onOpen">
-    <view class="grow">
-      <view>{{t.editProfile}}</view>
-      <view class="hint">{{t.editHint}}</view>
+    <view class="nav-row" data-page="terms" bindtap="onLegal">
+      <view class="grow">{{t.terms}}</view>
+      <view class="arrow">›</view>
     </view>
-    <view class="arrow">›</view>
-  </view>
-  <view wx:if="{{canPause}}" class="nav-row">
-    <view class="grow">
-      <view>{{t.pause}}</view>
-      <view class="hint">{{t.pauseHint}}</view>
+    <view class="nav-row" data-page="privacy" bindtap="onLegal">
+      <view class="grow">{{t.privacy}}</view>
+      <view class="arrow">›</view>
     </view>
-    <switch color="#ff5c8a" checked="{{paused}}" disabled="{{pausing}}" bindchange="onPause" />
-  </view>
-
-  <view class="section">{{t.photos}}</view>
-  <view class="photos">
-    <view wx:for="{{photos}}" wx:key="id" class="photo-wrap">
-      <image class="photo" src="{{item.path}}" mode="aspectFill" data-id="{{item.id}}" bindtap="onPhoto" />
-      <view class="photo-more" aria-role="button" aria-label="{{t.more}}" data-id="{{item.id}}" catchtap="onPhotoMore">···</view>
-    </view>
-    <view wx:if="{{photos.length < 6}}" class="photo add" bindtap="onAddPhoto">+</view>
-  </view>
-  <view wx:if="{{photos.length}}" class="hint">{{t.photosHint}}</view>
-
-  <view class="nav-row gap" data-screen="notifications" bindtap="onOpen">
-    <view class="grow">{{t.notifications}}</view>
-    <view wx:if="{{unread}}" class="badge">{{unread}}</view>
-    <view class="arrow">›</view>
-  </view>
-
-  <block wx:if="{{checkin}}">
-    <view class="section">{{t.checkIn}}</view>
-    <view class="card row">
-      <view class="grow soft">{{checkinText}}</view>
-      <button class="checkin {{checkin.checked_in ? 'plain' : 'primary'}}" size="mini" disabled="{{checkin.checked_in || checking}}" bindtap="onCheckIn">{{checkin.checked_in ? t.checkedIn : t.checkInButton}}</button>
+    <view class="nav-row" data-page="contact" bindtap="onLegal">
+      <view class="grow">{{t.contact}}</view>
+      <view class="arrow">›</view>
     </view>
   </block>
+  <block wx:else>
+    <view class="card row">
+      <image wx:if="{{photos.length}}" class="me-photo" src="{{mainPhoto}}" mode="aspectFill" />
+      <suki-avatar wx:else mood="pouty" size="144" ring="6" />
+      <view class="grow me-words">
+        <view class="title">{{displayName}}</view>
+        <view wx:if="{{user.has_password}}" class="soft">{{user.email}}</view>
+        <view wx:if="{{!photos.length}}" class="soft">{{t.noPhoto}}</view>
+      </view>
+    </view>
 
-  <view class="section">{{t.invite}}</view>
-  <view class="card" wx:if="{{invite}}">
-    <view class="soft">{{t.inviteHint}}</view>
-    <view class="soft gap">{{t.inviteCode}}: <text selectable="true">{{invite.code}}</text></view>
-    <view class="soft gap" wx:if="{{joinedText}}">{{joinedText}}</view>
-    <button class="plain" open-type="share">{{t.sendInvite}}</button>
-    <button class="plain" bindtap="onPoster">{{t.momentsPoster}}</button>
-  </view>
+    <view class="nav-row" data-screen="edit" bindtap="onOpen">
+      <view class="grow">
+        <view>{{t.editProfile}}</view>
+        <view class="hint">{{t.editHint}}</view>
+      </view>
+      <view class="arrow">›</view>
+    </view>
+    <view wx:if="{{canPause}}" class="nav-row">
+      <view class="grow">
+        <view>{{t.pause}}</view>
+        <view class="hint">{{t.pauseHint}}</view>
+      </view>
+      <switch color="#ff5c8a" checked="{{paused}}" disabled="{{pausing}}" bindchange="onPause" />
+    </view>
 
-  <view class="section">{{t.credits}}</view>
-  <view class="card" wx:if="{{credits}}">
-    <view class="title">{{balanceText}}</view>
-    <view class="soft">{{creditsText}}</view>
-    <block wx:if="{{credits.wechat_enabled && packs.length}}">
-      <button wx:for="{{packs}}" wx:for-item="p" wx:key="id" class="plain" disabled="{{buying}}" data-id="{{p.id}}" bindtap="onBuy">{{p.label}}</button>
+    <view class="section">{{t.photos}}</view>
+    <view class="photos">
+      <view wx:for="{{photos}}" wx:key="id" class="photo-wrap">
+        <image class="photo" src="{{item.path}}" mode="aspectFill" data-id="{{item.id}}" bindtap="onPhoto" />
+        <view class="photo-more" aria-role="button" aria-label="{{t.more}}" data-id="{{item.id}}" catchtap="onPhotoMore">···</view>
+      </view>
+      <view wx:if="{{photos.length < 6}}" class="photo add" bindtap="onAddPhoto">+</view>
+    </view>
+    <view wx:if="{{photos.length}}" class="hint">{{t.photosHint}}</view>
+
+    <view class="nav-row gap" data-screen="notifications" bindtap="onOpen">
+      <view class="grow">{{t.notifications}}</view>
+      <view wx:if="{{unread}}" class="badge">{{unread}}</view>
+      <view class="arrow">›</view>
+    </view>
+
+    <block wx:if="{{checkin}}">
+      <view class="section">{{t.checkIn}}</view>
+      <view class="card row">
+        <view class="grow soft">{{checkinText}}</view>
+        <button class="checkin {{checkin.checked_in ? 'plain' : 'primary'}}" size="mini" disabled="{{checkin.checked_in || checking}}" bindtap="onCheckIn">{{checkin.checked_in ? t.checkedIn : t.checkInButton}}</button>
+      </view>
     </block>
-    <view wx:else class="soft gap">{{t.noBuying}}</view>
-    <view wx:for="{{usage}}" wx:key="index" class="row gap">
-      <view class="grow soft">{{item.text}} · {{item.when}}</view>
-      <view>{{item.delta > 0 ? '+' : ''}}{{item.delta}}</view>
-    </view>
-  </view>
 
-  <view class="section">{{t.settings}}</view>
-  <view class="nav-row" data-screen="app" bindtap="onOpen">
-    <view class="grow">{{t.app}}</view>
-    <view class="arrow">›</view>
-  </view>
-  <view class="nav-row" data-screen="suki" bindtap="onOpen">
-    <view class="grow">
-      <view>{{t.sukiSettings}}</view>
-      <view class="hint">{{t.sukiSettingsHint}}</view>
+    <view class="section">{{t.invite}}</view>
+    <view class="card" wx:if="{{invite}}">
+      <view class="soft">{{t.inviteHint}}</view>
+      <view class="soft gap">{{t.inviteCode}}: <text selectable="true">{{invite.code}}</text></view>
+      <view class="soft gap" wx:if="{{joinedText}}">{{joinedText}}</view>
+      <button class="plain" open-type="share">{{t.sendInvite}}</button>
+      <button class="plain" bindtap="onPoster">{{t.momentsPoster}}</button>
     </view>
-    <view class="arrow">›</view>
-  </view>
-  <view class="nav-row" data-screen="memory" bindtap="onOpen">
-    <view class="grow">{{t.memory}}</view>
-    <view class="arrow">›</view>
-  </view>
-  <view class="nav-row" data-screen="blocked" bindtap="onOpen">
-    <view class="grow">{{t.blocked}}</view>
-    <view class="arrow">›</view>
-  </view>
-  <view class="nav-row" data-screen="account" bindtap="onOpen">
-    <view class="grow">
-      <view>{{t.account}}</view>
-      <view class="hint">{{t.accountHint}}</view>
+
+    <view class="section">{{t.credits}}</view>
+    <view class="card" wx:if="{{credits}}">
+      <view class="title">{{balanceText}}</view>
+      <view class="soft">{{creditsText}}</view>
+      <block wx:if="{{credits.wechat_enabled && packs.length}}">
+        <button wx:for="{{packs}}" wx:for-item="p" wx:key="id" class="plain" disabled="{{buying}}" data-id="{{p.id}}" bindtap="onBuy">{{p.label}}</button>
+      </block>
+      <view wx:else class="soft gap">{{t.noBuying}}</view>
+      <view wx:for="{{usage}}" wx:key="index" class="row gap">
+        <view class="grow soft">{{item.text}} · {{item.when}}</view>
+        <view>{{item.delta > 0 ? '+' : ''}}{{item.delta}}</view>
+      </view>
     </view>
-    <view class="arrow">›</view>
-  </view>
+
+    <view class="section">{{t.settings}}</view>
+    <view class="nav-row" data-screen="app" bindtap="onOpen">
+      <view class="grow">{{t.app}}</view>
+      <view class="arrow">›</view>
+    </view>
+    <view class="nav-row" data-screen="suki" bindtap="onOpen">
+      <view class="grow">
+        <view>{{t.sukiSettings}}</view>
+        <view class="hint">{{t.sukiSettingsHint}}</view>
+      </view>
+      <view class="arrow">›</view>
+    </view>
+    <view class="nav-row" data-screen="memory" bindtap="onOpen">
+      <view class="grow">{{t.memory}}</view>
+      <view class="arrow">›</view>
+    </view>
+    <view class="nav-row" data-screen="blocked" bindtap="onOpen">
+      <view class="grow">{{t.blocked}}</view>
+      <view class="arrow">›</view>
+    </view>
+    <view class="nav-row" data-screen="account" bindtap="onOpen">
+      <view class="grow">
+        <view>{{t.account}}</view>
+        <view class="hint">{{t.accountHint}}</view>
+      </view>
+      <view class="arrow">›</view>
+    </view>
+  </block>
 </view>
