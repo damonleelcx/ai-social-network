@@ -81,6 +81,7 @@ export const suki = {
     api<{ messages: Message[] | null; thinking: boolean }>(`/v1/agent/messages${after > 0 ? `?after=${after}` : ''}`),
   send: (text: string, client_id: string) =>
     api<{ message: Message }>('/v1/agent/messages', { method: 'POST', body: { text, client_id } }),
+  opened: () => api<Ok>('/v1/agent/opened', { method: 'POST', body: {} }),
 };
 
 export const proposals = {

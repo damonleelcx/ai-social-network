@@ -211,6 +211,7 @@ module.exports = {
   suki: {
     messages: (after) => get('/v1/agent/messages' + (after > 0 ? `?after=${after}` : '')),
     send: (text) => post('/v1/agent/messages', { text, client_id: clientId() }),
+    opened: () => post('/v1/agent/opened'),
     speechStatus: () => get('/v1/agent/speech'),
   },
   proposals: {

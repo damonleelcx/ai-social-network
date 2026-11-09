@@ -12,6 +12,7 @@ App({
     share.remember(options.query);
     if (!api.getToken()) return;
     live.connect();
+    api.suki.opened().catch(() => {});
     // Picks up their language. Until it arrives, the last one on this phone stays.
     settings.load().catch(() => {});
   },

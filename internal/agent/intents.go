@@ -76,6 +76,21 @@ const SuggestIntent = "sys_suggest_next"
 var suggest = Domain{Name: "suggest", Guide: `You're starting this, they didn't ask. Come up with one concrete thing for them to do today that gets them closer to meeting someone or doing something they'd enjoy: answer an introduction that's waiting, write to a match who's gone quiet, suggest a date, join or post a plan with a buddy, line up company for a trip they have coming, or improve their profile. Look at what's really there with proposal_list, match_list, buddy_board, buddy_mine and trip_mine, then pick what fits what you know about them. Show a post with buddy_show_post if that's the idea, or a button with app_open_screen. Never invent a person, a post, a place or an event. Don't repeat your last suggestion. Keep it to two or three short sentences, and offer quick replies that take it up or ask for something else.`,
 	Tools: []string{"proposal_list", "buddy_board", "buddy_mine", "buddy_show_post", "trip_mine"}}
 
+// OpenIntent is Suki saying something because someone just opened the app.
+const OpenIntent = "sys_app_open"
+
+// opening isn't in Domains either: only opening the app starts it. Its tools change nothing.
+var opening = Domain{Name: "opening", Guide: `They just opened the app and you're saying something first, like a friend who's glad they're back. Do ONE of these, whichever fits best right now, and don't do the same kind as your last message:
+- Introduce someone: if proposal_list has someone waiting, tell them who and why in a line, and show proposal_prepare_decision.
+- Recommend something: a plan they could join (buddy_board, then buddy_show_post), or a real place for something they like (place_ideas).
+- Suggest something to do: write to a match who's gone quiet, plan a date, line up company for a trip they have coming, or improve their profile.
+- Just chat: ask how something they told you went, or something light about what they like.
+Look with the tools before you introduce, recommend or suggest. Say only what your tools or what you know about them support: never invent a person, a post, a place, an event, the weather or the news. If there's nothing real to offer, just chat. If your last message is still unanswered, don't repeat it or chase them: say something new and easy to answer. Two short sentences at most, and offer quick replies.`,
+	Tools: []string{"proposal_list", "proposal_prepare_decision", "buddy_board", "buddy_mine", "buddy_show_post", "trip_mine", "place_ideas"}}
+
+// unprompted says Suki is speaking first, so her words are checked before anyone sees them.
+func unprompted(intent string) bool { return intent == SuggestIntent || intent == OpenIntent }
+
 func domainOf(intent string) *Domain {
 	for i := range Domains {
 		for _, x := range Domains[i].Intents {

@@ -368,6 +368,7 @@ func (s *Server) Handler() http.Handler {
 	// Suki
 	m.HandleFunc("GET /v1/agent/messages", v(s.agentMessages))
 	m.HandleFunc("POST /v1/agent/messages", v(lim("agent", 30, time.Minute, s.agentSend)))
+	m.HandleFunc("POST /v1/agent/opened", v(lim("agent_opened", 20, time.Minute, s.agentOpened)))
 	m.HandleFunc("GET /v1/agent/speech", v(s.speechStatus))
 	m.HandleFunc("POST /v1/agent/speech", v(lim("speech", 20, time.Minute, s.speak)))
 
@@ -1138,6 +1139,15 @@ func (s *Server) agentMessages(w http.ResponseWriter, r *http.Request) {
 	var pending int
 	_ = s.Pool.QueryRow(r.Context(), `SELECT count(*) FROM agent_turns WHERE conversation_id=$1 AND status IN ('ready','leased')`, conv).Scan(&pending)
 	writeJSON(w, 200, map[string]any{"messages": l, "thinking": pending > 0})
+}
+
+// agentOpened is the app telling us it just opened, so Suki can say something.
+func (s *Server) agentOpened(w http.ResponseWriter, r *http.Request) {
+	if err := workflows.GreetOnOpen(r.Context(), userOf(r).ID); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"ok": true})
 }
 
 func (s *Server) agentSend(w http.ResponseWriter, r *http.Request) {

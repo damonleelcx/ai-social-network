@@ -212,6 +212,11 @@ func (r *Runner) Execute(parent context.Context, t *Turn) {
 		_, _ = r.Pool.Exec(context.WithoutCancel(ctx), `UPDATE agent_turns SET status='ready', attempts=attempts-1, lease_owner=NULL, lease_expires_at=NULL WHERE id=$1 AND lease_epoch=$2`, t.ID, t.Epoch)
 		return
 	}
+	// Opening the app should never be answered with an apology for something they didn't ask.
+	if t.Intent == OpenIntent && (t.Attempts >= maxAttempts || errors.Is(err, llm.ErrPermanent) || errors.As(err, new(*engine.ErrBudget))) {
+		r.finish(ctx, t, "failed", intent, truncate(err.Error(), 400))
+		return
+	}
 	var budget *engine.ErrBudget
 	if errors.As(err, &budget) {
 		r.refund(ctx, t)
@@ -301,6 +306,9 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 	if intent == SuggestIntent {
 		dom = &suggest
 	}
+	if intent == OpenIntent {
+		dom = &opening
+	}
 	if t.Kind == "message" {
 		// A short answer means nothing without the question it answers.
 		var lastSuki string
@@ -382,6 +390,7 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 		msgs = append(msgs, llm.Message{Role: "system", Content: "EVENT, with no message from them: " + t.Prompt})
 	}
 	live := &streamer{r: r, ctx: ctx, t: t}
+	failedChecks := 0
 	for step := 0; step < maxToolSteps; step++ {
 		// Repeated on every call: after tool results, models tend to forget the last
 		// instruction in a long system prompt.
@@ -391,7 +400,12 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 			req.Tools = nil
 		}
 		live = &streamer{r: r, ctx: ctx, t: t, offset: 0}
-		resp, err := r.Model.Stream(ctx, engine.CallMeta{Purpose: "turn", UserID: t.UserID}, req, live.delta)
+		// What she says unprompted isn't shown word by word: it has to pass its check first.
+		onDelta := live.delta
+		if unprompted(intent) {
+			onDelta = func(string) {}
+		}
+		resp, err := r.Model.Stream(ctx, engine.CallMeta{Purpose: "turn", UserID: t.UserID}, req, onDelta)
 		if err != nil {
 			live.reset()
 			return intent, err
@@ -399,6 +413,18 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 		msg := resp.Message
 		msg.Role = "assistant"
 		if len(msg.ToolCalls) == 0 {
+			if unprompted(intent) {
+				if problem := r.checkOwnWords(ctx, t, state, msgs, msg.Content); problem != "" {
+					// Saying nothing is better than saying something untrue.
+					if failedChecks++; failedChecks >= 2 {
+						slog.Info("unprompted message held back", "turn", t.ID, "intent", intent)
+						return intent, nil
+					}
+					cards = nil
+					msgs = append(msgs, msg, llm.Message{Role: "system", Content: "That message failed its fact check and wasn't sent: " + problem + ". Write it again using only what your tools returned or what you know about them, show any card again, or just chat."})
+					continue
+				}
+			}
 			return intent, r.reply(ctx, t, msgs, msg.Content, cards, live)
 		}
 		// Text written before a tool call was only thinking aloud. It isn't kept.
@@ -427,6 +453,9 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 		if r.Hook != nil {
 			r.Hook(t.ID, step)
 		}
+	}
+	if unprompted(intent) {
+		return intent, nil // nobody is waiting on an answer
 	}
 	return intent, errors.New("no reply after the step budget")
 }

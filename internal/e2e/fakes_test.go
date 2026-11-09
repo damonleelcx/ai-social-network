@@ -24,6 +24,7 @@ type fakeLLM struct {
 	translations atomic.Int64
 	selfieMismatch atomic.Bool
 	verdict    atomic.Value // what the Critic rules, when set
+	inventOpening atomic.Bool // Suki names someone who doesn't exist when the app opens
 }
 
 func newFakeLLM() *fakeLLM { return &fakeLLM{} }
@@ -118,6 +119,14 @@ func (f *fakeLLM) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			reply(w, `{"city":"Testville","goal":"not_a_goal","interests":["origami"]}`, nil)
 		default:
 			reply(w, `{}`, nil)
+		}
+		return
+	}
+	if strings.Contains(sys, "You check a message Suki wrote") {
+		if strings.Contains(user, "Marco") {
+			reply(w, `{"ok":false,"problem":"nobody called Marco is in her tool results"}`, nil)
+		} else {
+			reply(w, `{"ok":true}`, nil)
 		}
 		return
 	}
@@ -262,6 +271,14 @@ func (f *fakeLLM) suki(w http.ResponseWriter, msgs []fakeMsg, has map[string]boo
 	}
 	if last.Role == "system" && strings.Contains(last.text(), "something for them to do") {
 		reply(w, "Why not say hi to someone today? <<mood=playful|replies=Good idea;Something else>>", nil)
+		return
+	}
+	if strings.Contains(all, "They just opened the app.") {
+		if f.inventOpening.Load() {
+			reply(w, "Marco is waiting to meet you! <<mood=happy>>", nil)
+		} else {
+			reply(w, "Hey you, how's your week going? <<mood=happy|replies=Good;Busy>>", nil)
+		}
 		return
 	}
 	if last.Role == "system" && strings.Contains(last.text(), "EVENT") {
