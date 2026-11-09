@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Pressable, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
 import { API_URL } from '@/api/client';
@@ -26,11 +26,14 @@ function SceneImage({ id }: { id: string }) {
   );
   return (
     <Image
+      // On the web a failed image never loads a new source, so each try is a new one.
+      key={attempt}
       source={{ uri: attempt ? `${sceneUri(id)}?try=${attempt}` : sceneUri(id) }}
       style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
       contentFit="cover"
       cachePolicy="disk"
-      transition={160}
+      // On the web a fade can stall and leave the picture invisible.
+      transition={Platform.OS === 'web' ? 0 : 160}
       onError={() => {
         if (attempt < SCENE_RETRIES) timer.current = setTimeout(() => setAttempt((a) => a + 1), SCENE_RETRY_MS);
       }}

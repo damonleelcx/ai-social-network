@@ -152,6 +152,9 @@ func run(mode string) error {
 	var wg sync.WaitGroup
 	if mode == "serve" || mode == "worker" {
 		startWorkers(ctx, &wg, cfg, store, model, chats, svc, bill, mailer)
+		if scn != nil {
+			go scn.Backfill(ctx)
+		}
 	}
 	if mode == "serve" || mode == "web" {
 		hub := httpapi.NewHub()

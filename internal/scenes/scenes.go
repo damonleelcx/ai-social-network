@@ -66,44 +66,77 @@ func Key(scene, cityKey string) string {
 
 // Post gives a plan its picture. It runs in the background: the plan is up already, and its
 // card shows the poster's photo until the picture is ready.
-func (s *Service) Post(requestID string) {
-	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
-		defer cancel()
-		var owner, kind, note, place, cityKey, cityName string
-		err := s.Pool.QueryRow(ctx, `SELECT user_id, kind, note, place, city_key, city_name FROM buddy_requests WHERE id=$1`, requestID).
-			Scan(&owner, &kind, &note, &place, &cityKey, &cityName)
-		if err != nil {
-			slog.Warn("scene: post", "err", err)
-			return
-		}
-		scene := s.name(ctx, owner, kind, note, place)
-		key, err := s.ensure(ctx, scene, cityKey, cityName, kind)
-		if err != nil {
-			slog.Warn("scene: draw", "err", err)
-			return
-		}
-		_, _ = s.Pool.Exec(ctx, `UPDATE buddy_requests SET scene_key=$2 WHERE id=$1`, requestID, key)
-	}()
-}
+func (s *Service) Post(requestID string) { go s.post(requestID) }
 
 // Trip gives a trip its city's picture.
-func (s *Service) Trip(tripID string) {
-	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
-		defer cancel()
-		var cityKey, cityName string
-		if err := s.Pool.QueryRow(ctx, `SELECT city_key, city_name FROM trips WHERE id=$1`, tripID).Scan(&cityKey, &cityName); err != nil {
-			slog.Warn("scene: trip", "err", err)
-			return
-		}
-		key, err := s.ensure(ctx, "city skyline", cityKey, cityName, "travel")
+func (s *Service) Trip(tripID string) { go s.trip(tripID) }
+
+func (s *Service) post(requestID string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+	defer cancel()
+	var owner, kind, note, place, cityKey, cityName string
+	err := s.Pool.QueryRow(ctx, `SELECT user_id, kind, note, place, city_key, city_name FROM buddy_requests WHERE id=$1`, requestID).
+		Scan(&owner, &kind, &note, &place, &cityKey, &cityName)
+	if err != nil {
+		slog.Warn("scene: post", "err", err)
+		return
+	}
+	scene := s.name(ctx, owner, kind, note, place)
+	key, err := s.ensure(ctx, scene, cityKey, cityName, kind)
+	if err != nil {
+		slog.Warn("scene: draw", "err", err)
+		return
+	}
+	_, _ = s.Pool.Exec(ctx, `UPDATE buddy_requests SET scene_key=$2 WHERE id=$1`, requestID, key)
+}
+
+func (s *Service) trip(tripID string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+	defer cancel()
+	var cityKey, cityName string
+	if err := s.Pool.QueryRow(ctx, `SELECT city_key, city_name FROM trips WHERE id=$1`, tripID).Scan(&cityKey, &cityName); err != nil {
+		slog.Warn("scene: trip", "err", err)
+		return
+	}
+	key, err := s.ensure(ctx, "city skyline", cityKey, cityName, "travel")
+	if err != nil {
+		slog.Warn("scene: draw", "err", err)
+		return
+	}
+	_, _ = s.Pool.Exec(ctx, `UPDATE trips SET scene_key=$2 WHERE id=$1`, tripID, key)
+}
+
+// Backfill gives a picture to the plans and trips still running that don't have one, such as those
+// made before pictures existed or whose drawing failed. One at a time, so it can't flood the model.
+func (s *Service) Backfill(ctx context.Context) {
+	ids := func(q string) []string {
+		rows, err := s.Pool.Query(ctx, q)
 		if err != nil {
-			slog.Warn("scene: draw", "err", err)
+			slog.Warn("scene: backfill", "err", err)
+			return nil
+		}
+		defer rows.Close()
+		out := []string{}
+		for rows.Next() {
+			var id string
+			if rows.Scan(&id) == nil {
+				out = append(out, id)
+			}
+		}
+		return out
+	}
+	for _, id := range ids(`SELECT id FROM buddy_requests WHERE scene_key IS NULL AND status='open' AND expires_at>now() ORDER BY created_at DESC LIMIT 50`) {
+		if ctx.Err() != nil {
 			return
 		}
-		_, _ = s.Pool.Exec(ctx, `UPDATE trips SET scene_key=$2 WHERE id=$1`, tripID, key)
-	}()
+		s.post(id)
+	}
+	for _, id := range ids(`SELECT id FROM trips WHERE scene_key IS NULL AND ends_on>=current_date ORDER BY created_at DESC LIMIT 50`) {
+		if ctx.Err() != nil {
+			return
+		}
+		s.trip(id)
+	}
 }
 
 // PreviewTrip names the picture a trip to this city will have, and starts drawing it, so the card

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { Alert } from '@/lib/dialogs';
 import * as api from '@/api/endpoints';
@@ -193,6 +193,24 @@ function useBuddyRequest(id: string) {
 
 const Closed = ({ label }: { label: string }) => <Pill tone="plain" icon="time-outline" label={label} />;
 
+/** The plan's picture with what comes under it, or just the words until it has one. */
+function PostFrame({ request, children }: { request: BuddyRequest; children: ReactNode }) {
+  if (request.scene) {
+    return (
+      <HeroCard scene={request.scene} title={request.when} subtitle={[request.place, request.city_name].filter(Boolean).join(' · ')} badges={<PlanBadges r={request} />} height={200}>
+        {request.note ? <T>{request.note}</T> : null}
+        {children}
+      </HeroCard>
+    );
+  }
+  return (
+    <Glass style={{ gap: space.md }}>
+      <Plan {...planOf(request, true)} />
+      {children}
+    </Glass>
+  );
+}
+
 /** One of this person's own plans, on the Dates tab. */
 export function MyBuddyPost({ request, onChange }: { request: BuddyRequest; onChange: () => void }) {
   const live = useLive();
@@ -230,8 +248,7 @@ export function MyBuddyPost({ request, onChange }: { request: BuddyRequest; onCh
   if (request.spots > 1) {
     const others = (request.members ?? []).slice(1);
     return (
-      <Glass style={{ gap: space.md }}>
-        <Plan {...planOf(request, true)} />
+      <PostFrame request={request}>
         {others.length ? (
           others.map((m) => <PersonRow key={m.user_id} person={m} onBlocked={onChange} />)
         ) : (
@@ -243,12 +260,11 @@ export function MyBuddyPost({ request, onChange }: { request: BuddyRequest; onCh
             <Button label={tr('Call it off')} kind="secondary" small loading={busy} onPress={close} />
           </>
         ) : null}
-      </Glass>
+      </PostFrame>
     );
   }
   return (
-    <Glass style={{ gap: space.md }}>
-      <Plan {...planOf(request, true)} />
+    <PostFrame request={request}>
       {request.status === 'filled' && request.match_id ? (
         <Button label={tr('Open the chat')} icon="chatbubbles" kind="secondary" small onPress={() => router.push(`/chat/${request.match_id}`)} />
       ) : (
@@ -266,7 +282,7 @@ export function MyBuddyPost({ request, onChange }: { request: BuddyRequest; onCh
           <Button label={tr('Take it down')} kind="secondary" small loading={busy} onPress={close} />
         </>
       )}
-    </Glass>
+    </PostFrame>
   );
 }
 
@@ -274,11 +290,13 @@ export function MyBuddyPost({ request, onChange }: { request: BuddyRequest; onCh
 export function BuddyPostCard({ card }: { card: Extract<Card, { kind: 'buddy_post' }> }) {
   const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle');
   const [error, setError] = useState<string | null>(null);
-  if (state === 'done') return <Pill tone="good" icon="checkmark-circle" label={tr('Posted.')} />;
+  if (state === 'done' && !card.scene) return <Pill tone="good" icon="checkmark-circle" label={tr('Posted.')} />;
   const group = !!card.spots && card.spots > 1;
-  const footer = (
+  const footer = state === 'done' ? (
+    <Pill tone="good" icon="checkmark-circle" label={tr('Posted.')} />
+  ) : (
     <>
-      {group ? <T v="small" soft>{tr('A group: people who join are in at once, and you all share a group chat.')}</T> : null}
+      {group ?<T v="small" soft>{tr('A group: people who join are in at once, and you all share a group chat.')}</T> : null}
       {card.same_gender ? <T v="small" soft>{tr('Only people of my gender')}</T> : null}
       <ErrorText message={error} />
       <Button

@@ -134,6 +134,7 @@ Component({
     },
     detached() {
       i18n.detach(this);
+      clearTimeout(this.sceneTimer);
     },
   },
   pageLifetimes: {
@@ -162,7 +163,7 @@ Component({
           });
           this.photo(item.person);
         } else if (c.kind === 'trip_post') {
-          this.setData({ datesText: dates(c.starts_on, c.ends_on) });
+          this.setData({ datesText: dates(c.starts_on, c.ends_on), scene: sceneSrc(c.scene) });
         } else if (c.kind === 'trip') {
           const item = await api.trips.get(c.trip_id);
           this.setData({ item, datesText: dates(item.starts_on, item.ends_on), tripText: tripLine(item), scene: sceneSrc(item.scene) });
@@ -171,6 +172,7 @@ Component({
             activityText: person.activity(c.activity),
             groupText: c.spots > 1 ? groupLine(1, c.spots) : '',
             placeText: [c.place, c.city_name].filter(Boolean).join(' · '),
+            scene: sceneSrc(c.scene),
           });
           // The card comes back with the conversation, and must not offer to post twice.
           const mine = await api.buddies.mine();
@@ -203,6 +205,14 @@ Component({
     async photo(person) {
       const ids = (person && person.photo_ids) || [];
       if (ids.length) this.setData({ photo: await api.media(ids[0]) });
+    },
+    // A new picture takes a while to draw and isn't there until then, so keep asking.
+    onSceneError() {
+      this.sceneTries = (this.sceneTries || 0) + 1;
+      if (this.sceneTries > 40) return;
+      this.sceneTimer = setTimeout(() => {
+        this.setData({ scene: `${this.data.scene.split('?')[0]}?try=${this.sceneTries}` });
+      }, 3000);
     },
     onPreview() {
       const person = this.data.item && this.data.item.person;

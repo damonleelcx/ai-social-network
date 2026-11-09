@@ -3,6 +3,7 @@
   <block wx:if="{{posts.length}}">
     <view class="section">{{t.posts}}</view>
     <view wx:for="{{posts}}" wx:key="id" wx:for-item="post" class="card">
+      <image wx:if="{{post.sceneUrl}}" class="post-scene" src="{{post.sceneUrl}}" mode="aspectFill" />
       <view class="title">{{post.kindText}}</view>
       <view class="soft">{{post.when}} · {{post.statusText}}</view>
       <view wx:if="{{post.note}}">{{post.note}}</view>

@@ -3,6 +3,7 @@ const live = require('../../lib/live');
 const i18n = require('../../lib/i18n');
 const person = require('../../lib/person');
 const { time, showError, confirm } = require('../../lib/format');
+const { API_URL } = require('../../config');
 
 const { t } = i18n;
 
@@ -47,6 +48,7 @@ Page({
         dates: dates.map((d) => Object.assign({}, d, { statusText: STATUS[d.status] ? t(STATUS[d.status]) : d.status, whenText: time(d.scheduled_at) })),
         posts: posts.map((p) => Object.assign({}, p, {
           kindText: person.activity(p.kind),
+          sceneUrl: p.scene ? `${API_URL}/v1/scenes/${p.scene}.jpg` : '',
           statusText: POST[p.status] ? t(POST[p.status]) : p.status,
           offers: (p.offers || []).map((o) => Object.assign({}, o, { line: t('{name} wants to go too', { name: o.person.display_name }) })),
         })),
