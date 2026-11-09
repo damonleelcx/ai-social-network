@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/damonleelcx/ai-social-network/internal/profile"
+	"github.com/damonleelcx/ai-social-network/internal/workflows"
 )
 
 // LookingFor is what Suki understands someone wants, in three parts, built only from what they
@@ -16,6 +17,8 @@ type LookingFor struct {
 	Must     LookingMust         `json:"must"`
 	RedFlags map[string][]string `json:"red_flags"`
 	Nice     []LookingForNote    `json:"nice"`
+	// Read is Suki's own reading of what they've said. Every line cites their words.
+	Read []workflows.LookingLine `json:"read"`
 }
 
 type LookingMust struct {
@@ -62,7 +65,20 @@ func ReadLookingFor(ctx context.Context, pool *pgxpool.Pool, userID string) (*Lo
 		}
 		out.Nice = append(out.Nice, n)
 	}
-	return out, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	out.Read, err = workflows.LookingLines(ctx, userID)
+	return out, err
+}
+
+// dropLookingLine takes one of Suki's lines off the card, and she won't say it again.
+func (s *Server) dropLookingLine(w http.ResponseWriter, r *http.Request) {
+	if err := workflows.DropLookingLine(r.Context(), userOf(r).ID, r.PathValue("id")); err != nil {
+		handleErr(w, r, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"ok": true})
 }
 
 func (s *Server) lookingFor(w http.ResponseWriter, r *http.Request) {

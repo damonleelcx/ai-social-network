@@ -46,10 +46,26 @@ function Line({ text, onRemove }: { text: string; onRemove?: () => void }) {
   );
 }
 
+/** Something Suki noticed, with their own words under it so they can see why she thinks so. */
+function ReadLine({ line, onRemove }: { line: api.LookingLine; onRemove: () => void }) {
+  const t = useTheme();
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: space.sm }}>
+      <View style={{ flex: 1, gap: 2 }}>
+        <T>{line.text}</T>
+        <T v="small" faint style={{ fontStyle: 'italic' }}>{`“${line.said}”`}</T>
+      </View>
+      <Pressable accessibilityRole="button" accessibilityLabel={tr('Remove')} hitSlop={10} onPress={onRemove}>
+        <T v="small" color={t.inkFaint}>✕</T>
+      </Pressable>
+    </View>
+  );
+}
+
 /**
  * What Suki understands this person is looking for, from what they told her and nothing else:
- * who and what they want, what they won't accept, and the notes she keeps. One tap removes a
- * line; anything else they change by telling her, which is what the button does.
+ * the basics they set, who draws them in, what they'd steer clear of, and the notes she keeps. One tap removes a line; anything else they change by telling her, which is what the
+ * button does.
  */
 export function LookingForCard() {
   const { sendToSuki } = useLive();
@@ -66,6 +82,9 @@ export function LookingForCard() {
     lf.must.city ? tr('In or near {city}', { city: lf.must.city }) : '',
   ].filter(Boolean);
   const flags = Object.entries(lf.red_flags);
+  const read = lf.read ?? [];
+  const toward = read.filter((l) => l.kind === 'toward');
+  const away = read.filter((l) => l.kind === 'away');
   const remove = (fn: () => Promise<unknown>) => async () => {
     try {
       await fn();
@@ -78,12 +97,20 @@ export function LookingForCard() {
     <Glass strong style={{ gap: space.md }}>
       <T v="subheading">{tr("What I think you're looking for")}</T>
       <T v="small" soft>{tr("Only from what you've told me. Tap ✕ to take something out, or tell me what to change.")}</T>
-      <Section title={tr('Must-haves')} empty={!must.length}>
+      <Section title={tr('The basics')} empty={!must.length}>
         {must.map((m) => (
           <Line key={m} text={m} />
         ))}
       </Section>
-      <Section title={tr('Red flags')} empty={!flags.length}>
+      <Section title={tr('Drawn to')} empty={!toward.length}>
+        {toward.map((l) => (
+          <ReadLine key={l.id} line={l} onRemove={remove(() => api.lookingFor.dropRead(l.id))} />
+        ))}
+      </Section>
+      <Section title={tr('Steering clear of')} empty={!flags.length && !away.length}>
+        {away.map((l) => (
+          <ReadLine key={l.id} line={l} onRemove={remove(() => api.lookingFor.dropRead(l.id))} />
+        ))}
         {flags.map(([field, values]) => (
           <Line key={field} text={redFlag(field, values)} onRemove={remove(() => api.lookingFor.dropRedFlag(field))} />
         ))}

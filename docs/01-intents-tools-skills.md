@@ -31,7 +31,7 @@ automated. Effects: **R** read, **W** writes our database, **X** reaches outside
 | `profile_write_bio` | "write my bio for me" | `bio_draft` (user approves) |
 | `profile_dealbreakers` | "no smokers, ever" | `dealbreaker_set` |
 | `profile_verify` | "how do I get verified?" | `selfie_request` (card: live selfie compared with their main photo, never kept) |
-| `profile_looking_for` | "what do you think I'm looking for?" | `looking_for_show` (card: must-haves, red flags, notes; corrections by tap or by telling Suki) |
+| `profile_looking_for` | "what do you think I'm looking for?" | `looking_for_show` (card: the basics, drawn to, steering clear of, notes; corrections by tap or by telling Suki) |
 | `photo_add` | "I want to add a photo" | `photo_request` |
 | `photo_feedback` | "is this a good photo?" | `photo_list`, `photo_advice` |
 | `photo_manage` | "make the second one my main photo" | `photo_set_primary`, `photo_remove` |
@@ -230,7 +230,7 @@ Column **Agents** lists who may call a tool. The worker refuses anyone else.
 | `bio_draft` | W | G1 | Suki | stores a draft shown as a card; only a tap saves it |
 | `dealbreaker_set` | W | G0 | Suki | hard filters the user stated |
 | `selfie_request` | R | G1 | Suki | renders the live-selfie button; the badge needs a match with their main photo |
-| `looking_for_show` | R | G1 | Suki | renders what Suki understands they want, only from what they told her |
+| `looking_for_show` | W | G1 | Suki | renders what Suki understands they want, only from what they told her |
 | `photo_request` | R | G0 | Suki | renders the upload button in chat |
 | `photo_list` | R | G0 | Suki | own photos and review state |
 | `photo_advice` | R | G0 | Suki | stored review tips for own photos |

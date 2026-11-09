@@ -560,8 +560,9 @@ module.exports = {
   // What I'm looking for
   "What I think you're looking for": ['我理解的你想找的人', '내가 이해한 당신이 찾는 사람', 'わたしが理解しているあなたの探している人', 'Lo que creo que buscas'],
   "Only from what you've told me. Tap ✕ to take something out, or tell me what to change.": ['只来自你告诉过我的内容。点 ✕ 可以删掉一项，或者告诉我要改什么。', '당신이 말해 준 것만으로 만들었어요. ✕를 눌러 빼거나, 바꿀 걸 말해 주세요.', 'あなたが話してくれたことだけから作っています。✕ で消すか、変えたいことを教えてください。', 'Solo con lo que me has contado. Toca ✕ para quitar algo, o dime qué cambiar.'],
-  'Must-haves': ['必须满足', '꼭 필요한 것', '必須の条件', 'Imprescindible'],
-  'Red flags': ['不能接受', '받아들일 수 없는 것', 'NG なこと', 'Líneas rojas'],
+  'The basics': ['基本条件', '기본 조건', '基本の条件', 'Lo básico'],
+  'Drawn to': ['会吸引你的', '끌리는 쪽', '惹かれるところ', 'Lo que te atrae'],
+  'Steering clear of': ['你想避开的', '피하고 싶은 쪽', '避けたいこと', 'Lo que prefieres evitar'],
   'Nice to have': ['加分项', '있으면 좋은 것', 'あるとうれしいこと', 'Un plus'],
   'Nothing yet.': ['还没有。', '아직 없어요.', 'まだありません。', 'Nada todavía.'],
   'Change something': ['改一下', '바꾸기', '変更する', 'Cambiar algo'],

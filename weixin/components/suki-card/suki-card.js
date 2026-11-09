@@ -50,8 +50,9 @@ const COPY = {
   inviteLine: 'Invite friends to find company with you.',
   lookingTitle: "What I think you're looking for",
   lookingHint: "Only from what you've told me. Tap ✕ to take something out, or tell me what to change.",
-  must: 'Must-haves',
-  redFlags: 'Red flags',
+  must: 'The basics',
+  drawnTo: 'Drawn to',
+  steerClear: 'Steering clear of',
   nice: 'Nice to have',
   nothingYet: 'Nothing yet.',
   changeSomething: 'Change something',
@@ -80,7 +81,8 @@ function lookingLines(lf) {
     const values = lf.red_flags[field].map((v) => (options && options[v] ? t(options[v]) : v)).join(', ');
     return { field, text: `${t(name)}: ${values}` };
   });
-  return { must, flags, nice: lf.nice || [] };
+  const read = lf.read || [];
+  return { must, flags, nice: lf.nice || [], toward: read.filter((l) => l.kind === 'toward'), away: read.filter((l) => l.kind === 'away') };
 }
 
 // Name and age, then work and city, for over a photo.
@@ -299,6 +301,14 @@ Component({
     async onDropNote(e) {
       try {
         await api.memories.remove(e.currentTarget.dataset.id);
+        this.setData({ looking: lookingLines(await api.lookingFor.get()) });
+      } catch (err) {
+        showError(err);
+      }
+    },
+    async onDropRead(e) {
+      try {
+        await api.lookingFor.dropRead(e.currentTarget.dataset.id);
         this.setData({ looking: lookingLines(await api.lookingFor.get()) });
       } catch (err) {
         showError(err);

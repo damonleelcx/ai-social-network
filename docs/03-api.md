@@ -194,6 +194,8 @@ Reasons: `harassment`, `fake_profile`, `inappropriate_content`, `scam`, `underag
 | `GET /v1/memories` | `{memories:[{id,note,created_at}]}` |
 | `DELETE /v1/memories/{id}` | `{ok}` |
 | `POST /v1/memories/reset` | `{ok}`: forgets notes and everything learned |
+| `GET /v1/looking-for` | `{must, red_flags, nice, read:[{id,kind,text,said}]}`: what Suki thinks they want. `read` is what she noticed, `kind` is toward or away, and `said` is the words that told her |
+| `DELETE /v1/looking-for/read/{id}` | `{ok}`: takes a line off, and she won't write it again |
 
 ## Notifications
 

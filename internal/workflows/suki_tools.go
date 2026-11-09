@@ -2,6 +2,7 @@ package workflows
 
 import (
 	"context"
+	"log/slog"
 	"errors"
 	"fmt"
 	"strings"
@@ -412,8 +413,15 @@ func registerSukiTools() {
 			return card("selfie"), nil
 		})
 
-	add("looking_for_show", "Show this person the card with what you understand they're looking for: must-haves, red flags and the notes you keep on what they like. They can correct it there or by telling you. Built only from what they told you, never from anything hidden.", noArgs, tools.Read,
-		func(context.Context, *tools.Env, map[string]any) (map[string]any, error) {
+	add("looking_for_show", "Show this person the card with what you understand they're looking for: the basics, who draws them in, what they'd steer clear of and the notes you keep. They can correct it there or by telling you. Built only from what they told you, never from anything hidden.", noArgs, tools.Write,
+		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
+			// The card still works without her read: it shows what they've set themselves.
+			if err := refreshLookingRead(ctx, env.UserID, env.Lang, env.ConversationID); err != nil {
+				slog.Warn("looking read", "err", err)
+			}
+			if err := markLookingShown(ctx, env.UserID); err != nil {
+				slog.Warn("looking shown", "err", err)
+			}
 			return card("looking_for"), nil
 		})
 

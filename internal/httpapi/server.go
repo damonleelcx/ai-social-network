@@ -449,6 +449,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /v1/settings", s.signedIn(s.patchSettings))
 	m.HandleFunc("GET /v1/memories", v(s.memories))
 	m.HandleFunc("GET /v1/looking-for", v(s.lookingFor))
+	m.HandleFunc("DELETE /v1/looking-for/read/{id}", v(s.dropLookingLine))
 	m.HandleFunc("POST /v1/verify/selfie", v(lim("selfie", 10, time.Hour, s.verifySelfie)))
 	m.HandleFunc("DELETE /v1/looking-for/red-flags/{field}", v(s.dropRedFlag))
 	m.HandleFunc("DELETE /v1/memories/{id}", v(s.deleteMemory))
@@ -2394,11 +2395,16 @@ func (s *Server) export(w http.ResponseWriter, r *http.Request) {
 		handleErr(w, r, err)
 		return
 	}
+	read, err := workflows.LookingLines(r.Context(), u.ID)
+	if err != nil {
+		handleErr(w, r, err)
+		return
+	}
 	notes, err := ids(r.Context(), s.Pool, `SELECT content FROM memories WHERE user_id=$1`, u.ID)
 	if err != nil {
 		handleErr(w, r, err)
 		return
 	}
 	writeJSON(w, 200, map[string]any{"account": map[string]any{"email": u.Email, "created_at": u.CreatedAt}, "profile": p, "photos": photos,
-		"settings": dating.GetSettings(r.Context(), s.Pool, u.ID), "buddy_posts": buddies, "trips": trips, "credit_history": credits, "suki_conversation": agentMsgs, "messages_you_sent": chats, "suki_notes": notes})
+		"settings": dating.GetSettings(r.Context(), s.Pool, u.ID), "looking_read": read, "buddy_posts": buddies, "trips": trips, "credit_history": credits, "suki_conversation": agentMsgs, "messages_you_sent": chats, "suki_notes": notes})
 }

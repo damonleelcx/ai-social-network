@@ -61,8 +61,12 @@
   <view class="lf-head">{{t.must}}</view>
   <view wx:if="{{!looking.must.length}}" class="soft">{{t.nothingYet}}</view>
   <view wx:for="{{looking.must}}" wx:key="*this" class="lf-line">{{item}}</view>
-  <view class="lf-head">{{t.redFlags}}</view>
-  <view wx:if="{{!looking.flags.length}}" class="soft">{{t.nothingYet}}</view>
+  <view class="lf-head">{{t.drawnTo}}</view>
+  <view wx:if="{{!looking.toward.length}}" class="soft">{{t.nothingYet}}</view>
+  <view wx:for="{{looking.toward}}" wx:key="id" class="lf-line row lf-read"><view class="grow"><view>{{item.text}}</view><view class="lf-said">“{{item.said}}”</view></view><view class="lf-x" data-id="{{item.id}}" bindtap="onDropRead">✕</view></view>
+  <view class="lf-head">{{t.steerClear}}</view>
+  <view wx:if="{{!looking.flags.length && !looking.away.length}}" class="soft">{{t.nothingYet}}</view>
+  <view wx:for="{{looking.away}}" wx:key="id" class="lf-line row lf-read"><view class="grow"><view>{{item.text}}</view><view class="lf-said">“{{item.said}}”</view></view><view class="lf-x" data-id="{{item.id}}" bindtap="onDropRead">✕</view></view>
   <view wx:for="{{looking.flags}}" wx:key="field" class="lf-line row"><view class="grow">{{item.text}}</view><view class="lf-x" data-field="{{item.field}}" bindtap="onDropFlag">✕</view></view>
   <view class="lf-head">{{t.nice}}</view>
   <view wx:if="{{!looking.nice.length}}" class="soft">{{t.nothingYet}}</view>
