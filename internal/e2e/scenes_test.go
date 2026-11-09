@@ -72,4 +72,21 @@ func TestPlansGetASharedScenePicture(t *testing.T) {
 		a.do("GET", "/v1/trips/"+trip.Trip.ID, nil, 200, &trip)
 		return trip.Trip.Scene != "" && trip.Trip.Scene != k1
 	})
+
+	// The card asking whether to add a trip names that same picture, and a new one gets drawn.
+	if key := e.svc.Scenes.PreviewTrip(context.Background(), "tt-test-farport", "Farport, Test, Testland"); key != trip.Trip.Scene {
+		t.Fatalf("the card's picture %q isn't the trip's %q", key, trip.Trip.Scene)
+	}
+	fresh := e.svc.Scenes.PreviewTrip(context.Background(), "tt-test-newtown", "Newtown, Test, Testland")
+	if fresh == "" {
+		t.Fatal("no picture for a new city's card")
+	}
+	eventually(t, "the card's picture to be drawn", func() bool {
+		res, err := http.Get(e.api.URL + "/v1/scenes/" + fresh + ".jpg")
+		if err != nil {
+			return false
+		}
+		defer res.Body.Close()
+		return res.StatusCode == 200
+	})
 }

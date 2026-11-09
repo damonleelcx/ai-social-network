@@ -275,17 +275,10 @@ export function BuddyPostCard({ card }: { card: Extract<Card, { kind: 'buddy_pos
   const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle');
   const [error, setError] = useState<string | null>(null);
   if (state === 'done') return <Pill tone="good" icon="checkmark-circle" label={tr('Posted.')} />;
-  return (
-    <Glass style={{ gap: space.sm }}>
-      <Plan
-        kind={card.activity}
-        when={card.when}
-        note={card.note}
-        place={card.place}
-        city={card.city_name}
-        group={card.spots && card.spots > 1 ? { going: 1, spots: card.spots } : undefined}
-      />
-      {card.spots && card.spots > 1 ? <T v="small" soft>{tr('A group: people who join are in at once, and you all share a group chat.')}</T> : null}
+  const group = !!card.spots && card.spots > 1;
+  const footer = (
+    <>
+      {group ? <T v="small" soft>{tr('A group: people who join are in at once, and you all share a group chat.')}</T> : null}
       {card.same_gender ? <T v="small" soft>{tr('Only people of my gender')}</T> : null}
       <ErrorText message={error} />
       <Button
@@ -314,6 +307,38 @@ export function BuddyPostCard({ card }: { card: Extract<Card, { kind: 'buddy_pos
           }
         }}
       />
+    </>
+  );
+  if (card.scene) {
+    return (
+      <HeroCard
+        scene={card.scene}
+        title={card.when}
+        subtitle={[card.place, card.city_name].filter(Boolean).join(' · ')}
+        badges={
+          <>
+            <PhotoBadge label={tr(KINDS[card.activity] ?? 'Something else')} />
+            {group ? <PhotoBadge label={groupLine(1, card.spots!)} /> : null}
+          </>
+        }
+        height={220}
+      >
+        {card.note ? <T>{card.note}</T> : null}
+        {footer}
+      </HeroCard>
+    );
+  }
+  return (
+    <Glass style={{ gap: space.sm }}>
+      <Plan
+        kind={card.activity}
+        when={card.when}
+        note={card.note}
+        place={card.place}
+        city={card.city_name}
+        group={group ? { going: 1, spots: card.spots! } : undefined}
+      />
+      {footer}
     </Glass>
   );
 }
@@ -444,13 +469,10 @@ export function TripPostCard({ card }: { card: Extract<Card, { kind: 'trip_post'
   const [trip, setTrip] = useState<Trip | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  if (trip) return <TripView trip={trip} />;
-  return (
-    <Glass style={{ gap: space.sm }}>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-        <Pill tone="accent" icon="airplane-outline" label={card.city} />
-        <T v="small" style={{ fontWeight: '700' }}>{tripDates(card.starts_on, card.ends_on)}</T>
-      </View>
+  // A new trip comes back before its picture is ready, and the card's is that same picture.
+  if (trip) return <TripView trip={{ ...trip, scene: trip.scene || card.scene }} />;
+  const footer = (
+    <>
       {card.note ? <T>{card.note}</T> : null}
       <T v="small" soft>{tr("While you're there, plans in this city reach you, and you can post your own.")}</T>
       <ErrorText message={error} />
@@ -471,6 +493,22 @@ export function TripPostCard({ card }: { card: Extract<Card, { kind: 'trip_post'
           }
         }}
       />
+    </>
+  );
+  if (card.scene) {
+    return (
+      <HeroCard scene={card.scene} title={card.city} subtitle={tripDates(card.starts_on, card.ends_on)} badges={<PhotoBadge label={tr('Trip')} />} height={220}>
+        {footer}
+      </HeroCard>
+    );
+  }
+  return (
+    <Glass style={{ gap: space.sm }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+        <Pill tone="accent" icon="airplane-outline" label={card.city} />
+        <T v="small" style={{ fontWeight: '700' }}>{tripDates(card.starts_on, card.ends_on)}</T>
+      </View>
+      {footer}
     </Glass>
   );
 }

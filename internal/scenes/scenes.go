@@ -106,6 +106,47 @@ func (s *Service) Trip(tripID string) {
 	}()
 }
 
+// PreviewTrip names the picture a trip to this city will have, and starts drawing it, so the card
+// that asks whether to add the trip can show it. The card keeps trying until the picture is there.
+// "" means no picture for now: today's pictures have run out.
+func (s *Service) PreviewTrip(ctx context.Context, cityKey, cityName string) string {
+	return s.preview(ctx, "city skyline", cityKey, cityName, "travel")
+}
+
+// PreviewPost is PreviewTrip for a plan that hasn't been posted yet. Posting it lands on the same
+// picture, so it is still drawn only once.
+func (s *Service) PreviewPost(ctx context.Context, userID, kind, note, place, cityKey, cityName string) string {
+	return s.preview(ctx, s.name(ctx, userID, kind, note, place), cityKey, cityName, kind)
+}
+
+func (s *Service) preview(ctx context.Context, scene, cityKey, cityName, kind string) string {
+	key := Key(scene, cityKey)
+	ready, err := s.ready(ctx, key)
+	if err != nil {
+		slog.Warn("scene: preview", "err", err)
+		return ""
+	}
+	if ready {
+		return key
+	}
+	var today int
+	if err := s.Pool.QueryRow(ctx, `SELECT count(*) FROM scene_images WHERE created_at > now() - interval '1 day' AND city_key<>''`).Scan(&today); err != nil {
+		slog.Warn("scene: preview", "err", err)
+		return ""
+	}
+	if s.DailyCap > 0 && today >= s.DailyCap {
+		return ""
+	}
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+		defer cancel()
+		if _, err := s.ensure(ctx, scene, cityKey, cityName, kind); err != nil {
+			slog.Warn("scene: draw", "err", err)
+		}
+	}()
+	return key
+}
+
 // name boils a plan down to a few generic English words, so plans that are the same idea land
 // on the same picture. The plan is the person's words: data for the model, never instructions.
 func (s *Service) name(ctx context.Context, userID, kind, note, place string) string {

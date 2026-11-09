@@ -121,6 +121,17 @@ func (f *fakeLLM) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	if strings.Contains(sys, "You check a card before it is shown") {
+		switch {
+		case strings.Contains(user, "马来西亚"):
+			reply(w, `{"ok":false,"problem":"they said Malaysia, the card says Testland"}`, nil)
+		case strings.Contains(user, "unreadable verdict"):
+			reply(w, `no idea`, nil)
+		default:
+			reply(w, `{"ok":true}`, nil)
+		}
+		return
+	}
 	if strings.Contains(sys, "Name the scene of this plan") {
 		reply(w, `{"scene":"Hotpot Dinner!"}`, nil)
 		return
@@ -266,6 +277,9 @@ func (f *fakeLLM) suki(w http.ResponseWriter, msgs []fakeMsg, has map[string]boo
 		reply(w, "", []any{call("p", "profile_save", map[string]any{"birthdate": time.Now().AddDate(-16, 0, 0).Format("2006-01-02")})})
 	case strings.Contains(user, "correct my birthday") && has["profile_save"]:
 		reply(w, "", []any{call("p", "profile_save", map[string]any{"birthdate": "1995-10-20"})})
+	case strings.Contains(user, "trip please") && has["trip_prepare_add"]:
+		day := func(n int) string { return time.Now().UTC().AddDate(0, 0, n).Format("2006-01-02") }
+		reply(w, "", []any{call("t", "trip_prepare_add", map[string]any{"city": "Farport", "starts_on": day(1), "ends_on": day(2)})})
 	case strings.Contains(user, "nurse") && has["profile_save"]:
 		reply(w, "", []any{call("p", "profile_save", map[string]any{"occupation": "nurse"})})
 	case strings.Contains(user, "all done") && has["debrief_close"]:
@@ -277,6 +291,8 @@ func (f *fakeLLM) suki(w http.ResponseWriter, msgs []fakeMsg, has map[string]boo
 
 func routeFor(text string) string {
 	switch {
+	case strings.Contains(text, "trip please"):
+		return "trip_add"
 	case strings.Contains(text, "nurse"):
 		return "profile_work_education"
 	case strings.Contains(text, "correct my birthday"), strings.Contains(text, "my friend was born"), strings.Contains(text, "minor correction"):

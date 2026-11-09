@@ -222,6 +222,27 @@ func (s *Service) PostBuddy(ctx context.Context, userID string, in BuddyInput) (
 	return s.buddyRequest(ctx, id, userID)
 }
 
+// DraftScene names the picture for a plan Suki has drafted but nobody has posted, in the city it
+// would go up in. "" means no picture for now.
+func (s *Service) DraftScene(ctx context.Context, userID, kind, note, place, tripID string) string {
+	if s.Scenes == nil {
+		return ""
+	}
+	var cityKey, cityName string
+	if tripID != "" {
+		if err := s.Pool.QueryRow(ctx, `SELECT city_key, city_name FROM trips WHERE id=$1 AND user_id=$2`, tripID, userID).Scan(&cityKey, &cityName); err != nil {
+			return ""
+		}
+	} else {
+		p, err := profile.Get(ctx, s.Pool, userID)
+		if err != nil {
+			return ""
+		}
+		cityKey, cityName = p.CityKey, p.CityName
+	}
+	return s.Scenes.PreviewPost(ctx, userID, kind, note, place, cityKey, cityName)
+}
+
 // tellNearby pings a few recently active people. A post is on the board whether or not this
 // reaches anyone, and nobody gets more than a few of these a day.
 func (s *Service) tellNearby(ctx context.Context, userID, requestID, cityKey string, in BuddyInput, p *profile.Profile) {

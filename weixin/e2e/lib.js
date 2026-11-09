@@ -207,7 +207,7 @@ const PARIS = { key: 'fr-ile-de-france-paris', name: 'Paris, Ile-de-France, Fran
 // The server caches city lookups, so a cached answer takes the place of OpenStreetMap.
 function seedCity() {
   for (const q of ['paris', 'paris, france']) {
-    sql(`INSERT INTO cached_lookups (key, data) VALUES ('city:${q}', '${JSON.stringify(PARIS)}') ON CONFLICT (key) DO UPDATE SET data=EXCLUDED.data, fetched_at=now();`);
+    sql(`INSERT INTO cached_lookups (key, data) VALUES ('city2:${q}', '${JSON.stringify(PARIS)}') ON CONFLICT (key) DO UPDATE SET data=EXCLUDED.data, fetched_at=now();`);
   }
 }
 
