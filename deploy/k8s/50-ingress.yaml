@@ -27,7 +27,6 @@ metadata:
     traefik.ingress.kubernetes.io/router.middlewares: synagent-rate-limit@kubernetescrd
 spec:
   ingressClassName: traefik
-  # The old name stays as an alias for builds that still point at it.
   rules:
     - host: match.heros-agent.space
       http:
@@ -35,14 +34,8 @@ spec:
           - path: /
             pathType: Prefix
             backend: { service: { name: synagent-web, port: { number: 80 } } }
-    - host: synagent.heros-agent.space
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend: { service: { name: synagent-web, port: { number: 80 } } }
   tls:
-    - hosts: [match.heros-agent.space, synagent.heros-agent.space]
+    - hosts: [match.heros-agent.space]
       secretName: synagent-tls
 ---
 apiVersion: networking.k8s.io/v1
@@ -55,15 +48,8 @@ metadata:
     traefik.ingress.kubernetes.io/router.middlewares: synagent-redirect-https@kubernetescrd
 spec:
   ingressClassName: traefik
-  # The old name stays as an alias for builds that still point at it.
   rules:
     - host: match.heros-agent.space
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend: { service: { name: synagent-web, port: { number: 80 } } }
-    - host: synagent.heros-agent.space
       http:
         paths:
           - path: /
