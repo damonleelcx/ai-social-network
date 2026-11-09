@@ -90,6 +90,7 @@ Up to 6 photos. Review is asynchronous; watch the `photos` topic.
 |---|---|---|
 | `GET /v1/agent/messages?after=<seq>` | | `{messages:[Message], thinking:bool}` (the last 100 without `after`). `after` responses may overlap slightly, here and in chats, so merge by `seq` |
 | `POST /v1/agent/messages` | `text, client_id` (a uuid per message, safe to retry) | `202 {message}` |
+| `POST /v1/agent/opened` | | `{ok}`. The app just opened, so Suki may say something. Quiet for 10 minutes after any turn, and at `suki_proactive: low` |
 
 The answer arrives later: watch `agent`. `thinking` is true while a reply is pending.
 

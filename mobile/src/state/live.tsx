@@ -292,11 +292,13 @@ export function LiveProvider({ children }: { children: ReactNode }) {
       .catch(() => setSeenSeq(0));
     refreshAll();
     socket.connect();
+    endpoints.suki.opened().catch(() => {});
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') {
         socket.reset();
         socket.connect();
         refreshAll();
+        endpoints.suki.opened().catch(() => {});
       } else if (state === 'background') {
         voice.stop();
         socket.disconnect();

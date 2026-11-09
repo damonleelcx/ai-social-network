@@ -305,6 +305,31 @@ func suggestions(ctx context.Context) error {
 	return nil
 }
 
+// openQuiet is how long after any turn opening the app stays quiet. Glancing at another app and
+// coming back is the same visit, and someone mid-conversation isn't interrupted.
+const openQuiet = 10 * time.Minute
+
+// GreetOnOpen has Suki say something because they just opened the app. It costs them nothing,
+// because only what they send is charged. Someone who set her proactivity to low asked her not
+// to start things, and someone who just signed up already has her welcome.
+func GreetOnOpen(ctx context.Context, userID string) error {
+	var due bool
+	var last string
+	err := d.Pool.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM profiles p JOIN users u ON u.id=p.user_id
+		LEFT JOIN user_preferences x ON x.user_id=p.user_id
+		WHERE p.user_id=$1 AND p.status IN ('active','onboarding') AND u.deleted_at IS NULL
+		AND u.created_at < now() - make_interval(secs => $2)
+		AND coalesce(x.data->>'suki_proactive','normal') <> 'low'
+		AND NOT EXISTS (SELECT 1 FROM agent_turns t WHERE t.user_id=p.user_id AND t.created_at > now() - make_interval(secs => $2))),
+		coalesce((SELECT id::text FROM agent_turns WHERE user_id=$1 ORDER BY created_at DESC LIMIT 1), '')`,
+		userID, openQuiet.Seconds()).Scan(&due, &last)
+	if err != nil || !due {
+		return err
+	}
+	// Two opens at the same moment follow the same last turn, so only one of them counts.
+	return EnqueueSystemTurn(ctx, userID, agent.OpenIntent, "They just opened the app. Say something to them.", "open:"+userID+":"+last)
+}
+
 func tasteRefresh(ctx context.Context) error {
 	ids, err := hidden.UsersDueForNotes(ctx, d.Pool, 10, 10)
 	if err != nil {
