@@ -86,7 +86,8 @@ func (c *Client) ResolveCity(ctx context.Context, q string) (*City, error) {
 	if q == "" {
 		return nil, ErrNoCity
 	}
-	cacheKey := "city:" + strings.ToLower(q)
+	// "city2:" retires answers cached before countries were told apart from cities.
+	cacheKey := "city2:" + strings.ToLower(q)
 	var city City
 	if c.cached(ctx, cacheKey, 90*24*time.Hour, &city) {
 		return &city, nil
@@ -112,7 +113,7 @@ func (c *Client) nominatimCity(ctx context.Context, q string) (*City, error) {
 		return nil, nil
 	}
 	var city City
-	u := c.NominatimURL + "/search?format=jsonv2&addressdetails=1&limit=5&accept-language=en&featureType=settlement&q=" + url.QueryEscape(q)
+	u := c.NominatimURL + "/search?format=jsonv2&addressdetails=1&limit=5&accept-language=en&extratags=1&featureType=settlement&q=" + url.QueryEscape(q)
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	req.Header.Set("User-Agent", userAgent)
 	resp, err := c.http().Do(req)
@@ -124,8 +125,11 @@ func (c *Client) nominatimCity(ctx context.Context, q string) (*City, error) {
 		return nil, fmt.Errorf("city lookup: status %d", resp.StatusCode)
 	}
 	var hits []struct {
-		Lat     string `json:"lat"`
-		Lon     string `json:"lon"`
+		Lat       string `json:"lat"`
+		Lon       string `json:"lon"`
+		Extratags struct {
+			LinkedPlace string `json:"linked_place"`
+		} `json:"extratags"`
 		Address struct {
 			City, Town, Village, Municipality, State, Country string
 			CountryCode                                       string `json:"country_code"`
@@ -136,14 +140,24 @@ func (c *Client) nominatimCity(ctx context.Context, q string) (*City, error) {
 	}
 	for _, h := range hits {
 		name := first(h.Address.City, h.Address.Town, h.Address.Municipality, h.Address.Village)
+		if name == "" && h.Extratags.LinkedPlace == "city" {
+			name = h.Address.State // Kuala Lumpur is mapped as a state that is a city
+		}
 		if name == "" {
 			continue
+		}
+		country, err := c.nominatimCountry(ctx, q)
+		if err != nil {
+			return nil, err
+		}
+		if country != "" && !strings.EqualFold(country, name) {
+			return nil, ErrNoCity
 		}
 		var lat, lon float64
 		fmt.Sscan(h.Lat, &lat)
 		fmt.Sscan(h.Lon, &lon)
 		display := name
-		if h.Address.State != "" {
+		if h.Address.State != "" && h.Address.State != name {
 			display += ", " + h.Address.State
 		}
 		if h.Address.Country != "" {
@@ -153,6 +167,34 @@ func (c *Client) nominatimCity(ctx context.Context, q string) (*City, error) {
 		return &city, nil
 	}
 	return nil, ErrNoCity
+}
+
+// nominatimCountry names the country q is, if it is one. The settlement search has no way to say
+// "that's a country": asked for 马来西亚 it fuzzily answers with Le Marais, in Paris. A place that
+// is its own country, like Singapore, is told apart by having the country's name.
+func (c *Client) nominatimCountry(ctx context.Context, q string) (string, error) {
+	u := c.NominatimURL + "/search?format=jsonv2&addressdetails=1&limit=1&accept-language=en&featureType=country&q=" + url.QueryEscape(q)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	req.Header.Set("User-Agent", userAgent)
+	resp, err := c.http().Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("country lookup: status %d", resp.StatusCode)
+	}
+	var hits []struct {
+		AddressType string `json:"addresstype"`
+		Address     struct{ Country string } `json:"address"`
+	}
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&hits); err != nil {
+		return "", err
+	}
+	if len(hits) == 0 || hits[0].AddressType != "country" {
+		return "", nil
+	}
+	return hits[0].Address.Country, nil
 }
 
 func first(l ...string) string {

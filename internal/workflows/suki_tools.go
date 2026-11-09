@@ -491,6 +491,9 @@ func registerSukiTools() {
 				}
 				cd["trip_id"], cd["city_name"] = t.ID, t.CityName
 			}
+			if key := d.Dating.DraftScene(ctx, env.UserID, objStr(a, "kind"), objStr(a, "note"), objStr(a, "place"), objStr(a, "trip_id")); key != "" {
+				cd["scene"] = key
+			}
 			return c, nil
 		})
 
@@ -715,7 +718,7 @@ func registerSukiTools() {
 
 	// ── Trips ──
 	ext("trip_prepare_add", "Show a card with a trip for this person to check: a city they'll visit and the dates. Only their tap adds it. Dates are yyyy-mm-dd.",
-		`{"type":"object","required":["city","starts_on","ends_on"],"additionalProperties":false,"properties":{"city":{"type":"string","minLength":2,"maxLength":120,"description":"City and country, as they said it"},"starts_on":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},"ends_on":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},"note":{"type":"string","maxLength":200,"description":"What they'd like to do there, in their voice"}}}`,
+		`{"type":"object","required":["city","starts_on","ends_on"],"additionalProperties":false,"properties":{"city":{"type":"string","minLength":2,"maxLength":120,"description":"A specific city and its country, in English, like Kuala Lumpur, Malaysia. If they only named a country or a region, ask which city first and don't call this."},"starts_on":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},"ends_on":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},"note":{"type":"string","maxLength":200,"description":"What they'd like to do there, in their voice"}}}`,
 		func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
 			in := dating.TripInput{City: objStr(a, "city"), StartsOn: objStr(a, "starts_on"), EndsOn: objStr(a, "ends_on"), Note: objStr(a, "note")}
 			if err := dating.CheckTrip(in); err != nil {
@@ -723,12 +726,18 @@ func registerSukiTools() {
 			}
 			c, err := d.Places.ResolveCity(ctx, in.City)
 			if errors.Is(err, places.ErrNoCity) {
-				return map[string]any{"found": false, "note": "No such city. Ask them for the city and country."}, nil
+				return map[string]any{"found": false, "note": "That isn't a city I can find, and a country alone won't do. Ask them which city, and show no card until they say."}, nil
 			}
 			if err != nil {
 				return nil, err
 			}
-			return card("trip_post", "city", c.Name, "starts_on", in.StartsOn, "ends_on", in.EndsOn, "note", in.Note), nil
+			tc := card("trip_post", "city", c.Name, "starts_on", in.StartsOn, "ends_on", in.EndsOn, "note", in.Note)
+			if d.Dating.Scenes != nil {
+				if key := d.Dating.Scenes.PreviewTrip(ctx, c.Key, c.Name); key != "" {
+					tc["card"].(map[string]any)["scene"] = key
+				}
+			}
+			return tc, nil
 		})
 
 	add("trip_mine", "This person's trips that aren't over, with how many others are going there at the same time and how many plans they could join there.", noArgs, tools.Read,

@@ -1,6 +1,8 @@
 <view wx:if="{{gone}}" class="card"><view class="soft">{{t.gone}}</view></view>
 
-<view wx:elif="{{card.kind === 'buddy_post'}}" class="card">
+<view wx:elif="{{card.kind === 'buddy_post'}}" class="card {{scene ? 'hero-card' : ''}}">
+  <image wx:if="{{scene}}" class="scene-strip" src="{{scene}}" mode="aspectFill" binderror="onSceneError" />
+  <view class="{{scene ? 'hero-body' : ''}}">
   <view class="title">{{activityText}}</view>
   <view class="soft">{{card.when}}<text wx:if="{{groupText}}"> · {{groupText}}</text></view>
   <view wx:if="{{placeText}}" class="soft">{{placeText}}</view>
@@ -8,6 +10,7 @@
   <view wx:if="{{groupText}}" class="soft">{{t.groupHint}}</view>
   <view wx:if="{{state === 'done'}}" class="done">{{t.posted}}</view>
   <button wx:else class="primary" loading="{{state === 'busy'}}" bindtap="onPost">{{t.post}}</button>
+  </view>
 </view>
 
 <view wx:elif="{{card.kind === 'buddy_request' && item}}" class="card hero-card">
@@ -80,7 +83,9 @@
   <button class="plain" bindtap="onPoster">{{t.momentsPoster}}</button>
 </view>
 
-<view wx:elif="{{card.kind === 'trip_post'}}" class="card">
+<view wx:elif="{{card.kind === 'trip_post'}}" class="card {{scene ? 'hero-card' : ''}}">
+  <image wx:if="{{scene}}" class="scene-strip" src="{{scene}}" mode="aspectFill" binderror="onSceneError" />
+  <view class="{{scene ? 'hero-body' : ''}}">
   <view class="title">✈ {{state === 'done' && item ? item.city_name : card.city}}</view>
   <view class="soft">{{datesText}}</view>
   <view wx:if="{{card.note}}">{{card.note}}</view>
@@ -89,6 +94,7 @@
     <view class="soft">{{t.tripHint}}</view>
     <button class="primary" loading="{{state === 'busy'}}" bindtap="onAddTrip">{{t.addTrip}}</button>
   </block>
+  </view>
 </view>
 
 <view wx:elif="{{card.kind === 'trip' && item}}" class="card {{scene ? 'hero-card' : ''}}">

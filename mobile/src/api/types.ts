@@ -80,12 +80,13 @@ export type Card =
       place?: string;
       trip_id?: string;
       city_name?: string;
+      scene?: string;
     }
   | { kind: 'group'; request_id: string }
   | { kind: 'invite' }
   | { kind: 'looking_for' }
   | { kind: 'selfie' }
-  | { kind: 'trip_post'; city: string; starts_on: string; ends_on: string; note?: string }
+  | { kind: 'trip_post'; city: string; starts_on: string; ends_on: string; note?: string; scene?: string }
   | { kind: 'trip'; trip_id: string }
   | { kind: 'buddy_request'; request_id: string }
   | { kind: 'buy_credits' }

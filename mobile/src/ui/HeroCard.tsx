@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import type { ReactNode } from 'react';
-import { Pressable, View } from 'react-native';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Platform, Pressable, View } from 'react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
 import { API_URL } from '@/api/client';
@@ -10,6 +10,36 @@ import { T } from '@/ui/primitives';
 
 /** A scene picture's address. They show no one, so they need no sign-in and never change. */
 export const sceneUri = (key: string) => `${API_URL}/v1/scenes/${key}.jpg`;
+
+const SCENE_RETRY_MS = 3000;
+const SCENE_RETRIES = 40;
+
+/** A scene picture. A new one takes a while to draw and 404s until then, so this keeps asking. */
+function SceneImage({ id }: { id: string }) {
+  const [attempt, setAttempt] = useState(0);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
+  return (
+    <Image
+      // On the web a failed image never loads a new source, so each try is a new one.
+      key={attempt}
+      source={{ uri: attempt ? `${sceneUri(id)}?try=${attempt}` : sceneUri(id) }}
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+      contentFit="cover"
+      cachePolicy="disk"
+      // On the web a fade can stall and leave the picture invisible.
+      transition={Platform.OS === 'web' ? 0 : 160}
+      onError={() => {
+        if (attempt < SCENE_RETRIES) timer.current = setTimeout(() => setAttempt((a) => a + 1), SCENE_RETRY_MS);
+      }}
+    />
+  );
+}
 
 /**
  * A card picture first: a person Suki recommends, or a plan with a picture of what it's about
@@ -46,7 +76,7 @@ export function HeroCard({
   const picture = (
     <View style={{ height }}>
       {scene ? (
-        <Image source={{ uri: sceneUri(scene) }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} contentFit="cover" cachePolicy="disk" transition={160} />
+        <SceneImage key={scene} id={scene} />
       ) : (
         <MediaImage id={photo} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       )}

@@ -40,6 +40,9 @@ type Hooks struct {
 type Scener interface {
 	Post(requestID string)
 	Trip(tripID string)
+	// The previews name the picture for a card that hasn't been confirmed yet, and start drawing it.
+	PreviewPost(ctx context.Context, userID, kind, note, place, cityKey, cityName string) string
+	PreviewTrip(ctx context.Context, cityKey, cityName string) string
 }
 
 type Service struct {
