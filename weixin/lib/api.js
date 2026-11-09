@@ -252,6 +252,7 @@ module.exports = {
   lookingFor: {
     get: () => get('/v1/looking-for'),
     dropRedFlag: (field) => del(`/v1/looking-for/red-flags/${field}`),
+    dropRead: (id) => del(`/v1/looking-for/read/${id}`),
   },
   people: {
     translation: (id, lang) => get(`/v1/people/${id}/translation?lang=${encodeURIComponent(lang)}`),

@@ -13,6 +13,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/damonleelcx/ai-social-network/internal/agent"
 	"github.com/damonleelcx/ai-social-network/internal/billing"
 	"github.com/damonleelcx/ai-social-network/internal/chatstore"
 	"github.com/damonleelcx/ai-social-network/internal/dating"
@@ -175,6 +176,11 @@ func AfterProfileChange(ctx context.Context, userID string) error {
 	if err := RewardReferrer(ctx, userID); err != nil {
 		slog.Error("referral reward", "err", err)
 	}
+	defer func() {
+		if err := EnqueueSystemTurn(context.WithoutCancel(ctx), userID, agent.LookingIntent, showLookingPrompt, "looking:"+userID); err != nil {
+			slog.Error("show looking for", "err", err)
+		}
+	}()
 	if err := d.Dating.PostFromSuki(ctx, userID, "Your profile is ready, and it looks great. I'm off to find people I think you'd really like. I'll be back soon!", "happy", nil, "profile-ready"); err != nil {
 		return err
 	}
@@ -303,6 +309,9 @@ func fmtList(l []string) string {
 // prose notes both go. It lives here so the API needn't touch the hidden side.
 func ResetTaste(ctx context.Context, userID string) error {
 	if err := hidden.ResetTaste(ctx, d.Pool, userID); err != nil {
+		return err
+	}
+	if _, err := d.Pool.Exec(ctx, `DELETE FROM looking_reads WHERE user_id=$1`, userID); err != nil {
 		return err
 	}
 	_, err := d.Pool.Exec(ctx, `DELETE FROM memories WHERE user_id=$1`, userID)

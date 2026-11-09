@@ -33,3 +33,5 @@ button.danger { background: rgba(255,92,120,.22) !important; color: #ff9db0 !imp
 .lf-head { color: #a99fc4; font-size: 24rpx; font-weight: 700; margin-top: 20rpx; }
 .lf-line { font-size: 28rpx; margin-top: 8rpx; }
 .lf-x { color: #a99fc4; padding: 0 8rpx 0 20rpx; }
+.lf-read { align-items: flex-start; }
+.lf-said { color: #a99fc4; font-size: 24rpx; font-style: italic; margin-top: 4rpx; }

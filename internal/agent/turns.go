@@ -212,8 +212,8 @@ func (r *Runner) Execute(parent context.Context, t *Turn) {
 		_, _ = r.Pool.Exec(context.WithoutCancel(ctx), `UPDATE agent_turns SET status='ready', attempts=attempts-1, lease_owner=NULL, lease_expires_at=NULL WHERE id=$1 AND lease_epoch=$2`, t.ID, t.Epoch)
 		return
 	}
-	// Opening the app should never be answered with an apology for something they didn't ask.
-	if t.Intent == OpenIntent && (t.Attempts >= maxAttempts || errors.Is(err, llm.ErrPermanent) || errors.As(err, new(*engine.ErrBudget))) {
+	// Something they didn't ask for should never end in an apology.
+	if (t.Intent == OpenIntent || t.Intent == LookingIntent) && (t.Attempts >= maxAttempts || errors.Is(err, llm.ErrPermanent) || errors.As(err, new(*engine.ErrBudget))) {
 		r.finish(ctx, t, "failed", intent, truncate(err.Error(), 400))
 		return
 	}
@@ -308,6 +308,9 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 	}
 	if intent == OpenIntent {
 		dom = &opening
+	}
+	if intent == LookingIntent {
+		dom = &showing
 	}
 	if t.Kind == "message" {
 		// A short answer means nothing without the question it answers.
@@ -414,6 +417,9 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 		msg.Role = "assistant"
 		if len(msg.ToolCalls) == 0 {
 			if unprompted(intent) {
+				if intent == LookingIntent && len(cards) == 0 {
+					return intent, nil // "here's who I'm looking for" with nothing under it
+				}
 				if problem := r.checkOwnWords(ctx, t, state, msgs, msg.Content); problem != "" {
 					// Saying nothing is better than saying something untrue.
 					if failedChecks++; failedChecks >= 2 {

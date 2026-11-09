@@ -25,6 +25,7 @@ type fakeLLM struct {
 	selfieMismatch atomic.Bool
 	verdict    atomic.Value // what the Critic rules, when set
 	inventOpening atomic.Bool // Suki names someone who doesn't exist when the app opens
+	skipLooking atomic.Bool // Suki doesn't call looking_for_show when she's meant to
 }
 
 func newFakeLLM() *fakeLLM { return &fakeLLM{} }
@@ -120,6 +121,15 @@ func (f *fakeLLM) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		default:
 			reply(w, `{}`, nil)
 		}
+		return
+	}
+	if strings.Contains(sys, "You work out who draws someone in") {
+		reply(w, `{"toward":[{"text":"Whoever it is has to get along with Rex.","said":"my dog Rex"},{"text":"You'd want a wine lover.","said":"had wine"}],"away":[{"text":"Smoking's a hard no for you.","said":"never date a smoker"},{"text":"Actors aren't for you.","said":"words they never said"}]}`, nil)
+		return
+	}
+	if strings.Contains(sys, "You check what Suki thinks someone is looking for") {
+		// The actors line never gets here, so these are Rex 0, wine 1, smoking 2. Wine is a stretch.
+		reply(w, `{"wrong":[1]}`, nil)
 		return
 	}
 	if strings.Contains(sys, "You check a message Suki wrote") {
@@ -271,6 +281,14 @@ func (f *fakeLLM) suki(w http.ResponseWriter, msgs []fakeMsg, has map[string]boo
 	}
 	if last.Role == "system" && strings.Contains(last.text(), "something for them to do") {
 		reply(w, "Why not say hi to someone today? <<mood=playful|replies=Good idea;Something else>>", nil)
+		return
+	}
+	if strings.Contains(all, "Time to show them what you think") {
+		if has["looking_for_show"] && last.Role != "tool" && !f.skipLooking.Load() {
+			reply(w, "", []any{call("l", "looking_for_show", map[string]any{})})
+		} else {
+			reply(w, "I've been listening. Did I read you right? <<mood=happy|replies=Yes;Not quite>>", nil)
+		}
 		return
 	}
 	if strings.Contains(all, "They just opened the app.") {

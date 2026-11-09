@@ -88,8 +88,17 @@ var opening = Domain{Name: "opening", Guide: `They just opened the app and you'r
 Look with the tools before you introduce, recommend or suggest. Say only what your tools or what you know about them support: never invent a person, a post, a place, an event, the weather or the news. If there's nothing real to offer, just chat. If your last message is still unanswered, don't repeat it or chase them: say something new and easy to answer. Two short sentences at most, and offer quick replies.`,
 	Tools: []string{"proposal_list", "proposal_prepare_decision", "buddy_board", "buddy_mine", "buddy_show_post", "trip_mine", "place_ideas"}}
 
+// LookingIntent is Suki showing someone what she thinks they're looking for, unasked.
+const LookingIntent = "sys_looking_for"
+
+// showing isn't in Domains either. It has one job, and the turn says nothing unless it's done.
+var showing = Domain{Name: "showing", Guide: `Show them what you think they're looking for: call looking_for_show. Then say one short line in your own voice: you've been paying attention, this is what you've picked up, and did you read them right? The card has the details, so don't repeat them. Offer quick replies.`,
+	Tools: []string{"looking_for_show"}}
+
 // unprompted says Suki is speaking first, so her words are checked before anyone sees them.
-func unprompted(intent string) bool { return intent == SuggestIntent || intent == OpenIntent }
+func unprompted(intent string) bool {
+	return intent == SuggestIntent || intent == OpenIntent || intent == LookingIntent
+}
 
 func domainOf(intent string) *Domain {
 	for i := range Domains {

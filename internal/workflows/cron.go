@@ -305,6 +305,8 @@ func suggestions(ctx context.Context) error {
 	return nil
 }
 
+const showLookingPrompt = "Time to show them what you think they're looking for."
+
 // openQuiet is how long after any turn opening the app stays quiet. Glancing at another app and
 // coming back is the same visit, and someone mid-conversation isn't interrupted.
 const openQuiet = 10 * time.Minute
@@ -313,7 +315,7 @@ const openQuiet = 10 * time.Minute
 // because only what they send is charged. Someone who set her proactivity to low asked her not
 // to start things, and someone who just signed up already has her welcome.
 func GreetOnOpen(ctx context.Context, userID string) error {
-	var due bool
+	var due, showLooking bool
 	var last string
 	err := d.Pool.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM profiles p JOIN users u ON u.id=p.user_id
 		LEFT JOIN user_preferences x ON x.user_id=p.user_id
@@ -321,10 +323,16 @@ func GreetOnOpen(ctx context.Context, userID string) error {
 		AND u.created_at < now() - make_interval(secs => $2)
 		AND coalesce(x.data->>'suki_proactive','normal') <> 'low'
 		AND NOT EXISTS (SELECT 1 FROM agent_turns t WHERE t.user_id=p.user_id AND t.created_at > now() - make_interval(secs => $2))),
-		coalesce((SELECT id::text FROM agent_turns WHERE user_id=$1 ORDER BY created_at DESC LIMIT 1), '')`,
-		userID, openQuiet.Seconds()).Scan(&due, &last)
+		coalesce((SELECT id::text FROM agent_turns WHERE user_id=$1 ORDER BY created_at DESC LIMIT 1), ''),
+		EXISTS (SELECT 1 FROM profiles WHERE user_id=$1 AND status='active')
+			AND NOT EXISTS (SELECT 1 FROM looking_reads WHERE user_id=$1 AND shown_at IS NOT NULL)`,
+		userID, openQuiet.Seconds()).Scan(&due, &last, &showLooking)
 	if err != nil || !due {
 		return err
+	}
+	// Anyone with a finished profile who hasn't seen her read of them gets that first.
+	if showLooking {
+		return EnqueueSystemTurn(ctx, userID, agent.LookingIntent, showLookingPrompt, "looking:"+userID+":"+last)
 	}
 	// Two opens at the same moment follow the same last turn, so only one of them counts.
 	return EnqueueSystemTurn(ctx, userID, agent.OpenIntent, "They just opened the app. Say something to them.", "open:"+userID+":"+last)

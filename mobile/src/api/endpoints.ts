@@ -170,11 +170,15 @@ export type LookingFor = {
   must: { seeking: string[]; age_min?: number; age_max?: number; goal?: string; city?: string };
   red_flags: Record<string, string[]>;
   nice: { id: string; note: string }[];
+  read?: LookingLine[];
 };
+
+export type LookingLine = { id: string; kind: 'toward' | 'away'; text: string; said: string };
 
 export const lookingFor = {
   get: () => api<LookingFor>('/v1/looking-for'),
   dropRedFlag: (field: string) => api<Ok>(`/v1/looking-for/red-flags/${field}`, { method: 'DELETE' }),
+  dropRead: (id: string) => api<Ok>(`/v1/looking-for/read/${id}`, { method: 'DELETE' }),
 };
 
 export const groups = {
