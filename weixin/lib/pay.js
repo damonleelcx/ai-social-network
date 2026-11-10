@@ -3,7 +3,7 @@
 // ordinary WeChat Pay, and never a pointer to pay anywhere else. If the server hasn't turned
 // virtual payment on (credits.wechat_virtual), nothing is for sale.
 const api = require('./api');
-const { t } = require('./i18n');
+const { t, modalButtons } = require('./i18n');
 
 const PACKS = [
   { id: 'small', credits: 100, fen: 3500 },
@@ -12,10 +12,26 @@ const PACKS = [
 ];
 
 // Call after api.credits.status(), which says whether virtual payment is on.
+const label = (p) => t('{n} credits for {price}', { n: p.credits, price: `¥${p.fen / 100}` });
+
 function packs() {
   if (!api.credits.virtual) return [];
-  return PACKS.map((p) => ({ id: p.id, label: t('{n} credits for {price}', { n: p.credits, price: `¥${p.fen / 100}` }) }));
+  return PACKS.map((p) => ({ id: p.id, label: label(p) }));
 }
+
+// WeChat's rules want a clear notice on the page before any payment (运营规范 2.14), so a tap
+// on a price only asks; nothing is ordered until they say yes.
+const NOTICE = 'Credits are virtual goods used for messages to Suki. You pay with WeChat virtual payment.';
+
+const confirmed = (id) => new Promise((resolve) => {
+  const pack = PACKS.find((p) => p.id === id);
+  wx.showModal(Object.assign({
+    title: t('Confirm your purchase'),
+    content: `${pack ? label(pack) : ''}\n${t(NOTICE)}`,
+    success: (r) => resolve(!!r.confirm),
+    fail: () => resolve(false),
+  }, modalButtons()));
+});
 
 const login = () => new Promise((resolve, reject) => {
   wx.login({ success: (r) => resolve(r.code), fail: () => reject(new Error(t("WeChat sign-in didn't work. Please try again."))) });
@@ -48,6 +64,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function buy(id) {
   const before = (await api.credits.status()).balance;
   if (!api.credits.virtual) throw new Error(t("Credits can't be bought here right now. You can still use any you already have."));
+  if (!(await confirmed(id))) return null;
   const o = await api.credits.wechatVirtual(id, await login());
   const order = o.order;
   if (!(await requestVirtualPayment(o))) return null;
@@ -62,4 +79,4 @@ async function buy(id) {
   return status;
 }
 
-module.exports = { packs, buy };
+module.exports = { packs, buy, NOTICE };

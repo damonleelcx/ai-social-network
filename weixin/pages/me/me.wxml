@@ -84,6 +84,7 @@
       <view class="title">{{balanceText}}</view>
       <view class="soft">{{creditsText}}</view>
       <block wx:if="{{credits.wechat_enabled && packs.length}}">
+        <view class="soft gap">{{t.buyNotice}}</view>
         <button wx:for="{{packs}}" wx:for-item="p" wx:key="id" class="plain" disabled="{{buying}}" data-id="{{p.id}}" bindtap="onBuy">{{p.label}}</button>
       </block>
       <view wx:else class="soft gap">{{t.noBuying}}</view>

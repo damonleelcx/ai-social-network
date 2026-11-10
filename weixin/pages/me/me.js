@@ -25,6 +25,7 @@ const COPY = {
   momentsPoster: 'Share a poster to Moments',
   credits: 'Credits',
   noBuying: "Credits can't be bought here right now. You can still use any you already have.",
+  buyNotice: pay.NOTICE,
   more: 'More',
   notifications: 'Notifications',
   settings: 'Settings',
