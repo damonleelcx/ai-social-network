@@ -11,6 +11,7 @@ const POLL_FOR_MS = 180000;
 
 const COPY = {
   aiGenerated: 'AI-generated',
+  aiNotice: 'Content on this page is AI-generated',
   winggirl: 'Your winggirl. Openly an AI.',
   thinkingHeader: 'Thinking about what you said...',
   settings: "Suki's settings",

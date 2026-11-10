@@ -4,7 +4,7 @@ page { background: #1b1033; color: #f3effa; font-size: 30rpx; line-height: 1.5; 
 .title { font-size: 34rpx; font-weight: 600; }
 .section { font-size: 28rpx; color: #a99fc4; margin: 28rpx 0 14rpx; }
 .soft { color: #a99fc4; font-size: 26rpx; }
-.ai-label { margin-top: 8rpx; color: #a99fc4; font-size: 22rpx; }
+.ai-label { display: block; width: fit-content; margin-top: 10rpx; padding: 2rpx 14rpx; border-radius: 999rpx; color: #fff; background: rgba(255,92,138,.85); font-size: 24rpx; font-weight: 700; }
 .error { color: #ff8a9a; font-size: 26rpx; margin: 12rpx 0; }
 .row { display: flex; align-items: center; }
 .grow { flex: 1; min-width: 0; }
@@ -46,3 +46,11 @@ button.danger { background: rgba(255,92,120,.22) !important; color: #ff9db0 !imp
 .send { background: #ff5c8a; color: #fff; padding: 14rpx 28rpx; border-radius: 32rpx; font-size: 28rpx; }
 .chips { display: flex; flex-wrap: wrap; padding: 0 24rpx 8rpx; }
 .chip { border: 1px solid rgba(255,255,255,.3); border-radius: 30rpx; padding: 8rpx 22rpx; margin: 0 12rpx 12rpx 0; font-size: 26rpx; }
+.stamps { display: flex; margin-top: 16rpx; }
+.stamp { flex: 1; margin-left: 14rpx; padding: 22rpx 6rpx; text-align: center; background: rgba(255,92,138,.14); border: 3rpx dashed rgba(255,255,255,.38); border-radius: 10rpx; }
+.stamp:first-child { margin-left: 0; }
+.stamp-on { background: rgba(255,92,138,.34); }
+.stamp-icon { display: block; width: 52rpx; height: 52rpx; margin: 0 auto 6rpx; }
+.stamp-count { font-size: 44rpx; font-weight: 700; line-height: 1.2; color: #fff; }
+.stamp-unit { font-size: 24rpx; color: #a99fc4; }
+.stamp-price { margin-top: 12rpx; font-size: 28rpx; font-weight: 600; color: #ff9db0; }

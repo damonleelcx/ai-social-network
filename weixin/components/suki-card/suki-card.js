@@ -13,6 +13,7 @@ const sceneSrc = (key) => (key ? `${API_URL}/v1/scenes/${key}.jpg` : '');
 const { t } = i18n;
 
 const COPY = {
+  aiGenerated: 'AI-generated',
   gone: 'This one has ended.',
   posted: "Posted. I'll tell you when someone joins.",
   post: 'Post it',
@@ -36,6 +37,8 @@ const COPY = {
   photoIn: "Got it. I'll take a look.",
   addPhoto: 'Add a photo',
   noBuying: "Credits can't be bought here right now. You can still use any you already have.",
+  buyNotice: pay.NOTICE,
+  credits: 'Credits',
   done: 'Done.',
   groupHint: 'A group: people who join are in at once, and you all share a group chat.',
   joinGroup: 'Join the group',
