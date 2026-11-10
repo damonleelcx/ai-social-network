@@ -2,6 +2,7 @@
 
 <view wx:elif="{{card.kind === 'buddy_post'}}" class="card {{scene ? 'hero-card' : ''}}">
   <image wx:if="{{scene}}" class="scene-strip" src="{{scene}}" mode="aspectFill" binderror="onSceneError" />
+  <view wx:if="{{scene}}" class="scene-ai">{{t.aiGenerated}}</view>
   <view class="{{scene ? 'hero-body' : ''}}">
   <view class="title">{{activityText}}</view>
   <view class="soft">{{card.when}}<text wx:if="{{groupText}}"> · {{groupText}}</text></view>
@@ -18,7 +19,7 @@
     <image wx:if="{{scene || photo}}" class="hero-img" src="{{scene || photo}}" mode="aspectFill" />
     <view wx:else class="hero-img hero-empty"></view>
     <view class="hero-shade"></view>
-    <view class="hero-badges"><text wx:if="{{item.person.verified}}" class="badge">✓ {{t.verified}}</text><text class="badge">{{activityText}}</text><text wx:if="{{groupText}}" class="badge">{{groupText}}</text></view>
+    <view class="hero-badges"><text wx:if="{{scene}}" class="badge">{{t.aiGenerated}}</text><text wx:if="{{item.person.verified}}" class="badge">✓ {{t.verified}}</text><text class="badge">{{activityText}}</text><text wx:if="{{groupText}}" class="badge">{{groupText}}</text></view>
     <view class="hero-text hero-row">
       <image wx:if="{{scene && photo}}" class="hero-avatar" src="{{photo}}" mode="aspectFill" />
       <view class="grow">
@@ -47,6 +48,7 @@
 
 <view wx:elif="{{card.kind === 'group' && item}}" class="card {{scene ? 'hero-card' : ''}}">
   <image wx:if="{{scene}}" class="scene-strip" src="{{scene}}" mode="aspectFill" />
+  <view wx:if="{{scene}}" class="scene-ai">{{t.aiGenerated}}</view>
   <view class="{{scene ? 'hero-body' : ''}}">
   <view class="title">{{activityText}}</view>
   <view class="soft">{{item.when}}<text wx:if="{{groupText}}"> · {{groupText}}</text></view>
@@ -89,6 +91,7 @@
 
 <view wx:elif="{{card.kind === 'trip_post'}}" class="card {{scene ? 'hero-card' : ''}}">
   <image wx:if="{{scene}}" class="scene-strip" src="{{scene}}" mode="aspectFill" binderror="onSceneError" />
+  <view wx:if="{{scene}}" class="scene-ai">{{t.aiGenerated}}</view>
   <view class="{{scene ? 'hero-body' : ''}}">
   <view class="title">✈ {{state === 'done' && item ? item.city_name : card.city}}</view>
   <view class="soft">{{datesText}}</view>
@@ -103,6 +106,7 @@
 
 <view wx:elif="{{card.kind === 'trip' && item}}" class="card {{scene ? 'hero-card' : ''}}">
   <image wx:if="{{scene}}" class="scene-strip" src="{{scene}}" mode="aspectFill" />
+  <view wx:if="{{scene}}" class="scene-ai">{{t.aiGenerated}}</view>
   <view class="{{scene ? 'hero-body' : ''}}">
   <view class="title">✈ {{item.city_name}}</view>
   <view class="soft">{{datesText}}</view>

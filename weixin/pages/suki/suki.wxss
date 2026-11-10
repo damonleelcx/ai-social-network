@@ -20,3 +20,4 @@
 .guest { margin: 8rpx 0 24rpx; }
 .guest-row { display: flex; align-items: flex-start; margin-top: 16rpx; line-height: 1.6; }
 .guest-dot { color: #ff5c8a; font-size: 18rpx; margin: 10rpx 16rpx 0 0; flex-shrink: 0; }
+.ai-notice { padding: 10rpx 24rpx; text-align: center; color: #ffd7e4; background: rgba(255,92,138,.24); font-size: 26rpx; font-weight: 700; }

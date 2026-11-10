@@ -2,6 +2,7 @@
 // the app's catalog (mobile/src/i18n/catalog.ts) where the English matches. Placeholders have to survive.
 module.exports = {
   'AI-generated': ['AI 生成', 'AI 생성', 'AI 生成', 'Generado por IA'],
+  'Content on this page is AI-generated': ['本页内容由 AI 生成（人工智能生成）', '이 페이지의 내용은 AI가 생성했습니다', 'このページの内容は AI が生成したものです', 'El contenido de esta página lo genera la IA'],
   '{count} people have joined': ['已有 {count} 人加入', '{count}명이 함께하고 있어요', '{count} 人が参加しています', '{count} personas se han unido'],
   '{n} credits for {price}': ['{n} 积分，{price}', '{n}크레딧, {price}', '{n} クレジット、{price}', '{n} créditos por {price}'],
   '{n} credits left': ['还剩 {n} 积分', '{n}크레딧 남음', '残り {n} クレジット', 'Te quedan {n} créditos'],

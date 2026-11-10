@@ -8,6 +8,7 @@ const { API_URL } = require('../../config');
 const { t } = i18n;
 
 const COPY = {
+  aiGenerated: 'AI-generated',
   posts: 'Your buddy posts',
   plans: 'Date plans',
   nobody: "Nobody's in yet. I'll let you know when someone is.",

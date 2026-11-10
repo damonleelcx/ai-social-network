@@ -13,6 +13,7 @@ const sceneSrc = (key) => (key ? `${API_URL}/v1/scenes/${key}.jpg` : '');
 const { t } = i18n;
 
 const COPY = {
+  aiGenerated: 'AI-generated',
   gone: 'This one has ended.',
   posted: "Posted. I'll tell you when someone joins.",
   post: 'Post it',
