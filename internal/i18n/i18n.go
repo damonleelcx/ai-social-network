@@ -24,7 +24,7 @@ func T(lang, english string, vars ...string) string {
 			text = row[c]
 		}
 	}
-	if chinaEdition && lang != "zh" {
+	if chinaEdition {
 		l := lang
 		if _, ok := column[l]; !ok {
 			l = "en"

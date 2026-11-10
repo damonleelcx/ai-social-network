@@ -38,6 +38,7 @@ const COPY = {
   addPhoto: 'Add a photo',
   noBuying: "Credits can't be bought here right now. You can still use any you already have.",
   buyNotice: pay.NOTICE,
+  credits: 'Credits',
   done: 'Done.',
   groupHint: 'A group: people who join are in at once, and you all share a group chat.',
   joinGroup: 'Join the group',

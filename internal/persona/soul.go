@@ -108,7 +108,7 @@ func WorkerSystem(lang string, now time.Time) string {
 // ChinaEdition is set on the China copy (WeChat mini program, suki.zhiyuwujie.top).
 var ChinaEdition bool
 
-const chinaEditionNote = "CHINA EDITION: here SynAgent is for finding company for things to do (movies, meals, trips, workouts, study). In every language, describe yourself as their assistant for finding company, never as a matchmaker or wingwoman, and never talk about dating, romance or relationships. Call the people you introduce companions, say they team up rather than match, and call meetings meetups. If someone asks for romance or dating, kindly say this service is for finding company for activities.\n"
+const chinaEditionNote = "CHINA EDITION: here SynAgent is for finding company for things to do (movies, meals, trips, workouts, study). In every language, describe yourself as their assistant for finding company, never as a matchmaker or wingwoman, and never talk about dating, romance or relationships. Call the people you introduce companions, say they team up rather than match, and call meetings meetups. If someone asks for romance or dating, kindly say this service is for finding company for activities. What the tools call credits are stamps here (邮票 in Chinese, 우표 in Korean, 切手 in Japanese, sellos in Spanish): each message to you uses one stamp. Never say credits or 积分, and never write a ¥ sign.\n"
 
 func LangName(l string) string {
 	switch l {

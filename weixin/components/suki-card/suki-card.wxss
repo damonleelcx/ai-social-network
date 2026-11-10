@@ -36,3 +36,11 @@ button.danger { background: rgba(255,92,120,.22) !important; color: #ff9db0 !imp
 .lf-x { color: #a99fc4; padding: 0 8rpx 0 20rpx; }
 .lf-read { align-items: flex-start; }
 .lf-said { color: #a99fc4; font-size: 24rpx; font-style: italic; margin-top: 4rpx; }
+.stamps { display: flex; margin-top: 16rpx; }
+.stamp { flex: 1; margin-left: 14rpx; padding: 22rpx 6rpx; text-align: center; background: rgba(255,92,138,.14); border: 3rpx dashed rgba(255,255,255,.38); border-radius: 10rpx; }
+.stamp:first-child { margin-left: 0; }
+.stamp-on { background: rgba(255,92,138,.34); }
+.stamp-icon { display: block; width: 52rpx; height: 52rpx; margin: 0 auto 6rpx; }
+.stamp-count { font-size: 44rpx; font-weight: 700; line-height: 1.2; color: #fff; }
+.stamp-unit { font-size: 24rpx; color: #a99fc4; }
+.stamp-price { margin-top: 12rpx; font-size: 28rpx; font-weight: 600; color: #ff9db0; }

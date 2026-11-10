@@ -12,11 +12,13 @@ const PACKS = [
 ];
 
 // Call after api.credits.status(), which says whether virtual payment is on.
-const label = (p) => t('{n} credits for {price}', { n: p.credits, price: `¥${p.fen / 100}` });
+// The China edition calls credits stamps, and shows prices in words, without a currency sign.
+const price = (p) => t('{yuan} yuan', { yuan: p.fen / 100 });
+const label = (p) => t('{n} credits for {price}', { n: p.credits, price: price(p) });
 
 function packs() {
   if (!api.credits.virtual) return [];
-  return PACKS.map((p) => ({ id: p.id, label: label(p) }));
+  return PACKS.map((p) => ({ id: p.id, count: p.credits, price: price(p) }));
 }
 
 // WeChat's rules want a clear notice on the page before any payment (运营规范 2.14), so a tap

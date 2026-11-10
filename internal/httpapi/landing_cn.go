@@ -107,7 +107,7 @@ const cnDownload = `<section class="solid" id="download" aria-labelledby="downlo
     <div class="wrap">
       <div class="divider"><i data-sprite="heart" class="spr flick"></i><span>IV · Get it</span><i data-sprite="heart" class="spr flick"></i></div>
       <h2 id="download-title" class="big">Take her with you</h2>
-      <p class="section-lede">Use SynAgent in WeChat or in your browser. For adults 18 and over. Your first introduction is free. After that, messages to Suki use credits, and chatting with the people you team up with stays free.</p>
+      <p class="section-lede">Use SynAgent in WeChat or in your browser. For adults 18 and over. Your first introduction is free. After that, messages to Suki use stamps, and chatting with the people you team up with stays free.</p>
       <div class="downloads">
         <article class="download download-web">
           <h3>In WeChat</h3>
@@ -124,10 +124,10 @@ const cnDownload = `<section class="solid" id="download" aria-labelledby="downlo
 
 // Sentences only the China page has.
 var cnDownloadText = []cnChange{
-	{"Use SynAgent in WeChat or in your browser. For adults 18 and over. Your first introduction is free. After that, messages to Suki use credits, and chatting with the people you team up with stays free.", "",
-		"在微信或浏览器中使用 SynAgent。仅限 18 岁及以上。第一次介绍免费，之后和 Suki 对话消耗积分，和搭子聊天一直免费。",
-		"위챗이나 브라우저에서 SynAgent를 이용하세요. 18세 이상만 이용할 수 있어요. 첫 소개는 무료이고, 그 후 Suki에게 보내는 메시지에는 크레딧이 들어요. 함께하는 사람과의 채팅은 계속 무료예요.",
-		"WeChat かブラウザで SynAgent を使えます。18 歳以上の方が対象です。最初の紹介は無料で、その後 Suki へのメッセージにはクレジットを使います。一緒に行く人とのチャットはずっと無料です。"},
+	{"Use SynAgent in WeChat or in your browser. For adults 18 and over. Your first introduction is free. After that, messages to Suki use stamps, and chatting with the people you team up with stays free.", "",
+		"在微信或浏览器中使用 SynAgent。仅限 18 岁及以上。第一次介绍免费，之后和 Suki 对话消耗邮票，和搭子聊天一直免费。",
+		"위챗이나 브라우저에서 SynAgent를 이용하세요. 18세 이상만 이용할 수 있어요. 첫 소개는 무료이고, 그 후 Suki에게 보내는 메시지에는 우표가 들어요. 함께하는 사람과의 채팅은 계속 무료예요.",
+		"WeChat かブラウザで SynAgent を使えます。18 歳以上の方が対象です。最初の紹介は無料で、その後 Suki へのメッセージには切手を使います。一緒に行く人とのチャットはずっと無料です。"},
 	{"In WeChat", "", "在微信里", "위챗에서", "WeChat で"},
 	{"Search for HelloSuki in WeChat, or open the mini program from a friend's share.", "",
 		"在微信中搜索 HelloSuki，或从朋友分享的小程序打开。", "위챗에서 HelloSuki를 검색하거나, 친구가 공유한 미니 프로그램을 열어 주세요.", "WeChat で HelloSuki を検索するか、友だちが共有したミニプログラムから開いてください。"},

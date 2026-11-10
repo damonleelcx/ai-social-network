@@ -193,7 +193,14 @@
   <view class="title">{{balanceText}}</view>
   <block wx:if="{{item.wechat_enabled && packs.length}}">
     <view class="soft">{{t.buyNotice}}</view>
-    <button wx:for="{{packs}}" wx:for-item="p" wx:key="id" class="plain" disabled="{{state === 'busy'}}" data-id="{{p.id}}" bindtap="onBuy">{{p.label}}</button>
+    <view class="stamps">
+      <view wx:for="{{packs}}" wx:for-item="p" wx:key="id" class="stamp" hover-class="stamp-on" aria-role="button" data-id="{{p.id}}" bindtap="onBuy">
+        <image class="stamp-icon" src="/assets/stamp.png" mode="aspectFit" aria-hidden="true" />
+        <view class="stamp-count">{{p.count}}</view>
+        <view class="stamp-unit">{{t.credits}}</view>
+        <view class="stamp-price">{{p.price}}</view>
+      </view>
+    </view>
   </block>
   <view wx:else class="soft">{{t.noBuying}}</view>
 </view>
