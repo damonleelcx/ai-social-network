@@ -144,6 +144,11 @@ func (c *Client) body(r Request, stream bool) map[string]any {
 	if strings.Contains(c.BaseURL, "aliyuncs.com") {
 		b["enable_thinking"] = false
 	}
+	// Hunyuan on Tencent TokenHub (the China copy) thinks by default too, and ignores
+	// enable_thinking; without this a short max_tokens comes back empty.
+	if strings.Contains(c.BaseURL, "tencentmaas.com") {
+		b["reasoning_effort"] = "none"
+	}
 	if stream {
 		b["stream_options"] = map[string]bool{"include_usage": true}
 	}

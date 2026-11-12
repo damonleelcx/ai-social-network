@@ -120,12 +120,16 @@ func run(mode string) error {
 	svc := &dating.Service{Pool: pool, Chats: chats, DateMinLead: cfg.DateMinLead}
 	// Pictures for plans and trips, drawn by the same provider's image model and kept for reuse.
 	var scn *scenes.Service
-	if imageURL := cfg.ImageURL; imageURL != "off" && cfg.LLMAPIKey != "" {
+	imageKey := cfg.ImageKey
+	if imageKey == "" {
+		imageKey = cfg.LLMAPIKey
+	}
+	if imageURL := cfg.ImageURL; imageURL != "off" && imageKey != "" {
 		if imageURL == "" {
 			imageURL = strings.Replace(cfg.LLMBaseURL, "/compatible-mode/v1", "/api/v1/services/aigc/multimodal-generation/generation", 1)
 		}
 		scn = &scenes.Service{Pool: pool, Photos: photos, Model: model, FastLLM: cfg.LLMFastModel, ImageModel: cfg.ImageModel,
-			ImageURL: imageURL, ImageKey: cfg.LLMAPIKey, DailyCap: cfg.SceneDailyCap}
+			ImageURL: imageURL, ImageKey: imageKey, DailyCap: cfg.SceneDailyCap}
 		svc.Scenes = scn
 	}
 	bill := &billing.Service{Pool: pool, StripeKey: cfg.StripeSecretKey, WebhookSecret: cfg.StripeWebhookSecret, PublicOrigin: cfg.PublicOrigin}
