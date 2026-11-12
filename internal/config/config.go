@@ -20,8 +20,9 @@ type Config struct {
 
 	LLMBaseURL   string
 	// Pictures for plans and trips (internal/scenes). ImageURL defaults to the LLM host's
-	// DashScope multimodal generation; "off" turns pictures off.
-	ImageModel, ImageURL string
+	// DashScope multimodal generation; "off" turns pictures off. ImageKey defaults to
+	// LLMAPIKey; set it when the pictures come from a different provider than the chat.
+	ImageModel, ImageURL, ImageKey string
 	SceneDailyCap        int
 	LLMAPIKey    string
 	LLMModel     string // reasoning, drafting, planning
@@ -121,6 +122,7 @@ func Load() (Config, error) {
 		LLMAPIKey:                os.Getenv("SYN_LLM_API_KEY"),
 		ImageModel:               env("SYN_IMAGE_MODEL", "qwen-image-3.0-pro"),
 		ImageURL:                 os.Getenv("SYN_IMAGE_URL"),
+		ImageKey:                 os.Getenv("SYN_IMAGE_KEY"),
 		SceneDailyCap:            envInt("SYN_SCENE_DAILY_CAP", 100),
 		StripeSecretKey:          os.Getenv("SYN_STRIPE_SECRET_KEY"),
 		StripeWebhookSecret:      os.Getenv("SYN_STRIPE_WEBHOOK_SECRET"),
