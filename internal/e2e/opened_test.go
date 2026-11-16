@@ -61,6 +61,10 @@ func TestSukiSpeaksWhenTheAppOpens(t *testing.T) {
 	before = a.countSuki()
 	a.do("POST", "/v1/agent/opened", map[string]any{}, 200, nil)
 	eventually(t, "Suki to speak again", func() bool { return a.countSuki() > before })
+	// Not with the same greeting: a repeat is sent back for something new.
+	if body, _ := a.lastSuki(); !strings.Contains(body, "Tried anything new") {
+		t.Fatalf("on the second visit she said %q", body)
+	}
 
 	// A message that fails its fact check never reaches them.
 	exec(later)
