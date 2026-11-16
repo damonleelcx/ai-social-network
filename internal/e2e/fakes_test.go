@@ -292,9 +292,13 @@ func (f *fakeLLM) suki(w http.ResponseWriter, msgs []fakeMsg, has map[string]boo
 		return
 	}
 	if strings.Contains(all, "They just opened the app.") {
-		if f.inventOpening.Load() {
+		switch {
+		case last.Role == "system" && strings.Contains(last.text(), "says the same thing as one you already sent"):
+			// Told the greeting was a repeat, she comes up with something else.
+			reply(w, "Tried anything new lately? <<mood=playful|replies=Yes;Not really>>", nil)
+		case f.inventOpening.Load():
 			reply(w, "Marco is waiting to meet you! <<mood=happy>>", nil)
-		} else {
+		default:
 			reply(w, "Hey you, how's your week going? <<mood=happy|replies=Good;Busy>>", nil)
 		}
 		return
