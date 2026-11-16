@@ -420,6 +420,18 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 				if intent == LookingIntent && len(cards) == 0 {
 					return intent, nil // "here's who I'm looking for" with nothing under it
 				}
+				// Saying the same thing again, day after day, is worse than saying nothing.
+				if intent != LookingIntent {
+					if prev := repeats(msg.Content, msgs); prev != "" {
+						if failedChecks++; failedChecks >= 2 {
+							slog.Info("unprompted message held back as a repeat", "turn", t.ID, "intent", intent)
+							return intent, nil
+						}
+						cards = nil
+						msgs = append(msgs, msg, llm.Message{Role: "system", Content: "That message wasn't sent: it says the same thing as one you already sent them (\"" + truncate(prev, 160) + "\"). Pick a different idea of a different kind from the ones in your recent messages, look with your tools if you need to, and word it differently. If there's nothing new to offer, just chat about something they like."})
+						continue
+					}
+				}
 				if problem := r.checkOwnWords(ctx, t, state, msgs, msg.Content); problem != "" {
 					// Saying nothing is better than saying something untrue.
 					if failedChecks++; failedChecks >= 2 {
