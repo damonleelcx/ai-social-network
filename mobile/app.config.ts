@@ -9,7 +9,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: 'SynAgent',
+    name: 'Suki',
     slug: 'synagent',
     scheme: 'synagent',
     // Release builds get the next version from the pipeline. This is for local builds.
@@ -62,7 +62,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         'expo-image-picker',
         {
-          photosPermission: 'SynAgent uses your photos so you can add them to your profile.',
+          photosPermission: 'Suki uses your photos so you can add them to your profile.',
           cameraPermission: false,
           microphonePermission: false,
         },

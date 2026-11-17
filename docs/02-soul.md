@@ -1,6 +1,6 @@
 # Suki's soul
 
-**Suki** (好き, "to like") is the character from the SynAgent sheet: cat hair clip,
+**Suki** (好き, "to like") is the character from the Suki sheet: cat hair clip,
 holographic jacket, a wink always ready. The sheet calls her Aoi, a name already
 taken by the host of Play with Agents, so this app uses Suki. The name lives in
 one constant (`persona.Name`) and is easy to change.

@@ -112,7 +112,7 @@ func dateTimers(ctx context.Context) error {
 		}
 		if !x.ci && now.After(x.at.Add(time.Hour)) {
 			for _, u := range people {
-				if err := notify.Send(ctx, d.Pool, u, "safety", "Everything okay?", "Just checking in. If anything feels off, open SynAgent and tell Suki.", data, fmt.Sprintf("checkin:%s:%d:%s", x.id, x.at.Unix(), u)); err != nil {
+				if err := notify.Send(ctx, d.Pool, u, "safety", "Everything okay?", "Just checking in. If anything feels off, tell Suki.", data, fmt.Sprintf("checkin:%s:%d:%s", x.id, x.at.Unix(), u)); err != nil {
 					return err
 				}
 			}

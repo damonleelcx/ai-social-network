@@ -1,6 +1,6 @@
-# SynAgent architecture
+# Suki architecture
 
-SynAgent is a dating app where an AI matchmaker, Suki, does the work of finding,
+Suki is a dating app where an AI matchmaker does the work of finding,
 introducing and helping people meet. This document is how it is built, and where each
 agent-development principle lives in the code.
 

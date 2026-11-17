@@ -49,7 +49,7 @@ async function prepare() {
 // The link carries only the opaque invite code, never an id or openid.
 function message() {
   return {
-    title: t('Come try SynAgent with me. Suki introduces you to people worth meeting.'),
+    title: t('Come try Suki with me. She introduces you to people worth meeting.'),
     path: mine ? `/pages/suki/suki?ref=${mine}` : '/pages/suki/suki',
     imageUrl: CARD,
   };

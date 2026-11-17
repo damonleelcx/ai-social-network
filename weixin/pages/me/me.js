@@ -16,7 +16,7 @@ const COPY = {
   photos: 'Photos',
   photosHint: 'Tap a photo to see all of it. Use ··· to make it your main one or remove it.',
   invite: 'Invite friends',
-  inviteHint: 'Know someone who could use company for a meal, a film or a trip? Send them SynAgent.',
+  inviteHint: 'Know someone who could use company for a meal, a film or a trip? Send them Suki.',
   inviteCode: 'Your invite code',
   checkIn: 'Daily check-in',
   checkInButton: 'Check in',
@@ -44,7 +44,7 @@ const COPY = {
   privacy: 'Privacy policy',
   contact: 'Contact',
 };
-const REASON = { purchase: 'Bought credits', turn: 'Message to Suki', referral: 'A friend joined', invited: 'Joined through a friend', checkin: 'Daily check-in', refund: "Refund: Suki couldn't answer", grant: 'Added by SynAgent' };
+const REASON = { purchase: 'Bought credits', turn: 'Message to Suki', referral: 'A friend joined', invited: 'Joined through a friend', checkin: 'Daily check-in', refund: "Refund: Suki couldn't answer", grant: 'Added by Suki' };
 const SCREENS = {
   edit: '/pages/profile/edit/edit',
   notifications: '/pages/notifications/notifications',

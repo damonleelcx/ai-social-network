@@ -26,7 +26,7 @@ export async function registerForPush() {
 
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
-        name: 'SynAgent',
+        name: 'Suki',
         importance: Notifications.AndroidImportance.DEFAULT,
       });
     }

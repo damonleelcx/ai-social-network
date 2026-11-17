@@ -343,7 +343,7 @@ function InviteCard() {
         loading={busy === 'link'}
         onPress={run('link', () =>
           Share.share({
-            message: tr('Come try SynAgent with me. Suki, an AI winggirl, introduces you to people worth meeting. Start here: {url} (invite code: {code})', { url: status.link, code: status.code }),
+            message: tr('Come try Suki with me: an AI winggirl who introduces you to people worth meeting. Start here: {url} (invite code: {code})', { url: status.link, code: status.code }),
           }),
         )}
       />
@@ -440,7 +440,7 @@ function BuyElsewhere({ status }: { status: CreditStatus }) {
           onPress={() => Linking.openURL(PLAY_LISTING).catch(showError)}
         />
       ) : null}
-      {status.wechat_enabled ? <T v="small" soft>{tr('Or buy them in the SynAgent mini program in WeChat.')}</T> : null}
+      {status.wechat_enabled ? <T v="small" soft>{tr('Or buy them in the Suki mini program in WeChat.')}</T> : null}
     </>
   );
 }

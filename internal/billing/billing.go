@@ -244,7 +244,7 @@ func (s *Service) Checkout(ctx context.Context, userID, packageID string) (strin
 		"line_items[0][quantity]":                {"1"},
 		"line_items[0][price_data][currency]":    {pkg.Currency},
 		"line_items[0][price_data][unit_amount]": {strconv.Itoa(pkg.AmountCents)},
-		"line_items[0][price_data][product_data][name]": {fmt.Sprintf("SynAgent: %d credits", pkg.Credits)},
+		"line_items[0][price_data][product_data][name]": {fmt.Sprintf("Suki: %d credits", pkg.Credits)},
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, s.stripeBase()+"/v1/checkout/sessions", strings.NewReader(form.Encode()))
 	if err != nil {

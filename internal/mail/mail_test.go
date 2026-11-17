@@ -6,10 +6,10 @@ import (
 	"testing"
 )
 
-func TestPageIsSynAgentBranded(t *testing.T) {
+func TestPageIsSukiBranded(t *testing.T) {
 	for _, lang := range []string{"en", "zh", "ko", "ja", "fr"} {
-		page := Page(lang, "It's a match!", "You both said yes.", "Open SynAgent", "https://example.test/open", "foot")
-		for _, want := range []string{">SYNAGENT<", "— Suki · SynAgent", "SynAgent"} {
+		page := Page(lang, "It's a match!", "You both said yes.", "Open Suki", "https://example.test/open", "foot")
+		for _, want := range []string{">SUKI<", "— Suki", "Suki"} {
 			if !strings.Contains(page, want) {
 				t.Errorf("%s: missing %q", lang, want)
 			}

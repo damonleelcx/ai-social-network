@@ -1,4 +1,4 @@
-# SynAgent API
+# Suki API
 
 The contract between the backend and the mobile app. JSON over HTTPS.
 

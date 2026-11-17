@@ -26,7 +26,7 @@ export function GoogleSignInButton({ referral }: { referral?: string }) {
       } catch (e) {
         if (!(e instanceof ApiError) || e.message !== tr('please accept the terms to continue')) throw e;
         const yes = await confirm(
-          tr('Welcome to SynAgent'),
+          tr('Welcome to Suki'),
           tr('By continuing, you confirm you are 18 or over and accept the Terms of Use and Privacy Policy.'),
           tr('Continue'),
         );

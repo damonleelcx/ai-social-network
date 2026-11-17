@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/assets/suki-avatar.png" alt="Suki, the SynAgent matchmaker: dark hair, a glowing cat hair clip, and a wink" width="160">
+  <img src="docs/assets/suki-avatar.png" alt="Suki, the AI matchmaker: dark hair, a glowing cat hair clip, and a wink" width="160">
 </p>
 
-<h1 align="center">SynAgent</h1>
+<h1 align="center">Suki</h1>
 
 <p align="center"><strong>Meet Suki, a matchmaker you talk to, not a deck you swipe.</strong></p>
 
@@ -13,7 +13,7 @@
   <a href="https://match.heros-agent.space/legal/terms">Terms</a>
 </p>
 
-SynAgent is an app for meeting people, on the web, iOS and Android, built around one AI
+Suki is an app for meeting people, on the web, iOS and Android, built around one AI
 character. Tell Suki about yourself, and she introduces you to people in your city, helps the
 conversation along, finds a place for the date, and gets a better sense of your type each time.
 And when you just want company, for a movie tonight, a trip or a business contact, she helps you
@@ -74,7 +74,7 @@ Your first match is free. After that, each message to Suki uses a credit, and yo
 
 ## Availability
 
-SynAgent is for adults 18 and over. [Open it in your browser](https://match.heros-agent.space/app/), or get the [direct downloads](https://match.heros-agent.space/#download). It isn't in the App Store or Google Play yet.
+Suki is for adults 18 and over. [Open it in your browser](https://match.heros-agent.space/app/), or get the [direct downloads](https://match.heros-agent.space/#download). It isn't in the App Store or Google Play yet.
 
 ## Contact
 

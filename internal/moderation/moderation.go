@@ -40,7 +40,7 @@ type Verdict struct {
 func (v Verdict) Minors() bool { return v.Category == "minors" }
 
 // BlockedMessage is what a person is told. It doesn't repeat what they wrote.
-const BlockedMessage = "That can't be sent here. SynAgent keeps things free of explicit content, so please rephrase it."
+const BlockedMessage = "That can't be sent here. Suki keeps things free of explicit content, so please rephrase it."
 
 // ProfileBlockedMessage is the same, for profile fields.
 const ProfileBlockedMessage = "That can't go on your profile. Please keep it free of explicit content."

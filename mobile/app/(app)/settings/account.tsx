@@ -156,7 +156,7 @@ export default function AccountSettings() {
     try {
       const data = await api.auth.exportData();
       const json = JSON.stringify(data, null, 2);
-      await saveJson('synagent-data.json', json, tr('Your SynAgent data'));
+      await saveJson('synagent-data.json', json, tr('Your Suki data'));
     } catch (e) {
       showError(e);
     } finally {

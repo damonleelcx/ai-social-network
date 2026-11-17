@@ -1,4 +1,4 @@
-# SynAgent mobile
+# Suki mobile
 
 The iOS, Android and web client: Expo, React Native, TypeScript, expo-router. It needs Node 22 or newer.
 

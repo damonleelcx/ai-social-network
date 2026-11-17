@@ -134,7 +134,7 @@ Page({
         this.after(await api.auth.wechat(await wxLogin(), false, share.pending(), i18n.current()));
       } catch (e) {
         if (e.raw !== 'please accept the terms to continue') throw e;
-        if (!(await confirm(t('Welcome to SynAgent'), t('By continuing, you confirm you are 18 or over and accept the Terms of Use and Privacy Policy.')))) return;
+        if (!(await confirm(t('Welcome to Suki'), t('By continuing, you confirm you are 18 or over and accept the Terms of Use and Privacy Policy.')))) return;
         this.after(await api.auth.wechat(await wxLogin(), true, share.pending(), i18n.current()));
       }
     });

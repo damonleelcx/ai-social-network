@@ -87,11 +87,11 @@ func legalPage(page string, china bool) http.HandlerFunc {
 			return
 		}
 		text := string(body)
-		title := "SynAgent"
+		title := "Suki"
 		if _, rest, ok := strings.Cut(text, "<h1>"); ok {
 			title, _, _ = strings.Cut(rest, "</h1>")
 		}
-		main := text + `<footer><a href="/">SynAgent</a><a href="/legal/terms">` + l.terms + `</a><a href="/legal/privacy">` + l.privacy + `</a><a href="/legal/delete-account">` + l.deleteAccount + `</a><a href="/legal/contact">` + l.contact + `</a>`
+		main := text + `<footer><a href="/">Suki</a><a href="/legal/terms">` + l.terms + `</a><a href="/legal/privacy">` + l.privacy + `</a><a href="/legal/delete-account">` + l.deleteAccount + `</a><a href="/legal/contact">` + l.contact + `</a>`
 		main = legalLink.ReplaceAllString(main, `$0?lang=`+l.code)
 		var out strings.Builder
 		out.WriteString(`<!doctype html><html lang="` + l.code + `"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>` + title + `</title>

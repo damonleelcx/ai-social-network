@@ -185,17 +185,17 @@ func (Log) Send(_ context.Context, m Message) (string, error) {
 }
 
 // SenderName is the display name on every message: Suki writes the emails.
-const SenderName = "Suki · SynAgent"
+const SenderName = "Suki"
 
 // Signature is how Suki signs off. Her name is the same in every language.
-func Signature(string) string { return "— Suki · SynAgent" }
+func Signature(string) string { return "— Suki" }
 
 // footerNote is the footer line under every email, per language.
 var footerNote = map[string]string{
-	"en": "You're receiving this because you have a SynAgent account.",
-	"zh": "你收到这封邮件，是因为你有一个 SynAgent 账户。",
-	"ko": "SynAgent 계정이 있어서 이 메일을 보내 드렸어요.",
-	"ja": "SynAgent のアカウントをお持ちのため、このメールをお送りしています。",
+	"en": "You're receiving this because you have a Suki account.",
+	"zh": "你收到这封邮件，是因为你有一个 Suki 账户。",
+	"ko": "Suki 계정이 있어서 이 메일을 보내 드렸어요.",
+	"ja": "Suki のアカウントをお持ちのため、このメールをお送りしています。",
 }
 
 // htmlLang is the lang attribute of the email page.
@@ -215,7 +215,7 @@ func Page(lang, title, lead, cta, link, foot string) string {
 	return `<!doctype html><html lang="` + htmlLang(lang) + `"><body style="margin:0;background:#0b1430;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#e8eeff">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0b1430"><tr><td align="center" style="padding:40px 16px">
 <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;background:#121e45;border:1px solid #23346e;border-radius:20px;padding:36px">
-<tr><td style="font-size:12px;letter-spacing:.22em;font-weight:700;color:#4f8cff">SYNAGENT</td></tr>
+<tr><td style="font-size:12px;letter-spacing:.22em;font-weight:700;color:#4f8cff">SUKI</td></tr>
 <tr><td style="padding-top:18px;font-size:26px;font-weight:700;line-height:1.25;color:#ffffff">` + e(title) + `</td></tr>
 <tr><td style="padding-top:14px;font-size:15px;line-height:1.65;color:#c3cdee">` + e(lead) + `</td></tr>
 <tr><td style="padding-top:26px"><a href="` + e(link) + `" style="display:inline-block;background:#4f8cff;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:999px;font-weight:600">` + e(cta) + `</a></td></tr>

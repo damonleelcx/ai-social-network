@@ -40,11 +40,11 @@ var chinaText = map[string]map[string]string{
 		"ja": "ここでは健全な話題だけにしているので、それはやめておきますね。プロフィールや仲間のこと、楽しいお出かけの計画なら喜んでお手伝いします。",
 		"es": "Aquí mantengo las cosas para todos los públicos, así que eso lo dejo pasar. Encantada de ayudarte con tu perfil, tus compañeros o a organizar una buena quedada.",
 	},
-	"Thanks for being honest with me. SynAgent is only for adults aged 18 and over, so I can't help you with dating here, and I've paused this account until someone on our team has looked at it. No hard feelings.": {
-		"en": "Thanks for being honest with me. SynAgent is only for adults aged 18 and over, so I can't help you find company here, and I've paused this account until someone on our team has looked at it. No hard feelings.",
-		"ko": "솔직하게 말해 줘서 고마워요. SynAgent는 만 18세 이상 성인만 이용할 수 있어서 여기서는 함께할 사람 찾기를 도와드릴 수 없고, 팀원이 확인할 때까지 이 계정을 일시 중지했어요. 기분 나쁘게 생각하지 말아요.",
-		"ja": "正直に話してくれてありがとう。SynAgent は 18 歳以上の成人専用なので、ここで仲間探しのお手伝いはできません。チームの担当者が確認するまで、このアカウントは一時停止しました。悪く思わないでくださいね。",
-		"es": "Gracias por ser sincero conmigo. SynAgent es solo para adultos de 18 años o más, así que no puedo ayudarte a encontrar compañía aquí, y he pausado esta cuenta hasta que alguien de nuestro equipo la revise. Sin rencores.",
+	"Thanks for being honest with me. Suki is only for adults aged 18 and over, so I can't help you with dating here, and I've paused this account until someone on our team has looked at it. No hard feelings.": {
+		"en": "Thanks for being honest with me. Suki is only for adults aged 18 and over, so I can't help you find company here, and I've paused this account until someone on our team has looked at it. No hard feelings.",
+		"ko": "솔직하게 말해 줘서 고마워요. Suki는 만 18세 이상 성인만 이용할 수 있어서 여기서는 함께할 사람 찾기를 도와드릴 수 없고, 팀원이 확인할 때까지 이 계정을 일시 중지했어요. 기분 나쁘게 생각하지 말아요.",
+		"ja": "正直に話してくれてありがとう。Suki は 18 歳以上の成人専用なので、ここで仲間探しのお手伝いはできません。チームの担当者が確認するまで、このアカウントは一時停止しました。悪く思わないでくださいね。",
+		"es": "Gracias por ser sincero conmigo. Suki es solo para adultos de 18 años o más, así que no puedo ayudarte a encontrar compañía aquí, y he pausado esta cuenta hasta que alguien de nuestro equipo la revise. Sin rencores.",
 	},
 	"Feedback after dates privately shapes who I introduce you to, and those details stay private, so there's no number for you to look at. The privacy policy explains more. So tell me: what made your favorite date your favorite?": {
 		"en": "Feedback after meetups privately shapes who I introduce you to, and those details stay private, so there's no number for you to look at. The privacy policy explains more. So tell me: what made your favorite meetup your favorite?",

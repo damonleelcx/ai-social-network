@@ -97,7 +97,7 @@ module.exports = async (l) => {
   await l.sleep(700);
   await l.shot('me-ja');
   const ascii = (await q.data()).t;
-  const untranslated = Object.values(ascii).filter((v) => /^[\x20-\x7e]+$/.test(v) && /[a-z]{3}/i.test(v) && !/Suki|SynAgent/.test(v));
+  const untranslated = Object.values(ascii).filter((v) => /^[\x20-\x7e]+$/.test(v) && /[a-z]{3}/i.test(v) && !/Suki|Suki/.test(v));
   l.check(untranslated.length === 0, 'Me has no untranslated words in Japanese', untranslated.join(' | '));
   p = await l.goto('/pages/settings/app/app');
   await l.waitData(p, (x) => x.s, 'app settings');

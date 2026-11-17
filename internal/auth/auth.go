@@ -69,7 +69,7 @@ var (
 	ErrTooManyCodes       = errors.New("too many codes requested; try again in an hour")
 	ErrTermsRequired      = errors.New("please accept the terms to continue")
 	ErrTooManyAttempts    = errors.New("too many attempts; try again in 15 minutes")
-	ErrBanned             = errors.New("this email can't be used on SynAgent")
+	ErrBanned             = errors.New("this email can't be used on Suki")
 )
 
 // UserFacing reports whether err is one of this package's own messages,

@@ -50,7 +50,7 @@ func TestChinaSiteSaysNothingItShouldnt(t *testing.T) {
 	// The US site is untouched.
 	rec := httptest.NewRecorder()
 	(&Server{}).Handler().ServeHTTP(rec, httptest.NewRequest("GET", "/", nil))
-	if !strings.Contains(rec.Body.String(), "SynAgent.apk") {
+	if !strings.Contains(rec.Body.String(), "Suki.apk") {
 		t.Error("the US home page changed")
 	}
 }
