@@ -83,12 +83,12 @@ jobs:
           mkdir -p out
           "$TOOLS/apksigner" sign --ks "$RUNNER_TEMP/release.p12" --ks-type PKCS12 --ks-key-alias synagent \
             --ks-pass env:ANDROID_KEYSTORE_PASSWORD --key-pass env:ANDROID_KEYSTORE_PASSWORD \
-            --out out/SynAgent.apk android/app/build/outputs/apk/release/app-release.apk
+            --out out/Suki.apk android/app/build/outputs/apk/release/app-release.apk
           rm -f "$RUNNER_TEMP/release.p12" out/*.idsig
-          "$TOOLS/apksigner" verify --print-certs out/SynAgent.apk | grep -i 'certificate DN'
-          "$TOOLS/aapt2" dump badging out/SynAgent.apk | grep -E "^package:"
+          "$TOOLS/apksigner" verify --print-certs out/Suki.apk | grep -i 'certificate DN'
+          "$TOOLS/aapt2" dump badging out/Suki.apk | grep -E "^package:"
           ls -la out
-          sha256sum out/SynAgent.apk | tee out/SynAgent.apk.sha256
+          sha256sum out/Suki.apk | tee out/Suki.apk.sha256
       - name: Allow the emulator to use KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm.rules
@@ -106,7 +106,7 @@ jobs:
           # Then pick Korean on Welcome and relaunch. The taps are fixed positions on this 320x640
           # screen, because uiautomator can't read a screen with a looping animation.
           script: |
-            adb install -r out/SynAgent.apk
+            adb install -r out/Suki.apk
             adb shell monkey -p space.herosagent.synagent -c android.intent.category.LAUNCHER 1
             sleep 30
             adb exec-out screencap -p > out/launch.png
@@ -184,9 +184,9 @@ jobs:
           if codesign -v "$APP" 2>/dev/null; then echo "unexpectedly signed"; exit 1; fi
           mkdir -p Payload
           cp -R "$APP" Payload/
-          zip -qry out/SynAgent-unsigned.ipa Payload
+          zip -qry out/Suki-unsigned.ipa Payload
           ls -la out
-          shasum -a 256 out/SynAgent-unsigned.ipa | tee out/SynAgent-unsigned.ipa.sha256
+          shasum -a 256 out/Suki-unsigned.ipa | tee out/Suki-unsigned.ipa.sha256
       - name: Keep the results
         if: always()
         uses: actions/upload-artifact@v4
@@ -212,10 +212,13 @@ jobs:
         run: |
           TAG=${VERSION:+app-v$VERSION}
           TAG=${TAG:-$GITHUB_REF_NAME}
-          APK_SUM=$(cut -d' ' -f1 out/android/SynAgent.apk.sha256)
-          IPA_SUM=$(cut -d' ' -f1 out/ios/SynAgent-unsigned.ipa.sha256)
+          APK_SUM=$(cut -d' ' -f1 out/android/Suki.apk.sha256)
+          IPA_SUM=$(cut -d' ' -f1 out/ios/Suki-unsigned.ipa.sha256)
           printf '%s\n' "For adults 18 and over." "" \
-            "- **SynAgent.apk**: Android. Install it directly; Android asks you to allow the source. SHA-256: \`$APK_SUM\`" \
-            "- **SynAgent-unsigned.ipa**: iOS, not signed. An iPhone won't install it until a sideloading tool signs it with your own Apple ID. SHA-256: \`$IPA_SUM\`" > notes.md
-          gh release create "$TAG" --target "$GITHUB_SHA" out/android/SynAgent.apk out/ios/SynAgent-unsigned.ipa --repo "$GITHUB_REPOSITORY" \
-            --title "SynAgent ${TAG#app-v}" --notes-file notes.md
+            "- **Suki.apk**: Android. Install it directly; Android asks you to allow the source. SHA-256: \`$APK_SUM\`" \
+            "- **Suki-unsigned.ipa**: iOS, not signed. An iPhone won't install it until a sideloading tool signs it with your own Apple ID. SHA-256: \`$IPA_SUM\`" > notes.md
+          # Apps up to 1.3.x look for SynAgent.apk when they check for updates, so the same file goes
+          # up under that name too. Drop it once nobody is left on 1.3.
+          cp out/android/Suki.apk out/android/SynAgent.apk
+          gh release create "$TAG" --target "$GITHUB_SHA" out/android/Suki.apk out/android/SynAgent.apk out/ios/Suki-unsigned.ipa --repo "$GITHUB_REPOSITORY" \
+            --title "Suki ${TAG#app-v}" --notes-file notes.md
