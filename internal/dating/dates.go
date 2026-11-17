@@ -336,7 +336,7 @@ func (s *Service) ProposeTime(ctx context.Context, dateID, userID string, at tim
 		return userErr("this date can't take a time right now")
 	}
 	s.chatNote(ctx, matchID, "New time suggested. Does it work?", nil, map[string]any{"date_id": dateID, "card": "confirm", "at": at.UTC().Format(time.RFC3339)}, fmt.Sprintf("date-time:%s:%d", dateID, at.Unix()))
-	if err := notify.Send(ctx, s.Pool, other, "date", "A time for your date", "Open SynAgent to say yes or suggest another.", map[string]any{"screen": "date", "id": dateID}, fmt.Sprintf("date-time:%s:%d:%s", dateID, at.Unix(), other)); err != nil {
+	if err := notify.Send(ctx, s.Pool, other, "date", "A time for your date", "Open Suki to say yes or suggest another.", map[string]any{"screen": "date", "id": dateID}, fmt.Sprintf("date-time:%s:%d:%s", dateID, at.Unix(), other)); err != nil {
 		return err
 	}
 	s.notifyUser(ctx, other, "dates")

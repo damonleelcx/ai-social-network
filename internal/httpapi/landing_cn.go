@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// The China copy (suki.zhiyuwujie.top) presents SynAgent as what it is there: finding
+// The China copy (suki.zhiyuwujie.top) presents Suki as what it is there: finding
 // company for things to do, used through the WeChat mini program or the browser. The
 // home page is rewritten for it when it is served: no app-store or file downloads, no
 // romance and no services outside China, in every language the page offers.
@@ -21,18 +21,18 @@ type cnChange struct{ en, newEn, zh, ko, ja string }
 var CNBanned = regexp.MustCompile(`(?i)\bdat(e|es|ed|ing)\b|matchmak|\bmatch(es)?\b|swipe|winggirl|heros-agent|google|app store|github|\.apk|\.ipa|altstore|sideload|\baws\b|amazon|united states|\bexpo\b|stripe|fish audio|约会|红娘|相亲|交友|恋爱|僚机|美国|境外|海外|데이트|매치|매칭|연애|소개팅|윙걸|미국|デート|マッチ|恋愛|婚活|出会い系|ウィングガール|アメリカ|仲人`)
 
 var cnText = []cnChange{
-	{"SynAgent: a matchmaker you talk to, not a deck you swipe", "SynAgent: find company for the things you want to do",
-		"SynAgent：找到一起做事的搭子", "SynAgent: 하고 싶은 일을 함께할 친구 찾기", "SynAgent：やりたいことを一緒に楽しむ仲間探し"},
-	{"SynAgent is built around Suki, an AI matchmaker. She introduces you to people in your city to date, or finds you company for a movie, a trip or a business contact. No swiping.",
-		"SynAgent is built around Suki, an AI assistant for finding company. Tell her what you'd like to do, and she finds people in your city to do it with.",
-		"SynAgent 以 AI 助手 Suki 为核心。告诉她你想做什么，她会帮你找到同城的搭子。",
-		"SynAgent는 함께할 친구를 찾아 주는 AI 도우미 Suki를 중심으로 만들어졌어요. 하고 싶은 일을 말하면 같은 도시에서 함께할 사람을 찾아 줘요.",
-		"SynAgent は、仲間探しを手伝う AI アシスタント Suki が中心のサービスです。やりたいことを伝えると、同じ街で一緒に楽しめる人を見つけてくれます。"},
-	{"SynAgent is a dating app built around Suki, an AI matchmaker. Tell her about you and she introduces you to people in your city. No swiping.",
-		"SynAgent is built around Suki, an AI assistant for finding company. Tell her what you'd like to do, and she finds people in your city to do it with.",
-		"SynAgent 以 AI 助手 Suki 为核心。告诉她你想做什么，她会帮你找到同城的搭子。",
-		"SynAgent는 함께할 친구를 찾아 주는 AI 도우미 Suki를 중심으로 만들어졌어요. 하고 싶은 일을 말하면 같은 도시에서 함께할 사람을 찾아 줘요.",
-		"SynAgent は、仲間探しを手伝う AI アシスタント Suki が中心のサービスです。やりたいことを伝えると、同じ街で一緒に楽しめる人を見つけてくれます。"},
+	{"Suki: a matchmaker you talk to, not a deck you swipe", "Suki: find company for the things you want to do",
+		"Suki：找到一起做事的搭子", "Suki: 하고 싶은 일을 함께할 친구 찾기", "Suki：やりたいことを一緒に楽しむ仲間探し"},
+	{"Suki is an AI matchmaker. She introduces you to people in your city to date, or finds you company for a movie, a trip or a business contact. No swiping.",
+		"Suki is an AI assistant for finding company. Tell her what you'd like to do, and she finds people in your city to do it with.",
+		"Suki 是一位 AI 助手。告诉她你想做什么，她会帮你找到同城的搭子。",
+		"Suki는 함께할 친구를 찾아 주는 AI 도우미예요. 하고 싶은 일을 말하면 같은 도시에서 함께할 사람을 찾아 줘요.",
+		"Suki は、仲間探しを手伝う AI アシスタントです。やりたいことを伝えると、同じ街で一緒に楽しめる人を見つけてくれます。"},
+	{"Suki is a dating app built around an AI matchmaker. Tell her about you and she introduces you to people in your city. No swiping.",
+		"Suki is an AI assistant for finding company. Tell her what you'd like to do, and she finds people in your city to do it with.",
+		"Suki 是一位 AI 助手。告诉她你想做什么，她会帮你找到同城的搭子。",
+		"Suki는 함께할 친구를 찾아 주는 AI 도우미예요. 하고 싶은 일을 말하면 같은 도시에서 함께할 사람을 찾아 줘요.",
+		"Suki は、仲間探しを手伝う AI アシスタントです。やりたいことを伝えると、同じ街で一緒に楽しめる人を見つけてくれます。"},
 	{"A matchmaker you talk to,", "An assistant you talk to,", "一位能聊天的找搭子助手，", "끝없는 목록이 아니라,", "スクロールし続けるリストではなく、"},
 	{"not a deck you swipe.", "not a list you scroll.", "不是一串刷不完的列表。", "대화하는 도우미.", "話せるアシスタント。"},
 	{"No swiping. No endless decks.", "No endless scrolling.", "不用没完没了地刷。", "끝없이 넘길 필요 없어요.", "延々とスクロールしなくていい。"},
@@ -54,11 +54,11 @@ var cnText = []cnChange{
 	{"Swipes: 0", "Forms: 0", "表单：0", "양식: 0", "フォーム：0"},
 	{"Your type, in her words", "What you enjoy, in her words", "你的喜好，用她的话说", "그녀가 말하는 당신의 취향", "彼女の言葉で、あなたの好み"},
 	{"Wants someone curious", "Likes curious company", "喜欢好奇心强的搭子", "호기심 많은 친구를 좋아함", "好奇心旺盛な仲間が好き"},
-	{"Most apps hand you a deck. SynAgent gives you someone to talk to, who gets a better sense of your type each time.",
-		"Most apps hand you a list. SynAgent gives you someone to talk to, who learns what you enjoy each time.",
-		"大多数应用只给你一串列表。SynAgent 给你一个可以聊天的助手，每次都更懂你喜欢什么。",
-		"대부분의 앱은 목록만 줘요. SynAgent는 대화할 상대를 주고, 그녀는 매번 당신의 취향을 더 잘 알게 돼요.",
-		"多くのアプリはリストを渡すだけ。SynAgent には話し相手がいて、そのたびにあなたの好みをよく知っていきます。"},
+	{"Most apps hand you a deck. Suki gives you someone to talk to, who gets a better sense of your type each time.",
+		"Most apps hand you a list. Suki gives you someone to talk to, who learns what you enjoy each time.",
+		"大多数应用只给你一串列表。Suki 给你一个可以聊天的助手，每次都更懂你喜欢什么。",
+		"대부분의 앱은 목록만 줘요. Suki는 대화할 상대를 주고, 그녀는 매번 당신의 취향을 더 잘 알게 돼요.",
+		"多くのアプリはリストを渡すだけ。Suki には話し相手がいて、そのたびにあなたの好みをよく知っていきます。"},
 	{"She learns your type", "She learns what you enjoy", "她会了解你的喜好", "당신의 취향을 배워요", "あなたの好みを覚えます"},
 	{"Her introductions improve with what you accept, what you pass on, and what you say after your dates.",
 		"Her introductions improve with what you accept, what you pass on, and what you say after you meet up.",
@@ -107,7 +107,7 @@ const cnDownload = `<section class="solid" id="download" aria-labelledby="downlo
     <div class="wrap">
       <div class="divider"><i data-sprite="heart" class="spr flick"></i><span>IV · Get it</span><i data-sprite="heart" class="spr flick"></i></div>
       <h2 id="download-title" class="big">Take her with you</h2>
-      <p class="section-lede">Use SynAgent in WeChat or in your browser. For adults 18 and over. Your first introduction is free. After that, messages to Suki use stamps, and chatting with the people you team up with stays free.</p>
+      <p class="section-lede">Use Suki in WeChat or in your browser. For adults 18 and over. Your first introduction is free. After that, messages to Suki use stamps, and chatting with the people you team up with stays free.</p>
       <div class="downloads">
         <article class="download download-web">
           <h3>In WeChat</h3>
@@ -116,7 +116,7 @@ const cnDownload = `<section class="solid" id="download" aria-labelledby="downlo
         <article class="download">
           <h3>In your browser</h3>
           <p>Nothing to install, and it works on a computer too. Your account is the same one the mini program uses.</p>
-          <a class="btn btn-heart" href="/app/">Open SynAgent <i data-sprite="heart" class="spr"></i></a>
+          <a class="btn btn-heart" href="/app/">Open Suki <i data-sprite="heart" class="spr"></i></a>
         </article>
       </div>
     </div>
@@ -124,17 +124,17 @@ const cnDownload = `<section class="solid" id="download" aria-labelledby="downlo
 
 // Sentences only the China page has.
 var cnDownloadText = []cnChange{
-	{"Use SynAgent in WeChat or in your browser. For adults 18 and over. Your first introduction is free. After that, messages to Suki use stamps, and chatting with the people you team up with stays free.", "",
-		"在微信或浏览器中使用 SynAgent。仅限 18 岁及以上。第一次介绍免费，之后和 Suki 对话消耗邮票，和搭子聊天一直免费。",
-		"위챗이나 브라우저에서 SynAgent를 이용하세요. 18세 이상만 이용할 수 있어요. 첫 소개는 무료이고, 그 후 Suki에게 보내는 메시지에는 우표가 들어요. 함께하는 사람과의 채팅은 계속 무료예요.",
-		"WeChat かブラウザで SynAgent を使えます。18 歳以上の方が対象です。最初の紹介は無料で、その後 Suki へのメッセージには切手を使います。一緒に行く人とのチャットはずっと無料です。"},
+	{"Use Suki in WeChat or in your browser. For adults 18 and over. Your first introduction is free. After that, messages to Suki use stamps, and chatting with the people you team up with stays free.", "",
+		"在微信或浏览器中使用 Suki。仅限 18 岁及以上。第一次介绍免费，之后和 Suki 对话消耗邮票，和搭子聊天一直免费。",
+		"위챗이나 브라우저에서 Suki를 이용하세요. 18세 이상만 이용할 수 있어요. 첫 소개는 무료이고, 그 후 Suki에게 보내는 메시지에는 우표가 들어요. 함께하는 사람과의 채팅은 계속 무료예요.",
+		"WeChat かブラウザで Suki を使えます。18 歳以上の方が対象です。最初の紹介は無料で、その後 Suki へのメッセージには切手を使います。一緒に行く人とのチャットはずっと無料です。"},
 	{"In WeChat", "", "在微信里", "위챗에서", "WeChat で"},
 	{"Search for HelloSuki in WeChat, or open the mini program from a friend's share.", "",
 		"在微信中搜索 HelloSuki，或从朋友分享的小程序打开。", "위챗에서 HelloSuki를 검색하거나, 친구가 공유한 미니 프로그램을 열어 주세요.", "WeChat で HelloSuki を検索するか、友だちが共有したミニプログラムから開いてください。"},
 	{"Nothing to install, and it works on a computer too. Your account is the same one the mini program uses.", "",
 		"无需安装，电脑上也能用。账号和小程序是同一个。", "설치할 필요 없고 컴퓨터에서도 돼요. 계정은 미니 프로그램과 같아요.", "インストール不要で、パソコンでも使えます。アカウントはミニプログラムと同じです。"},
 	{"Take her with you", "", "随时找她", "언제든 함께", "いつでも一緒に"},
-	{"Open SynAgent", "", "打开 SynAgent", "SynAgent 열기", "SynAgent を開く"},
+	{"Open Suki", "", "打开 Suki", "Suki 열기", "Suki を開く"},
 	{"Write to us", "", "联系我们", "문의하기", "お問い合わせ"},
 }
 
@@ -147,7 +147,7 @@ func chinaLanding(name string, body []byte) []byte {
 	case "landing/index.html":
 		s = cnDownloadSection.ReplaceAllLiteralString(s, cnDownload)
 		s = strings.ReplaceAll(s, `<a class="btn btn-ghost" href="#download">Download the app</a>`, `<a class="btn btn-ghost" href="#download">Open in WeChat</a>`)
-		s = strings.ReplaceAll(s, `<a class="btn btn-heart" href="#download">Download <i`, `<a class="btn btn-heart" href="/app/">Open SynAgent <i`)
+		s = strings.ReplaceAll(s, `<a class="btn btn-heart" href="#download">Download <i`, `<a class="btn btn-heart" href="/app/">Open Suki <i`)
 		s = strings.ReplaceAll(s, "mailto:support@heros-agent.space", "mailto:support@zhiyuwujie.top")
 		s = replaceText(s, false)
 	case "landing/app.js":

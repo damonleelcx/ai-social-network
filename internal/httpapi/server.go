@@ -1446,14 +1446,14 @@ func (s *Server) adminGrantCredits(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) creditsDone(w http.ResponseWriter, r *http.Request) {
-	line := "Thanks! Your credits will show up in a moment. You can go back to SynAgent now."
+	line := "Thanks! Your credits will show up in a moment. You can go back to Suki now."
 	if r.URL.Query().Get("cancelled") != "" {
-		line = "Nothing was charged. You can go back to SynAgent now."
+		line = "Nothing was charged. You can go back to Suki now."
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
-	_, _ = io.WriteString(w, `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SynAgent</title></head>`+
-		`<body style="font:18px/1.5 system-ui;max-width:32em;margin:20vh auto;padding:0 16px;text-align:center"><p>`+line+`</p><p><a href="/app/suki">Open SynAgent</a></p></body></html>`)
+	_, _ = io.WriteString(w, `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Suki</title></head>`+
+		`<body style="font:18px/1.5 system-ui;max-width:32em;margin:20vh auto;padding:0 16px;text-align:center"><p>`+line+`</p><p><a href="/app/suki">Open Suki</a></p></body></html>`)
 }
 
 // ── Buddies ──

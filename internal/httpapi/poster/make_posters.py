@@ -87,8 +87,8 @@ def make(lang):
     w = d.textlength(scan, font=lf)
     d.text(((W - w) / 2, 1085), scan, font=lf, fill=(120, 104, 160))
     brand = font(bold, 30)
-    w = d.textlength("SynAgent · Suki", font=brand)
-    d.text(((W - w) / 2, 1835), "SynAgent · Suki", font=brand, fill=(221, 208, 255))
+    w = d.textlength("Suki", font=brand)
+    d.text(((W - w) / 2, 1835), "Suki", font=brand, fill=(221, 208, 255))
     img.convert("RGB").save(os.path.join(HERE, f"bg-{lang}.jpg"), quality=86, optimize=True, progressive=True)
 
 

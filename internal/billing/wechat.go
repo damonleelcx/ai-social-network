@@ -172,7 +172,7 @@ func (s *Service) WeChatPrepay(ctx context.Context, userID, packageID, code stri
 	body, err := json.Marshal(map[string]any{
 		"appid":        w.AppID,
 		"mchid":        w.MchID,
-		"description":  fmt.Sprintf("SynAgent %d 积分", pkg.Credits),
+		"description":  fmt.Sprintf("Suki %d 积分", pkg.Credits),
 		"out_trade_no": tradeNo(id),
 		"notify_url":   s.PublicOrigin + "/v1/billing/wechat",
 		"amount":       map[string]any{"total": pkg.AmountCents, "currency": "CNY"},

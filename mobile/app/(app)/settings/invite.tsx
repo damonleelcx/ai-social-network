@@ -34,7 +34,7 @@ export default function InviteScreen() {
     if (!status) return;
     try {
       await Share.share({
-        message: tr('Come try SynAgent with me. Suki, an AI winggirl, introduces you to people worth meeting. Start here: {url} (invite code: {code})', {
+        message: tr('Come try Suki with me: an AI winggirl who introduces you to people worth meeting. Start here: {url} (invite code: {code})', {
           url: status.link,
           code: status.code,
         }),

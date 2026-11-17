@@ -94,7 +94,7 @@ func registerSukiTools() {
 				if _, e := d.Dating.FileReport(ctx, dating.Report{SubjectID: env.UserID, Source: "onboarding", Reason: "underage_birthdate", Severity: "critical", Key: "underage:" + env.UserID}); e != nil {
 					return nil, e
 				}
-				return map[string]any{"saved": false, "stop": "This person is under 18. Tell them kindly SynAgent is for adults only and stop onboarding."}, nil
+				return map[string]any{"saved": false, "stop": "This person is under 18. Tell them kindly Suki is for adults only and stop onboarding."}, nil
 			}
 			if err != nil {
 				return nil, userError(err)

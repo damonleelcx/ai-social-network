@@ -1,4 +1,4 @@
-# SynAgent WeChat mini program
+# Suki WeChat mini program
 
 A native mini program that talks to the same server as the app. React Native can't run in WeChat, so these are separate pages. The account, Suki, matches, chats and credits are all shared with the app.
 

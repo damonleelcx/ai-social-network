@@ -148,7 +148,7 @@ func (e *ValidationError) Error() string { return e.Msg }
 func invalid(f string, a ...any) error { return &ValidationError{fmt.Sprintf(f, a...)} }
 
 // ErrUnderage stops onboarding. The caller holds the account for a moderator.
-var ErrUnderage = errors.New("SynAgent is only for adults aged 18 or over")
+var ErrUnderage = errors.New("Suki is only for adults aged 18 or over")
 
 var enums = map[string][]string{
 	"gender":     {"woman", "man", "nonbinary", "other"},

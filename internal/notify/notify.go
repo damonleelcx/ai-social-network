@@ -154,9 +154,9 @@ func Render(kind, lang string, p map[string]any, origin string) (mail.Message, e
 		return mail.Message{}, fmt.Errorf("outbox %s without a title", kind)
 	}
 	foot := i18n.T(lang, "You can turn these emails off in Settings > Notifications.")
-	text := fmt.Sprintf("%s\n\n%s\n\n%s\n\n%s\n\nSuki", title, body, i18n.T(lang, "Open SynAgent to see it."), foot)
-	return mail.Message{Subject: title + " · SynAgent", Text: text,
-		HTML: mail.Page(lang, title, body, i18n.T(lang, "Open SynAgent"), origin+"/open", foot)}, nil
+	text := fmt.Sprintf("%s\n\n%s\n\n%s\n\n%s\n\nSuki", title, body, i18n.T(lang, "Open Suki to see it."), foot)
+	return mail.Message{Subject: title + " · Suki", Text: text,
+		HTML: mail.Page(lang, title, body, i18n.T(lang, "Open Suki"), origin+"/open", foot)}, nil
 }
 
 // PushDue sends unsent notifications through Expo's push service. A token that

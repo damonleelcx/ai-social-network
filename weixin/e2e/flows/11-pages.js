@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const SCORE = /\b(score|rank|percentile|compat(ibility)?)\b|\d+\s*%/i;
-const BRANDS = /Suki|SynAgent|WeChat|iPhone|Android|English|JSON|iOS|^OK$/;
+const BRANDS = /Suki|Suki|WeChat|iPhone|Android|English|JSON|iOS|^OK$/;
 
 module.exports = async (l) => {
   const m = l.m();

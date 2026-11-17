@@ -30,7 +30,7 @@ export function WorldMap({ width }: { width: number }) {
   const cells = data?.cells ?? [];
   const biggest = Math.max(1, ...cells.map((c) => c.n));
   return (
-    <View style={{ alignItems: 'center' }} accessible accessibilityRole="image" accessibilityLabel={tr('World map of where people use SynAgent')}>
+    <View style={{ alignItems: 'center' }} accessible accessibilityRole="image" accessibilityLabel={tr('World map of where people use Suki')}>
       <View style={{ width, height }}>
         <Image
           source={require('../../assets/brand/world-dots.png')}

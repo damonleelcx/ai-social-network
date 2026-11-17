@@ -1,4 +1,4 @@
-# SynAgent: intents, tools and skills
+# Suki: intents, tools and skills
 
 This is the first design artifact and the contract for everything else. The
 code registers exactly these names, and `internal/agent/catalog_test.go` fails

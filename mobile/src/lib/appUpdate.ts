@@ -36,7 +36,7 @@ export async function findUpdate(): Promise<AppRelease | null> {
     const release: { tag_name?: string; assets?: { name: string; browser_download_url: string }[] } = await res.json();
     const version = release.tag_name?.replace(/^app-v/, '');
     if (!version || !isNewer(version, installed)) return null;
-    const apk = release.assets?.find((a) => a.name === 'SynAgent.apk');
+    const apk = release.assets?.find((a) => a.name === 'Suki.apk');
     return { version, apkUrl: Platform.OS === 'android' ? (apk?.browser_download_url ?? null) : null };
   } catch {
     return null;

@@ -15,7 +15,7 @@ const REASON: Record<string, string> = {
   purchase: 'Bought credits',
   turn: 'Message to Suki',
   refund: "Refund: Suki couldn't answer",
-  grant: 'Added by SynAgent',
+  grant: 'Added by Suki',
   referral: 'A friend joined',
 };
 

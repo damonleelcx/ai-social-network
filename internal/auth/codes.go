@@ -106,7 +106,7 @@ func (s *Service) SendVerification(ctx context.Context, userID, lang string) err
 	if err != nil {
 		return err
 	}
-	m := codeMail("Your SynAgent verification code", "Welcome! Here is the code to confirm your email address.", u.Name, code, "If you didn't sign up, you can ignore this email.", lang)
+	m := codeMail("Your Suki verification code", "Welcome! Here is the code to confirm your email address.", u.Name, code, "If you didn't sign up, you can ignore this email.", lang)
 	m.To = u.Email
 	_, err = s.Mailer.Send(ctx, m)
 	return err
@@ -138,7 +138,7 @@ func (s *Service) ForgotPassword(ctx context.Context, email, lang string) error 
 	if err != nil {
 		return err
 	}
-	m := codeMail("Your SynAgent password reset code", "Here is the code to choose a new password.", name, code, "If you didn't ask for this, your password has not changed and you can ignore this email.", lang)
+	m := codeMail("Your Suki password reset code", "Here is the code to choose a new password.", name, code, "If you didn't ask for this, your password has not changed and you can ignore this email.", lang)
 	m.To = addr
 	_, err = s.Mailer.Send(ctx, m)
 	return err

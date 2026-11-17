@@ -145,7 +145,7 @@ def feature(out):
     glow(img, 860, 60, 300, (120, 210, 255), 90)
     glow(img, 120, 460, 300, (255, 120, 210), 90)
     d = ImageDraw.Draw(img)
-    d.text((56, 112), "SynAgent", font=ImageFont.truetype(BOLD, 84), fill=(255, 255, 255))
+    d.text((56, 112), "Suki", font=ImageFont.truetype(BOLD, 84), fill=(255, 255, 255))
     d.text((60, 226), "Meet Suki, your AI winggirl.", font=ImageFont.truetype(SEMI, 31), fill=(236, 226, 255))
     d.text((60, 276), "Good introductions,", font=ImageFont.truetype(SEMI, 27), fill=(214, 200, 250))
     d.text((60, 314), "no endless swiping.", font=ImageFont.truetype(SEMI, 27), fill=(214, 200, 250))

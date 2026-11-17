@@ -11,7 +11,7 @@ func TestPublicPages(t *testing.T) {
 	for _, tc := range []struct{ page, title, want string }{
 		{"terms", "Terms of Use", "at least 18 years old"},
 		{"privacy", "Privacy Policy", "Beijing, China"},
-		{"delete-account", "Delete your SynAgent account", "up to 30 days"},
+		{"delete-account", "Delete your Suki account", "up to 30 days"},
 		{"contact", "Contact us", "support@heros-agent.space"},
 		{"child-safety", "Child safety standards", "National Center for Missing &amp; Exploited Children"},
 	} {

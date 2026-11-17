@@ -24,7 +24,7 @@ const COPY = {
   stop: 'Stop',
   cancelVoice: 'Getting Suki’s voice. Tap to cancel',
   momentsTitle: "Hi, I'm Suki!",
-  momentsBody: 'I help you find company for a meal, a film, a walk or a trip, and introduce you to people worth meeting. Tap the button below to open SynAgent and say hi.',
+  momentsBody: 'I help you find company for a meal, a film, a walk or a trip, and introduce you to people worth meeting. Tap the button below to open Suki and say hi.',
   guestBody: 'Have a look around. When you want to talk to me, sign in and we can start.',
   whatIDo: 'What I can do for you',
   doCompany: 'Find company for a meal, a film, a walk or a trip',

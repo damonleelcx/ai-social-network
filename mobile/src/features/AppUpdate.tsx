@@ -33,7 +33,7 @@ export function AppUpdate() {
     }
     setPercent(0);
     try {
-      const download = FileSystem.createDownloadResumable(apkUrl, `${FileSystem.cacheDirectory}SynAgent-${version}.apk`, {}, (p) => {
+      const download = FileSystem.createDownloadResumable(apkUrl, `${FileSystem.cacheDirectory}Suki-${version}.apk`, {}, (p) => {
         if (p.totalBytesExpectedToWrite > 0) setPercent(Math.round((p.totalBytesWritten / p.totalBytesExpectedToWrite) * 100));
       });
       const file = await download.downloadAsync();

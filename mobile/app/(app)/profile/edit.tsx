@@ -105,7 +105,7 @@ function Birthdate({ value, onSaved }: { value: string; onSaved: () => void }) {
     const s = ymd(d);
     const yes = await confirm(
       tr('Is {time} right?', { time: fullDate(s) }),
-      tr("Please check it. SynAgent is for people 18 and over. If it's ever wrong, just tell Suki."),
+      tr("Please check it. Suki is for people 18 and over. If it's ever wrong, just tell her."),
       tr('Yes, save it'),
     );
     if (!yes) return;

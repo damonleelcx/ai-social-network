@@ -279,7 +279,7 @@ Page({
   // Saved right away, as in the app, because people can't change it afterwards.
   async onBirthdate(e) {
     const value = e.detail.value;
-    const yes = await confirm(t('Is {time} right?', { time: day(value) }), t("Please check it. SynAgent is for people 18 and over. If it's ever wrong, just tell Suki."));
+    const yes = await confirm(t('Is {time} right?', { time: day(value) }), t("Please check it. Suki is for people 18 and over. If it's ever wrong, just tell her."));
     if (!yes) return;
     try {
       await api.profile.save({ birthdate: value });

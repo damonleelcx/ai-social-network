@@ -1,4 +1,4 @@
-// SynAgent: one binary, several modes, so a deployment can scale the web tier and
+// Suki: one binary, several modes, so a deployment can scale the web tier and
 // the workers independently.
 //
 //	synagent serve    web + workers in one process (development)

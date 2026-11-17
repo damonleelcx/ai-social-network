@@ -9,7 +9,7 @@ import "strings"
 // column maps a language setting to its place in the catalog.
 var column = map[string]int{"zh": 0, "ko": 1, "ja": 2, "es": 3}
 
-// chinaEdition is set on the China copy, where SynAgent is for finding company: the
+// chinaEdition is set on the China copy, where Suki is for finding company: the
 // sentences in chinaText then read that way in every language (catalog_cn.go).
 var chinaEdition bool
 
@@ -136,11 +136,11 @@ var catalog = map[string][4]string{
 		"당신의 안전이 가장 중요해요. 지금 위험하다면 현지 긴급 전화(미국 911, EU 112)로 연락하고 주변에 사람이 있는 곳으로 가세요.\n\n저희 안전팀 담당자에게 알렸어요. 상대방의 프로필에서 차단할 수도 있고, 그러면 바로 모든 연락이 끊겨요.",
 		"あなたの安全が第一です。今危険な状況なら、現地の緊急番号（米国 911、EU 112）に電話して、周りに人がいる場所へ移動してください。\n\n安全チームの担当者に知らせました。相手のプロフィールからブロックすることもでき、すぐに連絡は一切取れなくなります。",
 		"Tu seguridad es lo primero. Si estás en peligro ahora mismo, llama al número de emergencias de tu zona (911 en EE. UU., 112 en la UE) y ve a un lugar con más gente.\n\nYa avisé a una persona de nuestro equipo de seguridad. También puedes bloquear a esta persona desde su perfil, y perderá todo contacto contigo al instante."},
-	"Thanks for being honest with me. SynAgent is only for adults aged 18 and over, so I can't help you with dating here, and I've paused this account until someone on our team has looked at it. No hard feelings.": {
-		"谢谢你对我说实话。SynAgent 只面向 18 岁及以上的成年人，所以我没法在这里帮你找搭子，这个账户也已暂停，等我们团队的人看过再说。别往心里去。",
-		"솔직하게 말해 줘서 고마워요. SynAgent는 만 18세 이상 성인만 이용할 수 있어서 여기서는 데이트를 도와드릴 수 없고, 팀원이 확인할 때까지 이 계정을 일시 중지했어요. 기분 나쁘게 생각하지 말아요.",
-		"正直に話してくれてありがとう。SynAgent は 18 歳以上の成人専用なので、ここでデートのお手伝いはできません。チームの担当者が確認するまで、このアカウントは一時停止しました。悪く思わないでくださいね。",
-		"Gracias por ser sincero conmigo. SynAgent es solo para adultos de 18 años o más, así que no puedo ayudarte con citas aquí, y he pausado esta cuenta hasta que alguien de nuestro equipo la revise. Sin rencores."},
+	"Thanks for being honest with me. Suki is only for adults aged 18 and over, so I can't help you with dating here, and I've paused this account until someone on our team has looked at it. No hard feelings.": {
+		"谢谢你对我说实话。Suki 只面向 18 岁及以上的成年人，所以我没法在这里帮你找搭子，这个账户也已暂停，等我们团队的人看过再说。别往心里去。",
+		"솔직하게 말해 줘서 고마워요. Suki는 만 18세 이상 성인만 이용할 수 있어서 여기서는 데이트를 도와드릴 수 없고, 팀원이 확인할 때까지 이 계정을 일시 중지했어요. 기분 나쁘게 생각하지 말아요.",
+		"正直に話してくれてありがとう。Suki は 18 歳以上の成人専用なので、ここでデートのお手伝いはできません。チームの担当者が確認するまで、このアカウントは一時停止しました。悪く思わないでくださいね。",
+		"Gracias por ser sincero conmigo. Suki es solo para adultos de 18 años o más, así que no puedo ayudarte con citas aquí, y he pausado esta cuenta hasta que alguien de nuestro equipo la revise. Sin rencores."},
 	"Feedback after dates privately shapes who I introduce you to, and those details stay private, so there's no number for you to look at. The privacy policy explains more. So tell me: what made your favorite date your favorite?": {
 		"见面后的反馈会在私下影响我之后给你介绍谁，这些细节是保密的，所以没有数字可以给你看。隐私政策里有更多说明。那告诉我：你最喜欢的一次见面，好在哪里？",
 		"데이트 후 피드백은 제가 다음에 누구를 소개할지에 비공개로 영향을 줘요. 자세한 내용은 비공개라서 보여 드릴 숫자는 없어요. 더 알고 싶다면 개인정보 처리방침을 참고해 주세요. 그럼 말해 주세요. 가장 좋았던 데이트는 뭐가 좋았나요?",
@@ -241,7 +241,7 @@ var catalog = map[string][4]string{
 	"Date ideas are ready":                          {"见面地点选好了", "데이트 장소가 준비됐어요", "デートのアイデアができました", "Las ideas para la cita están listas"},
 	"Suki found a few places for you both.":         {"Suki 为你们找到了几个地方。", "Suki가 두 분을 위한 장소를 몇 곳 찾았어요.", "Suki がおふたりに合う場所をいくつか見つけました。", "Suki ha encontrado algunos sitios para los dos."},
 	"A time for your date":                          {"见面时间提议", "데이트 시간 제안", "デートの時間", "Una hora para vuestra cita"},
-	"Open SynAgent to say yes or suggest another.":  {"打开 SynAgent 确认，或者提议别的时间。", "SynAgent를 열어 수락하거나 다른 시간을 제안하세요.", "SynAgent を開いて、承諾するか別の時間を提案してください。", "Abre SynAgent para aceptar o proponer otra."},
+	"Open Suki to say yes or suggest another.":  {"打开 Suki 确认，或者提议别的时间。", "Suki를 열어 수락하거나 다른 시간을 제안하세요.", "Suki を開いて、承諾するか別の時間を提案してください。", "Abre Suki para aceptar o proponer otra."},
 	"Your date is confirmed":                        {"见面已确认", "데이트가 확정됐어요", "デートが確定しました", "Tu cita está confirmada"},
 	"See you there. Suki will check in afterwards.": {"祝顺利。之后 Suki 会来问问你。", "잘 다녀오세요. 나중에 Suki가 안부를 물을게요.", "楽しんできてください。あとで Suki が様子を聞きますね。", "Que vaya bien. Suki te preguntará después."},
 	"Your date is tomorrow":                         {"明天就是见面了", "내일이 데이트예요", "デートは明日です", "Tu cita es mañana"},
@@ -249,20 +249,20 @@ var catalog = map[string][4]string{
 	"Your date is coming up":                        {"见面快到了", "데이트가 곧이에요", "もうすぐデートです", "Tu cita está cerca"},
 	"It's almost time.":                             {"时间快到了。", "거의 시간이 됐어요.", "もうすぐ時間です。", "Ya casi es la hora."},
 	"Everything okay?":                              {"一切还好吗？", "괜찮으세요?", "大丈夫ですか？", "¿Todo bien?"},
-	"Just checking in. If anything feels off, open SynAgent and tell Suki.": {"来问候一下。如果有什么不对劲，打开 SynAgent 告诉 Suki。", "잘 지내는지 확인해요. 뭔가 이상하다면 SynAgent를 열어 Suki에게 말해 주세요.", "様子を聞きに来ました。何か変だと感じたら、SynAgent を開いて Suki に伝えてください。", "Solo quería saber cómo estás. Si algo no va bien, abre SynAgent y cuéntaselo a Suki."},
+	"Just checking in. If anything feels off, tell Suki.": {"来问候一下。如果有什么不对劲，告诉 Suki。", "잘 지내는지 확인해요. 뭔가 이상하다면 Suki에게 말해 주세요.", "様子を聞きに来ました。何か変だと感じたら、Suki に伝えてください。", "Solo quería saber cómo estás. Si algo no va bien, cuéntaselo a Suki."},
 	"Suki has an idea":              {"Suki 有个主意", "Suki에게 아이디어가 있어요", "Suki にアイデアがあります", "Suki tiene una idea"},
 	"Something you could do today.": {"今天可以做点这个。", "오늘 해볼 만한 일이 있어요.", "今日できることがあります。", "Algo que podrías hacer hoy."},
 	"How did it go?":                    {"见面怎么样？", "어땠어요?", "どうでしたか？", "¿Qué tal fue?"},
 	"Suki would love to hear about it.": {"Suki 很想听听。", "Suki가 듣고 싶어 해요.", "Suki が聞きたがっています。", "A Suki le encantaría saberlo."},
 
 	// Email.
-	"Open SynAgent":            {"打开 SynAgent", "SynAgent 열기", "SynAgent を開く", "Abrir SynAgent"},
-	"Open SynAgent to see it.": {"打开 SynAgent 查看。", "SynAgent를 열어 확인하세요.", "SynAgent を開いて確認してください。", "Abre SynAgent para verlo."},
+	"Open Suki":            {"打开 Suki", "Suki 열기", "Suki を開く", "Abrir Suki"},
+	"Open Suki to see it.": {"打开 Suki 查看。", "Suki를 열어 확인하세요.", "Suki を開いて確認してください。", "Abre Suki para verlo."},
 	"You can turn these emails off in Settings > Notifications.":                               {"你可以在“设置 > 通知”中关闭这些邮件。", "설정 > 알림에서 이 이메일을 끌 수 있어요.", "これらのメールは「設定 > 通知」でオフにできます。", "Puedes desactivar estos correos en Ajustes > Notificaciones."},
-	"Your SynAgent verification code":                                                          {"你的 SynAgent 验证码", "SynAgent 인증 코드", "SynAgent の確認コード", "Tu código de verificación de SynAgent"},
+	"Your Suki verification code":                                                          {"你的 Suki 验证码", "Suki 인증 코드", "Suki の確認コード", "Tu código de verificación de Suki"},
 	"Welcome! Here is the code to confirm your email address.":                                 {"欢迎！这是确认邮箱地址的验证码。", "환영해요! 이메일 주소를 확인할 코드예요.", "ようこそ！メールアドレスを確認するためのコードです。", "¡Bienvenido! Aquí tienes el código para confirmar tu correo."},
 	"If you didn't sign up, you can ignore this email.":                                        {"如果不是你注册的，忽略这封邮件即可。", "가입한 적이 없다면 이 이메일은 무시하세요.", "登録した覚えがなければ、このメールは無視してください。", "Si no te registraste, puedes ignorar este correo."},
-	"Your SynAgent password reset code":                                                        {"你的 SynAgent 密码重置验证码", "SynAgent 비밀번호 재설정 코드", "SynAgent のパスワード再設定コード", "Tu código para restablecer la contraseña de SynAgent"},
+	"Your Suki password reset code":                                                        {"你的 Suki 密码重置验证码", "Suki 비밀번호 재설정 코드", "Suki のパスワード再設定コード", "Tu código para restablecer la contraseña de Suki"},
 	"Here is the code to choose a new password.":                                               {"这是设置新密码的验证码。", "새 비밀번호를 정할 코드예요.", "新しいパスワードを設定するためのコードです。", "Aquí tienes el código para elegir una contraseña nueva."},
 	"If you didn't ask for this, your password has not changed and you can ignore this email.": {"如果不是你申请的，你的密码没有变化，忽略这封邮件即可。", "요청한 적이 없다면 비밀번호는 바뀌지 않았으니 이 이메일은 무시하세요.", "心当たりがなければ、パスワードは変更されていないので、このメールは無視してください。", "Si no lo pediste, tu contraseña no ha cambiado y puedes ignorar este correo."},
 	"Hi":                       {"你好", "안녕하세요", "こんにちは", "Hola"},

@@ -81,7 +81,7 @@ export default function Welcome() {
           >
             <View style={{ paddingHorizontal: space.xl }}>
               <T v="display" center>
-                SynAgent
+                Suki
               </T>
               <T v="heading" center color={t.accent} style={{ marginTop: space.xs }}>{tr('Meet someone, share ideas, explore together')}</T>
             </View>
