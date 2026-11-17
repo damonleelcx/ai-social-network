@@ -24,6 +24,12 @@ function leave(url) {
   wx.reLaunch({ url, complete: () => { leaving = false; } });
 }
 
+// The server's words start in lower case because clients translate by them; on screen they
+// read as sentences.
+function sentence(text) {
+  return text ? text.charAt(0).toUpperCase() + text.slice(1) : text;
+}
+
 function failure(status, message) {
   if (status === 401 && message === 'please sign in') {
     setToken('');
@@ -32,7 +38,7 @@ function failure(status, message) {
   } else if (status === 403 && message === 'please verify your email first') {
     leave('/pages/login/login?mode=verify');
   }
-  const err = new Error(t(message || 'Something went wrong on our side. Please try again.'));
+  const err = new Error(sentence(t(message || 'Something went wrong on our side. Please try again.')));
   err.status = status;
   err.raw = message || ''; // What the server said, for code that needs to tell errors apart.
   return err;
@@ -167,6 +173,7 @@ function verifySelfie() {
 }
 
 module.exports = {
+  sentence,
   verifySelfie,
   API_URL,
   getToken: () => token,

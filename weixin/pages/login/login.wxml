@@ -8,7 +8,7 @@
   </view>
 
   <block wx:if="{{mode === 'wechat'}}">
-    <view wx:if="{{error}}" class="error">{{error}}</view>
+    <view wx:if="{{error}}" class="error"><text>{{error}}</text></view>
     <button class="primary" loading="{{busy}}" bindtap="onWeChat">{{t.wechat}}</button>
     <view class="link terms-line"><text wx:for="{{firstTime}}" wx:key="index" class="{{item.page ? 'under' : ''}}" data-page="{{item.page}}" bindtap="onLegal">{{item.text}}</text></view>
     <view class="link" data-mode="signin" bindtap="onMode">{{t.useEmail}}</view>
@@ -22,7 +22,7 @@
       <checkbox-group bindchange="onTerms"><checkbox value="yes" /></checkbox-group>
       <view class="grow"><text wx:for="{{signUpTerms}}" wx:key="index" class="{{item.page ? 'under' : ''}}" data-page="{{item.page}}" bindtap="onLegal">{{item.text}}</text></view>
     </view>
-    <view wx:if="{{error}}" class="error">{{error}}</view>
+    <view wx:if="{{error}}" class="error"><text>{{error}}</text></view>
     <button class="primary" loading="{{busy}}" bindtap="onSubmit">{{mode === 'signup' ? t.signUp : t.signIn}}</button>
     <view class="link" bindtap="onSwitch">{{mode === 'signup' ? t.haveAccount : t.noAccount}}</view>
     <view wx:if="{{mode === 'signin'}}" class="link" data-mode="forgot" bindtap="onMode">{{t.forgot}}</view>
@@ -32,7 +32,7 @@
   <block wx:elif="{{mode === 'verify'}}">
     <view class="soft lead">{{t.sentCode}}</view>
     <input class="input" placeholder="{{t.code}}" value="{{code}}" data-f="code" bindinput="onInput" />
-    <view wx:if="{{error}}" class="error">{{error}}</view>
+    <view wx:if="{{error}}" class="error"><text>{{error}}</text></view>
     <button class="primary" loading="{{busy}}" bindtap="onVerify">{{t.verify}}</button>
     <view class="link" bindtap="onResend">{{t.resend}}</view>
     <view class="link" bindtap="onLeave">{{t.otherAccount}}</view>
@@ -41,7 +41,7 @@
   <block wx:elif="{{mode === 'forgot'}}">
     <view class="soft lead">{{t.forgotLead}}</view>
     <input class="input" placeholder="{{t.email}}" value="{{email}}" data-f="email" bindinput="onInput" />
-    <view wx:if="{{error}}" class="error">{{error}}</view>
+    <view wx:if="{{error}}" class="error"><text>{{error}}</text></view>
     <button class="primary" loading="{{busy}}" disabled="{{!email}}" bindtap="onForgot">{{t.sendCode}}</button>
     <view class="link" data-mode="signin" bindtap="onMode">{{t.back}}</view>
   </block>
@@ -51,7 +51,7 @@
     <input class="input" placeholder="{{t.code}}" type="number" maxlength="6" value="{{code}}" data-f="code" bindinput="onInput" />
     <input class="input" placeholder="{{t.newPassword}}" password="{{true}}" value="{{password}}" data-f="password" bindinput="onInput" />
     <view class="hint">{{t.atLeast}}</view>
-    <view wx:if="{{error}}" class="error">{{error}}</view>
+    <view wx:if="{{error}}" class="error"><text>{{error}}</text></view>
     <button class="primary" loading="{{busy}}" disabled="{{code.length !== 6 || !password}}" bindtap="onReset">{{t.setPassword}}</button>
     <view class="link" data-mode="forgot" bindtap="onMode">{{t.otherEmail}}</view>
     <view class="link" data-mode="signin" bindtap="onMode">{{t.back}}</view>

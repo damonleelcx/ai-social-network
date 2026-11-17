@@ -17,13 +17,21 @@ const GENERIC_MESSAGE = 'Something went wrong on our side. Please try again.';
 const NEEDS_VERIFY = 'please verify your email first';
 const SIGNED_OUT = 'please sign in';
 
+/**
+ * A message as a sentence: capital first letter. The server's own words start in lower case
+ * because they are also the keys clients translate by, so they can't change there.
+ */
+export function sentence(text: string) {
+  return text ? text.charAt(0).toUpperCase() + text.slice(1) : text;
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
   ) {
     // Every failure ends up on screen through here, the server's words included.
-    super(tr(message));
+    super(sentence(tr(message)));
   }
 }
 
