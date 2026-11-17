@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { legalUrl } from '@/api/client';
+import { legalUrl, sentence } from '@/api/client';
 import { auth } from '@/api/endpoints';
 import { openLegal } from '@/lib/links';
 import { GoogleSignInButton } from '@/features/GoogleSignInButton';
@@ -25,7 +25,23 @@ export default function SignUp() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Everything wrong with the form at once, so nobody fixes one thing only to hear of the next.
+  // The server checks the same rules again.
+  const problems = () => {
+    const e = email.trim();
+    const out: string[] = [];
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) out.push('that email address does not look valid');
+    if (password.length < 10) out.push('password must be at least 10 characters');
+    else if (password.trim().toLowerCase() === e.toLowerCase()) out.push('password must not be your email address');
+    return out.map((m) => sentence(tr(m)));
+  };
+
   const submit = async () => {
+    const wrong = problems();
+    if (wrong.length) {
+      setError(wrong.join('\n'));
+      return;
+    }
     setBusy(true);
     setError(null);
     try {

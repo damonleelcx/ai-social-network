@@ -117,7 +117,14 @@ Page({
     const { mode, name, email, password, accepted } = this.data;
     this.act(async () => {
       if (mode === 'signin') return this.after(await api.auth.signIn(email.trim(), password));
-      if (!accepted) throw new Error(t('please accept the terms to continue'));
+      // Everything wrong with the form at once. The server checks the same rules again.
+      const wrong = [];
+      const e = email.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) wrong.push('that email address does not look valid');
+      if (password.length < 10) wrong.push('password must be at least 10 characters');
+      else if (password.trim().toLowerCase() === e.toLowerCase()) wrong.push('password must not be your email address');
+      if (!accepted) wrong.push('please accept the terms to continue');
+      if (wrong.length) throw new Error(wrong.map((m) => api.sentence(t(m))).join('\n'));
       this.after(await api.auth.signUp({ email: email.trim(), password, name: name.trim(), accept_terms: true, ref: share.pending(), language: i18n.current() }));
     });
   },
