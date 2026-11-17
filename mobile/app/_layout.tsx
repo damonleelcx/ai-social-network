@@ -47,7 +47,7 @@ function Routes() {
             title={tr("I can't reach the server")}
             body={tr('It might be your connection, or it might be us. Your account is safe. Try again in a moment.')}
           >
-            <Button label={tr('Try again')} icon="refresh" onPress={retry} />
+            <Button label={tr('Try again')} icon="refresh" onPress={retry} style={{ alignSelf: 'center' }} />
           </SukiSays>
         </View>
       </Backdrop>
