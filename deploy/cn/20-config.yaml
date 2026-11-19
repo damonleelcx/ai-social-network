@@ -21,9 +21,10 @@ data:
   # web and worker pods share it.
   SYN_PHOTO_DIR: "/photos"
   # Fish Audio is blocked from China, so Suki speaks through Tencent's Tenlai (天籁) on
-  # TokenHub, with the chat key. The voice is a numeric id from the Tenlai voice list.
+  # TokenHub, with the chat key. The voice is a numeric id from the Tenlai voice list
+  # (603002 is 软萌心心).
   SYN_TTS_PROVIDER: "tenlai"
-  SYN_TTS_VOICE_ID: "502001"
+  SYN_TTS_VOICE_ID: "603002"
   SYN_TTS_MODEL: "tenlai-tts-v1.0"
   SYN_TTS_DAILY_CHARS: "20000"
   SYN_WORKERS: "2"
