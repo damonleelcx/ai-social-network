@@ -18,15 +18,15 @@ type Config struct {
 	SessionTTL   time.Duration
 	CookieSecure bool
 
-	LLMBaseURL   string
+	LLMBaseURL string
 	// Pictures for plans and trips (internal/scenes). ImageURL defaults to the LLM host's
 	// DashScope multimodal generation; "off" turns pictures off. ImageKey defaults to
 	// LLMAPIKey; set it when the pictures come from a different provider than the chat.
 	ImageModel, ImageURL, ImageKey string
-	SceneDailyCap        int
-	LLMAPIKey    string
-	LLMModel     string // reasoning, drafting, planning
-	LLMFastModel string // routing, judging, summarising
+	SceneDailyCap                  int
+	LLMAPIKey                      string
+	LLMModel                       string // reasoning, drafting, planning
+	LLMFastModel                   string // routing, judging, summarising
 
 	SMTPHost    string
 	SMTPPort    int
@@ -73,7 +73,8 @@ type Config struct {
 	TTSVoiceID    string
 	TTSModel      string
 	TTSDailyChars int
-	// TTSProvider is "fish" (default) or "cosyvoice" (Alibaba DashScope, for the China copy).
+	// TTSProvider is "fish" (default), "tenlai" (Tencent on TokenHub, the China copy; it uses
+	// the LLM key and a numeric voice id) or "cosyvoice" (Alibaba DashScope).
 	TTSProvider string
 	// Stripe. No keys means credits can't be bought, so messages to Suki stay free.
 	StripeSecretKey     string

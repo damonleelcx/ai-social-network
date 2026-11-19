@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"strings"
@@ -121,7 +122,9 @@ func run(mode string) error {
 	// Pictures for plans and trips, drawn by the same provider's image model and kept for reuse.
 	var scn *scenes.Service
 	imageKey := cfg.ImageKey
-	if imageKey == "" {
+	// Pictures from the chat model's own host (Hunyuan on TokenHub, for the China copy) take
+	// the chat key, whatever SYN_IMAGE_KEY holds.
+	if imageKey == "" || sameHost(cfg.ImageURL, cfg.LLMBaseURL) {
 		imageKey = cfg.LLMAPIKey
 	}
 	if imageURL := cfg.ImageURL; imageURL != "off" && imageKey != "" {
@@ -183,12 +186,20 @@ func run(mode string) error {
 		srv.Translator = &translate.Service{Pool: pool, Model: model, LLM: cfg.LLMFastModel}
 		srv.Scenes = scn
 		srv.Verifier = &verify.Service{Pool: pool, Photos: photos, Model: model, LLM: cfg.LLMFastModel}
-		if cfg.TTSAPIKey != "" && cfg.TTSVoiceID != "" {
+		ttsKey := cfg.TTSAPIKey
+		if cfg.TTSProvider == "tenlai" {
+			// Tencent's voice is on TokenHub, with the chat model, under the same key.
+			ttsKey = cfg.LLMAPIKey
+		}
+		if ttsKey != "" && cfg.TTSVoiceID != "" {
 			var voice tts.Synthesizer
 			var err error
-			if cfg.TTSProvider == "cosyvoice" {
+			switch cfg.TTSProvider {
+			case "tenlai":
+				voice, err = tts.NewTenlai("", ttsKey, cfg.TTSModel, cfg.TTSVoiceID)
+			case "cosyvoice":
 				voice, err = tts.NewCosyVoice("", cfg.TTSAPIKey, cfg.TTSModel, cfg.TTSVoiceID)
-			} else {
+			default:
 				voice, err = tts.NewFish("", cfg.TTSAPIKey, cfg.TTSVoiceID, cfg.TTSModel)
 			}
 			if err != nil {
@@ -286,4 +297,11 @@ func listenTurns(ctx context.Context, store *engine.Store, wake chan<- struct{})
 			time.Sleep(time.Second)
 		}
 	}
+}
+
+// sameHost reports whether two URLs name the same host. An empty or unparsable one never does.
+func sameHost(a, b string) bool {
+	ua, err1 := url.Parse(a)
+	ub, err2 := url.Parse(b)
+	return err1 == nil && err2 == nil && ua.Host != "" && ua.Host == ub.Host
 }
