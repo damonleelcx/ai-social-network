@@ -44,7 +44,8 @@ type Service struct {
 	Pool   *pgxpool.Pool
 	Photos photostore.Store
 	Model  *engine.Model
-	// FastLLM names a scene; ImageModel draws it at ImageURL (DashScope's multimodal generation).
+	// FastLLM names a scene; ImageModel draws it at ImageURL: DashScope's multimodal generation,
+	// or Hunyuan's image model on TokenHub for the China copy.
 	FastLLM, ImageModel, ImageURL, ImageKey string
 	// DailyCap bounds new pictures a day. Past it, plans share their kind's general picture.
 	DailyCap int
@@ -288,41 +289,11 @@ func (s *Service) draw(ctx context.Context, scene, cityName string) ([]byte, err
 		where = " in " + cityName
 	}
 	prompt := fmt.Sprintf("Wide cinematic photo: %s%s. Inviting, warm, natural light, rich detail, a place you'd want to be. No people, no faces, no text, no signs with writing, no logos, no watermark.", scene, where)
-	body, _ := json.Marshal(map[string]any{
-		"model":      s.ImageModel,
-		"input":      map[string]any{"messages": []map[string]any{{"role": "user", "content": []map[string]string{{"text": prompt}}}}},
-		"parameters": map[string]any{"size": size, "watermark": false, "prompt_extend": true},
-	})
-	req, _ := http.NewRequestWithContext(ctx, http.MethodPost, s.ImageURL, bytes.NewReader(body))
-	req.Header.Set("Authorization", "Bearer "+s.ImageKey)
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := s.client().Do(req)
+	url, err := s.ask(ctx, prompt)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		b, _ := io.ReadAll(io.LimitReader(resp.Body, 300))
-		return nil, fmt.Errorf("scene: image model %d: %s", resp.StatusCode, b)
-	}
-	var out struct {
-		Output struct {
-			Choices []struct {
-				Message struct {
-					Content []struct {
-						Image string `json:"image"`
-					} `json:"content"`
-				} `json:"message"`
-			} `json:"choices"`
-		} `json:"output"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
-		return nil, err
-	}
-	if len(out.Output.Choices) == 0 || len(out.Output.Choices[0].Message.Content) == 0 || out.Output.Choices[0].Message.Content[0].Image == "" {
-		return nil, errors.New("scene: the image model sent no picture")
-	}
-	get, _ := http.NewRequestWithContext(ctx, http.MethodGet, out.Output.Choices[0].Message.Content[0].Image, nil)
+	get, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	pic, err := s.client().Do(get)
 	if err != nil {
 		return nil, err
@@ -337,6 +308,76 @@ func (s *Service) draw(ctx context.Context, scene, cityName string) ([]byte, err
 	}
 	jpg, _, _, err := photostore.Normalize(raw)
 	return jpg, err
+}
+
+// Hunyuan reports whether ImageURL is Tencent's Hunyuan image model on TokenHub (the China
+// copy) rather than DashScope's multimodal generation. They take different requests.
+func (s *Service) Hunyuan() bool { return strings.Contains(s.ImageURL, "/hunyuan-image/") }
+
+// ask sends the prompt to the image model and returns where the picture can be fetched.
+func (s *Service) ask(ctx context.Context, prompt string) (string, error) {
+	var body []byte
+	if s.Hunyuan() {
+		body, _ = json.Marshal(map[string]any{
+			"model":    s.ImageModel,
+			"messages": []map[string]any{{"role": "user", "content": []map[string]string{{"type": "text", "text": prompt}}}},
+			"size":     strings.Replace(size, "*", "x", 1),
+		})
+	} else {
+		body, _ = json.Marshal(map[string]any{
+			"model":      s.ImageModel,
+			"input":      map[string]any{"messages": []map[string]any{{"role": "user", "content": []map[string]string{{"text": prompt}}}}},
+			"parameters": map[string]any{"size": size, "watermark": false, "prompt_extend": true},
+		})
+	}
+	req, _ := http.NewRequestWithContext(ctx, http.MethodPost, s.ImageURL, bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer "+s.ImageKey)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := s.client().Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		b, _ := io.ReadAll(io.LimitReader(resp.Body, 300))
+		return "", fmt.Errorf("scene: image model %d: %s", resp.StatusCode, b)
+	}
+	var out struct {
+		// DashScope.
+		Output struct {
+			Choices []struct {
+				Message struct {
+					Content []struct {
+						Image string `json:"image"`
+					} `json:"content"`
+				} `json:"message"`
+			} `json:"choices"`
+		} `json:"output"`
+		// Hunyuan: the picture is in choices[0].delta.image.url, and success means it is there.
+		Choices []struct {
+			Delta struct {
+				Image struct {
+					URL string `json:"url"`
+				} `json:"image"`
+			} `json:"delta"`
+		} `json:"choices"`
+		Error *struct {
+			Message string `json:"message"`
+		} `json:"error"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		return "", err
+	}
+	if out.Error != nil {
+		return "", fmt.Errorf("scene: image model: %s", out.Error.Message)
+	}
+	if len(out.Choices) > 0 && out.Choices[0].Delta.Image.URL != "" {
+		return out.Choices[0].Delta.Image.URL, nil
+	}
+	if len(out.Output.Choices) > 0 && len(out.Output.Choices[0].Message.Content) > 0 && out.Output.Choices[0].Message.Content[0].Image != "" {
+		return out.Output.Choices[0].Message.Content[0].Image, nil
+	}
+	return "", errors.New("scene: the image model sent no picture")
 }
 
 func (s *Service) client() *http.Client {

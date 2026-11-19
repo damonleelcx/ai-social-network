@@ -13,18 +13,19 @@ data:
   SYN_LLM_BASE_URL: "https://tokenhub.tencentmaas.com/v1"
   SYN_LLM_MODEL: "hy4"
   SYN_LLM_FAST_MODEL: "hy4"
-  # Pictures still come from Alibaba, with its own key (SYN_IMAGE_KEY in the synagent
-  # secret, the token plan key the chat used before).
-  SYN_IMAGE_URL: "https://token-plan.cn-beijing.maas.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
+  # Pictures come from Hunyuan's image model on the same TokenHub, with the same key.
+  SYN_IMAGE_URL: "https://tokenhub.tencentmaas.com/v1/wand/hunyuan-image/v35-generation"
+  SYN_IMAGE_MODEL: "hy-image-v3.5-preview"
   SYN_MONGO_DB: "synagent"
   # Photos live on this node's disk (the photos volume). It is a single node, so the
   # web and worker pods share it.
   SYN_PHOTO_DIR: "/photos"
-  # Fish Audio is blocked from China, so Suki speaks through Alibaba CosyVoice. The key
-  # (a DashScope API key, secret synagent-voice) is separate from the model's token plan.
-  SYN_TTS_PROVIDER: "cosyvoice"
-  SYN_TTS_VOICE_ID: "longxiaochun_v2"
-  SYN_TTS_MODEL: "cosyvoice-v2"
+  # Fish Audio is blocked from China, so Suki speaks through Tencent's Tenlai (天籁) on
+  # TokenHub, with the chat key. The voice is a numeric id from the Tenlai voice list
+  # (603002 is 软萌心心).
+  SYN_TTS_PROVIDER: "tenlai"
+  SYN_TTS_VOICE_ID: "603002"
+  SYN_TTS_MODEL: "tenlai-tts-v1.0"
   SYN_TTS_DAILY_CHARS: "20000"
   SYN_WORKERS: "2"
   SYN_LEASE: "90s"
