@@ -1,4 +1,4 @@
-# HTTPS for suki.zhiyuwujie.top and zhuanzuya.zhiyuwujie.top. Caddy takes ports 80 and 443 on the node and gets
+# HTTPS for suki.zhiyuwujie.top, zhuanzuya.zhiyuwujie.top and vera.zhiyuwujie.top. Caddy takes ports 80 and 443 on the node and gets
 # its certificate from Let's Encrypt itself; certificates persist on the node.
 apiVersion: v1
 kind: ConfigMap
@@ -20,6 +20,15 @@ data:
     zhuanzuya.zhiyuwujie.top {
       encode gzip
       reverse_proxy site.zhuanzuya.svc.cluster.local:80
+    }
+    # Vera China copy (repo damonleelcx/Law-Med-agent, deploy/cn; its deploy.sh
+    # checks this route exists). flush_interval -1: chat replies and live
+    # updates are server-sent events.
+    vera.zhiyuwujie.top {
+      encode gzip
+      reverse_proxy act-web.act.svc.cluster.local:80 {
+        flush_interval -1
+      }
     }
 ---
 apiVersion: apps/v1
