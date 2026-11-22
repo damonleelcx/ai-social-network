@@ -1,9 +1,24 @@
-# One-off production bundle for Google Play. The sideload pipeline publishes an APK.
+# Production app bundle for Google Play. The sideload pipeline publishes an APK.
 # Play only accepts an app bundle signed with the upload key already in the console.
+# versionCode must be higher than the last upload. 1.4.0 (10400) is the release
+# that went to review without a Google web client id.
 name: Play bundle
 
 on:
   workflow_dispatch:
+    inputs:
+      app_version:
+        description: versionName written into the bundle
+        required: true
+        default: "1.4.1"
+      version_code:
+        description: Android versionCode, higher than the last Play upload
+        required: true
+        default: "10401"
+      git_ref:
+        description: Git ref to build
+        required: true
+        default: app-v1.4.0
 
 permissions:
   contents: read
@@ -14,8 +29,8 @@ env:
   EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ vars.GOOGLE_WEB_CLIENT_ID }}
   EXPO_NO_TELEMETRY: "1"
   CI: "1"
-  APP_VERSION: "1.4.0"
-  ANDROID_VERSION_CODE: "10400"
+  APP_VERSION: ${{ inputs.app_version }}
+  ANDROID_VERSION_CODE: ${{ inputs.version_code }}
 
 jobs:
   aab:
@@ -27,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: app-v1.4.0
+          ref: ${{ inputs.git_ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -65,6 +80,7 @@ jobs:
           set -euo pipefail
           echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.p12"
           SRC="android/app/build/outputs/bundle/release/app-release.aab"
+          OUT="out/Suki-${APP_VERSION}.aab"
           cp "$SRC" "$RUNNER_TEMP/app.aab"
           zip -d "$RUNNER_TEMP/app.aab" 'META-INF/*' || [ $? -eq 12 ]
           jarsigner -sigalg SHA256withRSA -digestalg SHA-256 \
@@ -73,16 +89,16 @@ jobs:
             -keypass:env ANDROID_KEYSTORE_PASSWORD \
             "$RUNNER_TEMP/app.aab" synagent
           mkdir -p out
-          cp "$RUNNER_TEMP/app.aab" out/Suki-1.4.0.aab
+          cp "$RUNNER_TEMP/app.aab" "$OUT"
           rm -f "$RUNNER_TEMP/release.p12"
-          keytool -printcert -jarfile out/Suki-1.4.0.aab | grep -E 'Owner:|SHA256:'
+          keytool -printcert -jarfile "$OUT" | grep -E 'Owner:|SHA256:'
           curl -fsSL -o "$RUNNER_TEMP/bundletool.jar" \
             https://github.com/google/bundletool/releases/download/1.18.0/bundletool-all-1.18.0.jar
-          java -jar "$RUNNER_TEMP/bundletool.jar" dump manifest --bundle out/Suki-1.4.0.aab \
+          java -jar "$RUNNER_TEMP/bundletool.jar" dump manifest --bundle "$OUT" \
             | grep -E 'package=|versionCode|versionName|android.permission.REQUEST_INSTALL'
           ls -lh out
       - uses: actions/upload-artifact@v4
         with:
           name: play-aab
-          path: mobile/out/Suki-1.4.0.aab
+          path: mobile/out/Suki-${{ inputs.app_version }}.aab
           if-no-files-found: error
