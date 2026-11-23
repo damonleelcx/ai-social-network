@@ -711,7 +711,7 @@ func (r *Runner) loadState(ctx context.Context, userID string) (string, persona.
 		b.WriteString("They already have a bio. Only draft another if they ask.\n")
 	}
 	if len(missing) > 0 {
-		fmt.Fprintf(&b, "Still needed for their profile: %s. Ask only for these.\n", strings.Join(missing, ", "))
+		fmt.Fprintf(&b, "Still needed for their profile: %s. Ask for the next few of these together, not one per message.\n", strings.Join(missing, ", "))
 	} else {
 		b.WriteString("Their profile is complete. Don't ask for their birthday, city or other profile details again.\n")
 	}
