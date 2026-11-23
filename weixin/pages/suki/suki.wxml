@@ -2,13 +2,17 @@
   <suki-says face="chibi" size="296" title="{{t.momentsTitle}}" body="{{t.momentsBody}}" />
 </view>
 <view wx:else class="chat">
-  <view class="suki-header">
+  <view class="suki-header" style="{{headerInset}}">
     <suki-avatar mood="{{headerMood}}" mood-avatar="{{moodAvatar}}" size="108" ring="6" />
     <view class="grow">
       <view class="suki-name">Suki</view>
       <view wx:if="{{thinking}}" class="suki-busy">{{t.thinkingHeader}}</view>
     </view>
-    <view wx:if="{{!guest}}" class="suki-settings" aria-role="button" aria-label="{{t.settings}}" bindtap="onSettings">···</view>
+    <view wx:if="{{!guest}}" class="suki-settings" aria-role="button" aria-label="{{t.settings}}" bindtap="onSettings">
+      <view class="suki-settings-dot"></view>
+      <view class="suki-settings-dot"></view>
+      <view class="suki-settings-dot"></view>
+    </view>
   </view>
   <view class="ai-notice">{{t.winggirl}} {{t.aiNotice}}</view>
   <scroll-view class="chat-list" scroll-y scroll-into-view="{{bottom}}" scroll-with-animation>
