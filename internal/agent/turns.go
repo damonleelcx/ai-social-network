@@ -39,15 +39,15 @@ const (
 type Runner struct {
 	// Billing is nil when messages cost nothing.
 	Billing Billing
-	ID        string
-	Pool      *pgxpool.Pool
-	Chats     *chatstore.Store
-	Model     *engine.Model
-	Dating    *dating.Service
-	LLM       string
-	FastLLM   string
-	Lease     time.Duration
-	Wake      <-chan struct{}
+	ID      string
+	Pool    *pgxpool.Pool
+	Chats   *chatstore.Store
+	Model   *engine.Model
+	Dating  *dating.Service
+	LLM     string
+	FastLLM string
+	Lease   time.Duration
+	Wake    <-chan struct{}
 	// Hook, if set, runs after each step. Tests use it to crash a worker.
 	Hook func(turnID string, step int)
 }
@@ -398,7 +398,7 @@ func (r *Runner) run(ctx context.Context, t *Turn) (string, error) {
 		// Repeated on every call: after tool results, models tend to forget the last
 		// instruction in a long system prompt.
 		req := llm.Request{Model: r.LLM, Tools: defs, Temperature: 0.7, MaxTokens: 900,
-			Messages: append(msgs[:len(msgs):len(msgs)], llm.Message{Role: "system", Content: "If this is your reply to them rather than a tool call, end it with the line <<mood=M|replies=A;B;C>>, choosing M to fit how you feel about what they said: happy, surprised, thinking, playful or pouty. Vary it. Only say things their profile or your tools actually support."})}
+			Messages: append(msgs[:len(msgs):len(msgs)], llm.Message{Role: "system", Content: "If this is your reply to them rather than a tool call, end it with <<mood=M>> or, when you offer taps, <<mood=M|replies=A;B;C>>. M is happy, surprised, thinking, playful or pouty. Vary it. Never write a trailing | with no replies. Only say things their profile or your tools actually support."})}
 		if step == maxToolSteps-1 {
 			req.Tools = nil
 		}
@@ -587,26 +587,40 @@ func resultText(res *tools.Result, err error) string {
 	return truncate(string(raw), 8000)
 }
 
-var reMarker = regexp.MustCompile(`(?s)<<\s*mood\s*=\s*([a-z]+)\s*(?:\|\s*replies\s*=(.*?))?>>\s*$`)
+// The model is asked for <<mood=M>> or <<mood=M|replies=A;B;C>>. It also writes
+// <<mood=happy|>> when it has no taps, and that form used to be left on screen.
+var reMarker = regexp.MustCompile(`(?is)<<\s*mood\s*=\s*([a-z]+)\s*(?:\|\s*(?:replies\s*=\s*(.*?))?)?\s*>>`)
+var reDangling = regexp.MustCompile(`(?is)<<\s*mood\s*=\s*([a-z]*)[^>\n]*$`)
 
 var moods = map[string]bool{"happy": true, "surprised": true, "thinking": true, "playful": true, "pouty": true}
 
-// parseReply splits the text from the trailing mood marker.
+// parseReply splits the mood marker off the words a person should see.
 func parseReply(s string) (body, mood string, replies []string) {
 	s = strings.TrimSpace(s)
 	mood = "happy"
-	if m := reMarker.FindStringSubmatch(s); m != nil {
-		s = strings.TrimSpace(s[:len(s)-len(m[0])])
-		if moods[m[1]] {
-			mood = m[1]
+	if found := reMarker.FindAllStringSubmatch(s, -1); len(found) > 0 {
+		m := found[len(found)-1]
+		if moods[strings.ToLower(m[1])] {
+			mood = strings.ToLower(m[1])
 		}
 		for _, x := range strings.Split(m[2], ";") {
 			if x = strings.TrimSpace(x); x != "" && len(replies) < 3 && len(x) <= 40 {
 				replies = append(replies, x)
 			}
 		}
+		s = reMarker.ReplaceAllString(s, "")
+	} else if m := reDangling.FindStringSubmatch(s); len(m) > 1 && moods[strings.ToLower(m[1])] {
+		mood = strings.ToLower(m[1])
 	}
-	return s, mood, replies
+	s = reDangling.ReplaceAllString(s, "")
+	return strings.TrimSpace(s), mood, replies
+}
+
+// DisplayBody is a stored reply with any mood marker removed, including ones saved
+// before <<mood=happy|>> was recognized.
+func DisplayBody(s string) string {
+	body, _, _ := parseReply(s)
+	return body
 }
 
 // reply checks the draft before anyone sees it. If it sounds like it reveals an

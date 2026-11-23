@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/damonleelcx/ai-social-network/internal/engine"
 	"github.com/damonleelcx/ai-social-network/internal/llm"
@@ -19,7 +20,7 @@ const extractPrompt = `You extract profile facts from one message a person sent 
 
 Fields:
 display_name: the name they want to go by
-birthdate: yyyy-mm-dd, only for a complete date with a four-digit year. Copy the year exactly as they wrote it. Leave it out if the year has two digits
+birthdate: yyyy-mm-dd. A year-first date is complete, including a two-digit year: 95/10/20, 95-10-20 and 95年10月20日 are 1995-10-20 when that century makes them 18 to 110. Copy a four-digit year exactly. Leave it out when there is no complete date
 city: where they live, as they said it
 gender: woman | man | nonbinary | other
 pronouns: text
@@ -56,13 +57,12 @@ func (r *Runner) extractProfile(ctx context.Context, t *Turn, env *tools.Env, te
 		{Role: "system", Content: extractPrompt},
 		{Role: "user", Content: "THE MATCHMAKER JUST SAID:\n" + lastQ + "\n\nTHEIR MESSAGE:\n" + text},
 	}})
+	var got map[string]any
 	if err != nil {
 		slog.Warn("profile extraction failed", "err", err)
-		return ""
-	}
-	var got map[string]any
-	if err := json.Unmarshal([]byte(llm.ExtractJSON(resp.Message.Content)), &got); err != nil {
-		return ""
+		got = map[string]any{}
+	} else if err := json.Unmarshal([]byte(llm.ExtractJSON(resp.Message.Content)), &got); err != nil || got == nil {
+		got = map[string]any{}
 	}
 	var saved, problems []string
 	save := func(tool string, label string, args map[string]any) {
@@ -95,8 +95,16 @@ func (r *Runner) extractProfile(ctx context.Context, t *Turn, env *tools.Env, te
 	}
 	delete(got, "city")
 	// A correction needs judging, so that's Suki's call: "my friend was born in 1990" isn't one.
+	// A year-first date is read here, so 95/10/20 is saved even when the model leaves it out.
 	if p.Birthdate != "" {
 		delete(got, "birthdate")
+	} else if profileToo {
+		if stated, ok := profile.StatedBirthdate(text, time.Now()); ok {
+			if got == nil {
+				got = map[string]any{}
+			}
+			got["birthdate"] = stated
+		}
 	}
 	// One call per field, so a bad value can't cost the good ones.
 	keys := make([]string, 0, len(got))

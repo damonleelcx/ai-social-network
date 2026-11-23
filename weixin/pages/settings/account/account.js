@@ -137,7 +137,7 @@ Page({
     this.setData({ exporting: true });
     try {
       const data = await api.auth.exportData();
-      const filePath = `${wx.env.USER_DATA_PATH}/synagent-data.json`;
+      const filePath = `${wx.env.USER_DATA_PATH}/suki-data.json`;
       await new Promise((resolve, reject) => {
         wx.getFileSystemManager().writeFile({ filePath, data: JSON.stringify(data, null, 2), encoding: 'utf8', success: resolve, fail: reject });
       });
@@ -150,7 +150,7 @@ Page({
   onSendFile() {
     wx.shareFileMessage({
       filePath: this.data.exportPath,
-      fileName: 'synagent-data.json',
+      fileName: 'suki-data.json',
       fail: (e) => {
         if (!/cancel/.test((e && e.errMsg) || '')) showError(new Error(t('Something went wrong. Please try again.')));
       },

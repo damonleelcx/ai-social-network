@@ -2,7 +2,7 @@
 // the app's catalog (mobile/src/i18n/catalog.ts) where the English matches. Placeholders have to survive.
 module.exports = {
   'AI-generated': ['AI 生成', 'AI 생성', 'AI 生成', 'Generado por IA'],
-  'Content on this page is AI-generated': ['本页内容由 AI 生成（人工智能生成）', '이 페이지의 내용은 AI가 생성했습니다', 'このページの内容は AI が生成したものです', 'El contenido de esta página lo genera la IA'],
+  'Content on this page is AI-generated': ['本页由人工智能生成', '이 페이지는 AI가 생성', 'このページはAIが生成', 'Página generada por IA'],
   '{yuan} yuan': ['{yuan} 元', '{yuan}위안', '{yuan} 元', '{yuan} yuanes'],
   'Confirm your purchase': ['确认购买', '구매 확인', '購入の確認', 'Confirma tu compra'],
   'Credits are virtual goods used for messages to Suki. You pay with WeChat virtual payment.': ['邮票属于虚拟商品，用于和 Suki 对话，通过微信虚拟支付付款。', '우표는 Suki와의 메시지에 쓰는 가상 상품이며, WeChat 가상 결제로 결제합니다.', '切手は Suki へのメッセージに使うバーチャル商品で、WeChat のバーチャル決済でお支払いいただきます。', 'Los sellos son bienes virtuales para enviar mensajes a Suki. Se pagan con el pago virtual de WeChat.'],
@@ -480,7 +480,7 @@ module.exports = {
   "No photo yet. That's my face, not yours.": ['还没有照片。这是我的脸，不是你的。', '아직 사진이 없어요. 이건 제 얼굴이지 당신 얼굴이 아니에요.', 'まだ写真がありません。これは私の顔で、あなたの顔じゃないよ。', 'Todavía no hay foto. Esa es mi cara, no la tuya.'],
   'Avatar moods': ['头像表情', '아바타 표정', 'アバターの表情', 'Estados de ánimo del avatar'],
   "Her face changes with what she's saying.": ['她的表情会随着说的话变化。', '말하는 내용에 따라 표정이 바뀌어요.', '話す内容に合わせて表情が変わります。', 'Su cara cambia según lo que dice.'],
-  'Your winggirl. Openly an AI.': ['你的找搭子助手。坦白说，是个 AI。', '당신의 윙걸. 대놓고 AI예요.', 'あなたのウィングガール。堂々と AI です。', 'Tu cómplice. Una IA, y sin esconderlo.'],
+  'Your winggirl. Openly an AI.': ['你的找搭子助手，坦白说是 AI。', '당신의 윙걸. 대놓고 AI예요.', 'あなたのウィングガール。堂々と AI です。', 'Tu cómplice. Una IA, y sin esconderlo.'],
   'Thinking about what you said...': ['正在想你说的话...', '당신의 말을 생각하는 중...', 'あなたの言葉を考えています...', 'Pensando en lo que dijiste...'],
   "Hi, I'm Suki!": ['嗨，我是 Suki！', '안녕하세요, 저는 Suki예요!', 'こんにちは、Suki です！', '¡Hola, soy Suki!'],
   "I'm an AI matchmaker, and I'm on your side. Say hi and we'll get to know each other. No forms, I promise.": ['我是你的找搭子助手，站在你这边。打个招呼，我们就开始互相了解。保证不用填表。', '저는 AI 매치메이커이고, 당신 편이에요. 인사하면 서로 알아가요. 양식 작성은 없어요, 약속해요.', '私は AI マッチメイカーで、あなたの味方です。あいさつして、お互いを知りましょう。フォーム入力はなし、約束します。', 'Soy una casamentera de IA y estoy de tu lado. Salúdame y nos vamos conociendo. Sin formularios, lo prometo.'],

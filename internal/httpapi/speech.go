@@ -21,6 +21,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"github.com/damonleelcx/ai-social-network/internal/agent"
 	"github.com/damonleelcx/ai-social-network/internal/dating"
 	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"github.com/damonleelcx/ai-social-network/internal/tts"
@@ -75,7 +76,7 @@ func (s *Server) speak(w http.ResponseWriter, r *http.Request) {
 			fail(w, 404, "not found")
 			return
 		}
-		text = ms[0].Body
+		text = agent.DisplayBody(ms[0].Body)
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 50*time.Second)
 	defer cancel()

@@ -6,11 +6,11 @@
     <suki-avatar mood="{{headerMood}}" mood-avatar="{{moodAvatar}}" size="108" ring="6" />
     <view class="grow">
       <view class="suki-name">Suki</view>
-      <view class="{{thinking ? 'suki-busy' : 'soft'}}">{{thinking ? t.thinkingHeader : t.winggirl}}</view>
+      <view wx:if="{{thinking}}" class="suki-busy">{{t.thinkingHeader}}</view>
     </view>
     <view wx:if="{{!guest}}" class="suki-settings" aria-role="button" aria-label="{{t.settings}}" bindtap="onSettings">···</view>
   </view>
-  <view class="ai-notice">{{t.aiNotice}}</view>
+  <view class="ai-notice">{{t.winggirl}} {{t.aiNotice}}</view>
   <scroll-view class="chat-list" scroll-y scroll-into-view="{{bottom}}" scroll-with-animation>
     <block wx:if="{{guest}}">
       <suki-says face="chibi" size="296" title="{{t.hi}}" body="{{t.guestBody}}" />
