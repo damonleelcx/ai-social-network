@@ -1,7 +1,7 @@
 {
   "description": "Suki WeChat mini program",
   "appid": "wx7ae96f4417e63425",
-  "projectname": "synagent",
+  "projectname": "suki",
   "compileType": "miniprogram",
   "setting": {
     "es6": true,

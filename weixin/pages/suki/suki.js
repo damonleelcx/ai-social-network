@@ -34,9 +34,18 @@ const COPY = {
   signInToChat: 'Sign in to chat with Suki',
 };
 
+// The mood line is for her face, not for reading. Older replies stored <<mood=happy|>>.
+function visibleBody(body) {
+  if (!body) return body;
+  return String(body)
+    .replace(/<<\s*mood\s*=\s*[a-z]+(?:\s*\|[^>]*)?>>/gi, '')
+    .replace(/<<\s*mood\s*=[^>]*$/i, '')
+    .trim();
+}
+
 function shape(m) {
   const meta = m.meta || {};
-  return { seq: m.seq, role: m.role, body: m.body, mood: meta.mood || '', cards: meta.cards || [], replies: meta.replies || [] };
+  return { seq: m.seq, role: m.role, body: visibleBody(m.body), mood: meta.mood || '', cards: meta.cards || [], replies: meta.replies || [] };
 }
 
 // What her face in the header shows: what she last felt, or that she's thinking.

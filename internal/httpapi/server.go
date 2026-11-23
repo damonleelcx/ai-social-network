@@ -68,8 +68,8 @@ type Server struct {
 	Scenes *scenes.Service
 	// Verifier checks a live selfie against someone's main photo. Nil turns the badge off.
 	Verifier *verify.Service
-	limit            limiter
-	mapCache         userMapCache
+	limit    limiter
+	mapCache userMapCache
 }
 
 // ── Socket fan-out ──────────────────────────────────────────────────────────
@@ -139,7 +139,9 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 	_ = json.NewEncoder(w).Encode(v)
 }
 
-func fail(w http.ResponseWriter, status int, msg string) { writeJSON(w, status, map[string]string{"error": msg}) }
+func fail(w http.ResponseWriter, status int, msg string) {
+	writeJSON(w, status, map[string]string{"error": msg})
+}
 
 // handleErr shows messages written for people, and logs the rest.
 func handleErr(w http.ResponseWriter, r *http.Request, err error) {
@@ -1136,6 +1138,11 @@ func (s *Server) agentMessages(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		handleErr(w, r, err)
 		return
+	}
+	for i := range l {
+		if l[i].Role == "assistant" {
+			l[i].Body = agent.DisplayBody(l[i].Body)
+		}
 	}
 	var pending int
 	_ = s.Pool.QueryRow(r.Context(), `SELECT count(*) FROM agent_turns WHERE conversation_id=$1 AND status IN ('ready','leased')`, conv).Scan(&pending)

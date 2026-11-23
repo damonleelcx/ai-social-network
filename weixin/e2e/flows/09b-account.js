@@ -59,7 +59,7 @@ module.exports = async (l) => {
     await m.mockWxMethod('shareFileMessage', function record(o) { getApp().shared = o.fileName; return { errMsg: 'shareFileMessage:ok' }; }); // eslint-disable-line
     await l.tapText(p, 'button', 'Send the file');
     await l.sleep(500);
-    l.check((await m.evaluate(() => getApp().shared)) === 'synagent-data.json', 'the send button offers the file (shareFileMessage mocked)');
+    l.check((await m.evaluate(() => getApp().shared)) === 'suki-data.json', 'the send button offers the file (shareFileMessage mocked)');
     await m.restoreWxMethod('shareFileMessage');
   } else {
     await l.tapText(p, 'button', 'Send the file');

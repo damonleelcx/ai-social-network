@@ -2,9 +2,9 @@ package workflows
 
 import (
 	"context"
-	"log/slog"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/damonleelcx/ai-social-network/internal/dating"
@@ -72,7 +72,7 @@ func registerSukiTools() {
 			return map[string]any{"profile": p, "missing": m}, nil
 		})
 
-	add("profile_save", "Save fields of this person's profile, as they told you. Only save what they actually said. Use it to correct anything they say is wrong, too. Birthdate is yyyy-mm-dd and must be 18 or over.",
+	add("profile_save", "Save fields of this person's profile, as they told you. Only save what they actually said. Use it to correct anything they say is wrong, too. Birthdate is yyyy-mm-dd and must be 18 or over. A year-first date such as 95/10/20 is 1995-10-20.",
 		`{"type":"object","additionalProperties":false,"properties":{
 			"display_name":{"type":"string"},"birthdate":{"type":"string"},"gender":{"type":"string","enum":["woman","man","nonbinary","other"]},"pronouns":{"type":"string"},
 			"seeking":{"type":"array","items":{"type":"string","enum":["woman","man","nonbinary","other"]}},"age_min":{"type":"integer"},"age_max":{"type":"integer"},
@@ -83,7 +83,7 @@ func registerSukiTools() {
 			"prompts":{"type":"array","items":{"type":"object","required":["q","a"],"properties":{"q":{"type":"string"},"a":{"type":"string"}}}}}}`,
 		tools.Write, func(ctx context.Context, env *tools.Env, a map[string]any) (map[string]any, error) {
 			if b, _ := a["birthdate"].(string); b != "" && env.UserText != "" && !profile.StatesBirthYear(env.UserText, b) {
-				return map[string]any{"saved": false, "stop": "birthdate: nothing was saved, because the year has to be in their own message. Ask for their full date of birth with the four-digit year, like March 2, 1996."}, nil
+				return map[string]any{"saved": false, "stop": "birthdate: nothing was saved, because their own message has to contain that date. A year-first date such as 95/10/20 or 1995-10-20 is enough. If it doesn't, ask for the full date, and don't invent the year."}, nil
 			}
 			save := profile.Save
 			if env.UserText != "" {
@@ -155,7 +155,9 @@ func registerSukiTools() {
 		})
 
 	add("photo_request", "Show the button that lets this person add a photo from their phone.", noArgs, tools.Read,
-		func(context.Context, *tools.Env, map[string]any) (map[string]any, error) { return card("photo_upload"), nil })
+		func(context.Context, *tools.Env, map[string]any) (map[string]any, error) {
+			return card("photo_upload"), nil
+		})
 
 	add("photo_list", "List this person's own photos and whether each has been approved.", noArgs, tools.Read,
 		func(ctx context.Context, env *tools.Env, _ map[string]any) (map[string]any, error) {
@@ -818,7 +820,7 @@ func registerSukiTools() {
 				// China copy Suki never pitches credits as a reason to invite anyone.
 				return map[string]any{"link": st.Link, "code": st.Code, "friends_joined": st.Joined,
 					"how_to_share": "In the mini program: the share button on the Me page, or ··· then Send to friends. Don't mention credits or any reward for inviting or sharing.",
-					"card": map[string]any{"kind": "invite"}}, nil
+					"card":         map[string]any{"kind": "invite"}}, nil
 			}
 			return map[string]any{"link": st.Link, "code": st.Code, "credits_per_friend": st.CreditsPerFriend, "credits_for_the_friend": st.CreditsForFriend, "earned_when": "the friend signs up with the link or code and finishes their profile", "friends_joined": st.Joined, "credits_earned": st.CreditsEarned,
 				"card": map[string]any{"kind": "invite"}}, nil
@@ -830,7 +832,9 @@ func registerSukiTools() {
 		})
 
 	add("safety_tips", "Reviewed advice for staying safe on a date, to share as written.", noArgs, tools.Read,
-		func(context.Context, *tools.Env, map[string]any) (map[string]any, error) { return map[string]any{"tips": safety.Tips}, nil })
+		func(context.Context, *tools.Env, map[string]any) (map[string]any, error) {
+			return map[string]any{"tips": safety.Tips}, nil
+		})
 
 	add("safety_report", "File a report for the human safety team, or as the Sentinel, add your assessment to a report_id. Files a report; nothing happens to anyone until a person reviews it.",
 		`{"type":"object","required":["details"],"additionalProperties":false,"properties":{"report_id":{"type":"string"},"match_id":{"type":"string"},"reason":{"type":"string","maxLength":80},"severity":{"type":"string","enum":["normal","high","critical"]},"details":{"type":"string","minLength":3,"maxLength":1000}}}`, tools.Write,
