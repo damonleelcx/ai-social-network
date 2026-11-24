@@ -57,24 +57,6 @@ function headerMood(messages, thinking) {
   return 'happy';
 }
 
-// WeChat draws its own capsule over the top-right of the page. A button there is covered.
-function headerInset() {
-  try {
-    const menu = wx.getMenuButtonBoundingClientRect();
-    const win = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
-    const width = win.windowWidth || win.screenWidth || 0;
-    const status = win.statusBarHeight || 0;
-    if (!menu || menu.left <= 0 || menu.width <= 0 || width <= 0) return '';
-    const nav = menu.top > status ? (menu.top - status) * 2 + menu.height : menu.height;
-    const hang = Math.max(0, Math.ceil(menu.bottom - status - nav));
-    let style = 'padding-right:' + Math.max(12, Math.ceil(width - menu.left + 8)) + 'px';
-    if (hang > 0) style += ';padding-top:' + (hang + 8) + 'px';
-    return style;
-  } catch (e) {
-    return '';
-  }
-}
-
 function newestSpeakable(messages) {
   for (let i = messages.length - 1; i >= 0; i--) {
     if (messages[i].role === 'assistant' && messages[i].body) return messages[i].seq;
@@ -83,7 +65,7 @@ function newestSpeakable(messages) {
 }
 
 Page({
-  data: { t: i18n.strings(COPY), guest: false, moments: false, messages: [], thinking: false, draft: '', replies: [], bottom: '', loaded: false, speaker: false, clip: null, phase: null, moodAvatar: true, headerMood: 'happy', headerInset: headerInset() },
+  data: { t: i18n.strings(COPY), guest: false, moments: false, messages: [], thinking: false, draft: '', replies: [], bottom: '', loaded: false, speaker: false, clip: null, phase: null, moodAvatar: true, headerMood: 'happy' },
   onLoad() {
     // Opened from Moments: no sign-in and no navigation here, just a hello. WeChat shows its
     // own button to open the full mini program, which keeps the link's invite code.
@@ -112,8 +94,6 @@ Page({
     this.stopPolling();
   },
   onShow() {
-    const headerInsetStyle = headerInset();
-    if (headerInsetStyle && headerInsetStyle !== this.data.headerInset) this.setData({ headerInset: headerInsetStyle });
     i18n.apply(this, COPY);
     if (this.data.moments) return;
     i18n.tabs();
