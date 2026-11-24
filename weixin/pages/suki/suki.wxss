@@ -1,5 +1,5 @@
 .end { height: 2rpx; }
-.suki-header { display: flex; align-items: center; padding: 16rpx 24rpx; background: #241644; }
+.suki-header { display: flex; align-items: center; padding: 16rpx 16rpx 16rpx 24rpx; background: #241644; }
 .suki-header .grow { margin-left: 20rpx; }
 .suki-name { font-size: 36rpx; font-weight: 700; }
 .suki-busy { font-size: 26rpx; font-weight: 600; color: #ff9db0; }

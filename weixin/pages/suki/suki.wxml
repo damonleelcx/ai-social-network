@@ -2,7 +2,7 @@
   <suki-says face="chibi" size="296" title="{{t.momentsTitle}}" body="{{t.momentsBody}}" />
 </view>
 <view wx:else class="chat">
-  <view class="suki-header" style="{{headerInset}}">
+  <view class="suki-header">
     <suki-avatar mood="{{headerMood}}" mood-avatar="{{moodAvatar}}" size="108" ring="6" />
     <view class="grow">
       <view class="suki-name">Suki</view>
