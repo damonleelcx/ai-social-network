@@ -50,7 +50,11 @@
     <view class="photos">
       <view wx:for="{{photos}}" wx:key="id" class="photo-wrap">
         <image class="photo" src="{{item.path}}" mode="aspectFill" data-id="{{item.id}}" bindtap="onPhoto" />
-        <view class="photo-more" aria-role="button" aria-label="{{t.more}}" data-id="{{item.id}}" catchtap="onPhotoMore">···</view>
+        <view class="photo-more" aria-role="button" aria-label="{{t.more}}" data-id="{{item.id}}" catchtap="onPhotoMore">
+          <view class="photo-more-dot"></view>
+          <view class="photo-more-dot"></view>
+          <view class="photo-more-dot"></view>
+        </view>
       </view>
       <view wx:if="{{photos.length < 6}}" class="photo add" bindtap="onAddPhoto">+</view>
     </view>
