@@ -9,7 +9,7 @@ import { useSession } from '@/state/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
 import { Group, NavRow, ToggleRow } from '@/ui/form';
-import { Backdrop, Page, TabHeader, ThemeToggle } from '@/ui/layout';
+import { Backdrop, NotifyBell, Page, TabHeader, ThemeToggle } from '@/ui/layout';
 import { PersonAvatar } from '@/ui/person';
 import { Button, Glass, Pill, T } from '@/ui/primitives';
 import { showError } from '@/ui/sheet';
@@ -85,7 +85,15 @@ export default function Me() {
 
   return (
     <Backdrop>
-      <TabHeader title={tr('Me')} right={<ThemeToggle />} />
+      <TabHeader
+        title={tr('Me')}
+        right={
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <NotifyBell />
+            <ThemeToggle />
+          </View>
+        }
+      />
       <Page
         bottomInset={false}
         contentStyle={{ paddingTop: space.xs }}
@@ -121,6 +129,7 @@ export default function Me() {
         ) : null}
 
         <Group>
+          <NavRow icon="notifications-outline" label={tr('Notifications')} badge={live.badges.me} onPress={() => router.push('/notifications')} />
           <NavRow icon="create-outline" label={tr('Edit profile')} hint={tr('Or just tell Suki')} onPress={() => router.push('/profile/edit')} />
           <NavRow
             icon="images-outline"
@@ -128,7 +137,6 @@ export default function Me() {
             hint={live.photos.length ? undefined : tr('Add your first one')}
             onPress={() => router.push('/profile/photos')}
           />
-          <NavRow icon="notifications-outline" label={tr('Notifications')} badge={live.badges.me} onPress={() => router.push('/notifications')} />
           <NavRow icon="person-add-outline" label={tr('Invite friends')} hint={tr('Earn credits for each friend who joins')} onPress={() => router.push('/settings/invite')} />
           <NavRow
             icon="card-outline"

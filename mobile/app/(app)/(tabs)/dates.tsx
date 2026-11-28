@@ -8,9 +8,9 @@ import { longDateTime } from '@/lib/format';
 import { dateNeedsMe, useLive, useTopic } from '@/state/live';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
-import { Backdrop, TabHeader } from '@/ui/layout';
+import { Backdrop, NotifyBell, TabHeader } from '@/ui/layout';
 import { PersonAvatar } from '@/ui/person';
-import { Glass, Pill, T } from '@/ui/primitives';
+import { Button, Glass, Pill, T } from '@/ui/primitives';
 import { SukiLoading, SukiSays } from '@/ui/suki';
 import { tr } from '@/i18n';
 
@@ -98,7 +98,7 @@ export default function Dates() {
 
   return (
     <Backdrop>
-      <TabHeader title={tr('Dates')} subtitle={tr('I handle the logistics. You bring the charm.')} />
+      <TabHeader title={tr('Dates')} subtitle={tr('I handle the logistics. You bring the charm.')} right={<NotifyBell />} />
       <FlatList
         data={dates}
         keyExtractor={(d) => d.id}
@@ -116,14 +116,20 @@ export default function Dates() {
           />
         }
         ListHeaderComponent={
-          posts.length ? (
-            <View style={{ gap: space.md }}>
-              <T v="subheading">{tr('Your buddy posts')}</T>
-              {posts.map((p) => (
-                <MyBuddyPost key={p.id} request={p} onChange={loadPosts} />
-              ))}
+          <View style={{ gap: space.md, marginBottom: space.md }}>
+            <View style={{ flexDirection: 'row', gap: space.sm }}>
+              <Button label={tr('Post a plan')} icon="add" small style={{ flex: 1, alignSelf: 'stretch' }} onPress={() => router.push('/buddy/new')} />
+              <Button label={tr('Nearby plans')} icon="compass-outline" kind="secondary" small style={{ flex: 1, alignSelf: 'stretch' }} onPress={() => router.push('/buddy/nearby')} />
             </View>
-          ) : undefined
+            {posts.length ? (
+              <View style={{ gap: space.md }}>
+                <T v="subheading">{tr('Your buddy posts')}</T>
+                {posts.map((p) => (
+                  <MyBuddyPost key={p.id} request={p} onChange={loadPosts} />
+                ))}
+              </View>
+            ) : null}
+          </View>
         }
         ListEmptyComponent={
           posts.length ? undefined : !loaded.dates ? (

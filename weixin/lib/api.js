@@ -248,6 +248,11 @@ module.exports = {
     share: async (id) => (await get(`/v1/dates/${id}/share`)).text,
   },
   buddies: {
+    board: async () => {
+      const r = await get('/v1/buddies');
+      return { requests: r.requests || [], missing: r.missing || [] };
+    },
+    draft: async (idea) => (await post('/v1/buddies/draft', { idea })).draft,
     mine: async () => (await get('/v1/buddies/mine')).requests || [],
     get: async (id) => (await get(`/v1/buddies/${id}`)).request,
     post: async (b) => (await post('/v1/buddies', b)).request,

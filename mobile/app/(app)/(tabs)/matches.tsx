@@ -8,7 +8,7 @@ import { shortTime, STAGE_LABEL } from '@/lib/format';
 import { useLive } from '@/state/live';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
-import { Backdrop, TabHeader } from '@/ui/layout';
+import { Backdrop, NotifyBell, TabHeader } from '@/ui/layout';
 import { MediaImage, PersonAvatar, personLine, SharedChips } from '@/ui/person';
 import { Badge, Glass, T } from '@/ui/primitives';
 import { FadeIn, SukiAvatar, SukiLoading, SukiSays } from '@/ui/suki';
@@ -118,7 +118,7 @@ export default function Matches() {
 
   return (
     <Backdrop>
-      <TabHeader title={tr('Matches')} subtitle={tr('Good introductions, not endless swiping.')} />
+      <TabHeader title={tr('Matches')} subtitle={tr('Good introductions, not endless swiping.')} right={<NotifyBell />} />
       <FlatList
         data={rows}
         keyExtractor={(r) => r.key}

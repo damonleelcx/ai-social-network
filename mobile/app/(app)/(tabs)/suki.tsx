@@ -12,7 +12,7 @@ import { useLive, useSukiStreams, type PendingMessage } from '@/state/live';
 import { useSession } from '@/state/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space } from '@/theme/tokens';
-import { Backdrop } from '@/ui/layout';
+import { Backdrop, NotifyBell } from '@/ui/layout';
 import { Chip } from '@/ui/form';
 import { IconButton, IrisRule, T } from '@/ui/primitives';
 import { FadeIn, SukiAvatar, SukiLoading, SukiSays, TypingDots } from '@/ui/suki';
@@ -285,7 +285,10 @@ export default function SukiChat() {
             <T v="small" soft>{tr('Your winggirl. Openly an AI.')}</T>
           )}
         </View>
-        <IconButton icon="options-outline" label={tr("Suki's settings")} filled onPress={() => router.push('/settings/suki')} />
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <NotifyBell />
+          <IconButton icon="options-outline" label={tr("Suki's settings")} filled onPress={() => router.push('/settings/suki')} />
+        </View>
       </View>
       <IrisRule style={{ opacity: 0.6 }} />
 

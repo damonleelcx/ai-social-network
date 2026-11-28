@@ -1,4 +1,5 @@
 const api = require('../../lib/api');
+const notes = require('../../lib/notes');
 const live = require('../../lib/live');
 const i18n = require('../../lib/i18n');
 const { time, showError, confirm } = require('../../lib/format');
@@ -68,8 +69,10 @@ Page({
   onShow() {
     i18n.apply(this, COPY, 'Me');
     i18n.tabs();
-    this.setData({ guest: !api.getToken() });
-    if (!this.data.guest) this.load();
+    const guest = !api.getToken();
+    this.setData({ guest });
+    if (guest) notes.badge(0);
+    else this.load();
   },
   onSignIn() {
     wx.navigateTo({ url: '/pages/login/login' });
@@ -120,6 +123,7 @@ Page({
         usage: usage.slice(0, 20).map((u) => ({ delta: u.delta, text: REASON[u.reason] ? t(REASON[u.reason]) : u.reason, when: time(u.created_at) })),
         unread: notifications.filter((n) => !n.read).length,
       });
+      notes.badge(notifications.filter((n) => !n.read).length);
       this.loadCheckIn();
       const invite = await share.prepare();
       this.setData({ invite, joinedText: invite ? t('Friends who joined: {count}', { count: invite.joined || 0 }) : '' });

@@ -1,5 +1,6 @@
 const api = require('../../lib/api');
 const live = require('../../lib/live');
+const notes = require('../../lib/notes');
 const i18n = require('../../lib/i18n');
 const person = require('../../lib/person');
 const { time, showError, confirm } = require('../../lib/format');
@@ -21,12 +22,15 @@ const COPY = {
   guestTitle: 'Your plans live here',
   guestBody: 'Meetups and the plans you post show up here once you sign in.',
   signIn: 'Sign in',
+  post: 'Post a plan',
+  nearby: 'Nearby plans',
+  notifications: 'Notifications',
 };
 const STATUS = { searching: 'Looking for places', voting: 'Choosing a place', scheduling: 'Finding a time', confirmed: 'On!', completed: 'Finished', cancelled: 'Cancelled' };
 const POST = { open: 'Open to join', filled: 'Picked', closed: 'Taken down' };
 
 Page({
-  data: { t: i18n.strings(COPY), guest: false, dates: [], posts: [], loaded: false },
+  data: { t: i18n.strings(COPY), guest: false, dates: [], posts: [], loaded: false, unread: 0 },
   onLoad() {
     this.off = live.on((topic) => {
       if (topic === 'dates' || topic === 'buddies' || topic === 'reconnect') this.load();
@@ -39,10 +43,21 @@ Page({
     i18n.apply(this, COPY, 'Dates');
     i18n.tabs();
     if (!api.getToken()) {
-      this.setData({ guest: true, loaded: true });
+      this.setData({ guest: true, loaded: true, unread: 0 });
+      notes.badge(0);
       return;
     }
+    notes.refresh().then((n) => this.setData({ unread: n }));
     this.load();
+  },
+  onPost() {
+    wx.navigateTo({ url: '/pages/buddy/new' });
+  },
+  onNearby() {
+    wx.navigateTo({ url: '/pages/buddy/nearby' });
+  },
+  onNotes() {
+    wx.navigateTo({ url: '/pages/notifications/notifications' });
   },
   onSignIn() {
     wx.navigateTo({ url: '/pages/login/login' });

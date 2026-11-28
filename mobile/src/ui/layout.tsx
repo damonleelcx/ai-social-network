@@ -14,10 +14,11 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLive } from '@/state/live';
 import { useSession } from '@/state/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
-import { IconButton, IrisRule, T } from './primitives';
+import { Badge, IconButton, IrisRule, T } from './primitives';
 import { Sheet, SheetAction, showError } from './sheet';
 import { currentLanguage, LANGUAGE_NAMES, tr } from '@/i18n';
 
@@ -106,6 +107,27 @@ export function ScreenHeader({
         {right}
       </View>
       <IrisRule style={{ opacity: 0.55 }} />
+    </View>
+  );
+}
+
+/** The unread bell, on every tab so notifications aren't only a row on Me. */
+export function NotifyBell() {
+  const { badges } = useLive();
+  const count = badges.me;
+  return (
+    <View>
+      <IconButton
+        icon={count > 0 ? 'notifications' : 'notifications-outline'}
+        label={tr('Notifications')}
+        filled={count > 0}
+        onPress={() => router.push('/notifications')}
+      />
+      {count > 0 ? (
+        <View pointerEvents="none" style={{ position: 'absolute', top: -4, right: -4 }}>
+          <Badge count={count} />
+        </View>
+      ) : null}
     </View>
   );
 }

@@ -21,6 +21,11 @@
     </view>
   </block>
   <block wx:else>
+    <view class="nav-row" data-screen="notifications" bindtap="onOpen">
+      <view class="grow">{{t.notifications}}</view>
+      <view wx:if="{{unread}}" class="badge">{{unread}}</view>
+      <view class="arrow">›</view>
+    </view>
     <view class="card row">
       <image wx:if="{{photos.length}}" class="me-photo" src="{{mainPhoto}}" mode="aspectFill" />
       <suki-avatar wx:else mood="pouty" size="144" ring="6" />
@@ -59,12 +64,6 @@
       <view wx:if="{{photos.length < 6}}" class="photo add" bindtap="onAddPhoto">+</view>
     </view>
     <view wx:if="{{photos.length}}" class="hint">{{t.photosHint}}</view>
-
-    <view class="nav-row gap" data-screen="notifications" bindtap="onOpen">
-      <view class="grow">{{t.notifications}}</view>
-      <view wx:if="{{unread}}" class="badge">{{unread}}</view>
-      <view class="arrow">›</view>
-    </view>
 
     <block wx:if="{{checkin}}">
       <view class="section">{{t.checkIn}}</view>

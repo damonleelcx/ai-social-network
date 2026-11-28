@@ -26,6 +26,7 @@ import (
 	"github.com/damonleelcx/ai-social-network/internal/billing"
 	"github.com/damonleelcx/ai-social-network/internal/chatstore"
 	"github.com/damonleelcx/ai-social-network/internal/dating"
+	"github.com/damonleelcx/ai-social-network/internal/engine"
 	"github.com/damonleelcx/ai-social-network/internal/externalauth"
 	"github.com/damonleelcx/ai-social-network/internal/i18n"
 	"github.com/damonleelcx/ai-social-network/internal/photostore"
@@ -68,6 +69,9 @@ type Server struct {
 	Scenes *scenes.Service
 	// Verifier checks a live selfie against someone's main photo. Nil turns the badge off.
 	Verifier *verify.Service
+	// Model drafts a buddy post from one sentence. Nil leaves the form to be filled by hand.
+	Model    *engine.Model
+	FastLLM  string
 	limit    limiter
 	mapCache userMapCache
 }
@@ -399,6 +403,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /v1/buddies/mine", v(s.buddyMine))
 	m.HandleFunc("GET /v1/buddies/{id}", v(s.buddyGet))
 	m.HandleFunc("POST /v1/buddies", v(lim("buddy_post", 10, time.Hour, s.buddyPost)))
+	m.HandleFunc("POST /v1/buddies/draft", v(lim("buddy_draft", 30, time.Hour, s.buddyDraft)))
 	m.HandleFunc("POST /v1/buddies/{id}/offer", v(lim("buddy_offer", 30, time.Hour, s.buddyOffer)))
 	m.HandleFunc("DELETE /v1/buddies/{id}/offer", v(s.buddyWithdraw))
 	m.HandleFunc("POST /v1/buddies/{id}/pick", v(lim("buddy_pick", 30, time.Hour, s.buddyPick)))
