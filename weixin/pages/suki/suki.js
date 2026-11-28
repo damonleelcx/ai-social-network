@@ -1,5 +1,6 @@
 const api = require('../../lib/api');
 const live = require('../../lib/live');
+const notes = require('../../lib/notes');
 const i18n = require('../../lib/i18n');
 const settings = require('../../lib/settings');
 const voice = require('../../lib/voice');
@@ -15,6 +16,7 @@ const COPY = {
   winggirl: 'Your winggirl. Openly an AI.',
   thinkingHeader: 'Thinking about what you said...',
   settings: "Suki's settings",
+  notifications: 'Notifications',
   hi: "Hi, I'm Suki!",
   hiBody: "I'm an AI matchmaker, and I'm on your side. Say hi and we'll get to know each other. No forms, I promise.",
   loading: 'Finding our conversation...',
@@ -65,7 +67,7 @@ function newestSpeakable(messages) {
 }
 
 Page({
-  data: { t: i18n.strings(COPY), guest: false, moments: false, messages: [], thinking: false, draft: '', replies: [], bottom: '', loaded: false, speaker: false, clip: null, phase: null, moodAvatar: true, headerMood: 'happy' },
+  data: { t: i18n.strings(COPY), guest: false, moments: false, messages: [], thinking: false, draft: '', replies: [], bottom: '', loaded: false, speaker: false, clip: null, phase: null, moodAvatar: true, headerMood: 'happy', unread: 0 },
   onLoad() {
     // Opened from Moments: no sign-in and no navigation here, just a hello. WeChat shows its
     // own button to open the full mini program, which keeps the link's invite code.
@@ -82,6 +84,7 @@ Page({
     this.off = live.on((topic) => {
       if (topic === 'agent' || topic === 'reconnect') this.load();
       else if (topic === 'typing:agent') this.watch();
+      else if (topic === 'notification') notes.refresh().then((n) => this.setData({ unread: n }));
     });
     this.offVoice = voice.on((s) => {
       this.setData({ clip: s.clip, phase: s.phase });
@@ -101,6 +104,7 @@ Page({
     // Only what arrives from here on is new. Nothing she said while they were away gets read out.
     this.spokenUpTo = null;
     if (api.getToken()) {
+      notes.refresh().then((n) => this.setData({ unread: n }));
       this.load();
       share.prepare();
       voice.refreshEnabled();
@@ -191,6 +195,10 @@ Page({
   onSettings() {
     if (this.data.guest) return this.onSignIn();
     wx.navigateTo({ url: '/pages/settings/suki/suki' });
+  },
+  onNotes() {
+    if (this.data.guest) return this.onSignIn();
+    wx.navigateTo({ url: '/pages/notifications/notifications' });
   },
   onInput(e) {
     this.setData({ draft: e.detail.value });

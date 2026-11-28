@@ -1,4 +1,13 @@
 <view class="page">
+  <view wx:if="{{!guest}}" class="plan-actions">
+    <view class="plan-action" bindtap="onPost">{{t.post}}</view>
+    <view class="plan-action plain" bindtap="onNearby">{{t.nearby}}</view>
+  </view>
+  <view wx:if="{{!guest}}" class="nav-row" bindtap="onNotes">
+    <view class="grow">{{t.notifications}}</view>
+    <view wx:if="{{unread}}" class="badge">{{unread}}</view>
+    <view class="arrow">›</view>
+  </view>
   <suki-says wx:if="{{!loaded}}" face="thinking" size="144" dots body="{{t.loading}}" />
   <block wx:if="{{posts.length}}">
     <view class="section">{{t.posts}}</view>

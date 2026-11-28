@@ -3,6 +3,8 @@
     "pages/suki/suki",
     "pages/matches/matches",
     "pages/dates/dates",
+    "pages/buddy/new",
+    "pages/buddy/nearby",
     "pages/me/me",
     "pages/login/login",
     "pages/chat/chat",

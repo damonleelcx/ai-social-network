@@ -1,5 +1,6 @@
 const api = require('../../lib/api');
 const live = require('../../lib/live');
+const notes = require('../../lib/notes');
 const i18n = require('../../lib/i18n');
 const person = require('../../lib/person');
 const { showError } = require('../../lib/format');
@@ -16,10 +17,11 @@ const COPY = {
   guestTitle: 'Your introductions live here',
   guestBody: "When I find someone worth your time, I'll bring them here. Sign in so I know who you are.",
   signIn: 'Sign in',
+  notifications: 'Notifications',
 };
 
 Page({
-  data: { t: i18n.strings(COPY), guest: false, matches: [], proposals: [], loaded: false },
+  data: { t: i18n.strings(COPY), guest: false, matches: [], proposals: [], loaded: false, unread: 0 },
   onLoad() {
     this.off = live.on((topic) => {
       if (topic === 'matches' || topic === 'proposals' || topic === 'reconnect' || topic.startsWith('chat:')) this.load();
@@ -32,10 +34,15 @@ Page({
     i18n.apply(this, COPY, 'Matches');
     i18n.tabs();
     if (!api.getToken()) {
-      this.setData({ guest: true, loaded: true });
+      this.setData({ guest: true, loaded: true, unread: 0 });
+      notes.badge(0);
       return;
     }
+    notes.refresh().then((n) => this.setData({ unread: n }));
     this.load();
+  },
+  onNotes() {
+    wx.navigateTo({ url: '/pages/notifications/notifications' });
   },
   onSignIn() {
     wx.navigateTo({ url: '/pages/login/login' });

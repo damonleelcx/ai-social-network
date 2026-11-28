@@ -186,6 +186,8 @@ func run(mode string) error {
 		srv.Translator = &translate.Service{Pool: pool, Model: model, LLM: cfg.LLMFastModel}
 		srv.Scenes = scn
 		srv.Verifier = &verify.Service{Pool: pool, Photos: photos, Model: model, LLM: cfg.LLMFastModel}
+		srv.Model = model
+		srv.FastLLM = cfg.LLMFastModel
 		ttsKey := cfg.TTSAPIKey
 		if cfg.TTSProvider == "tenlai" {
 			// Tencent's voice is on TokenHub, with the chat model, under the same key.

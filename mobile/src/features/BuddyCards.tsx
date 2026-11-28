@@ -361,6 +361,46 @@ export function BuddyPostCard({ card }: { card: Extract<Card, { kind: 'buddy_pos
   );
 }
 
+/** A plan from the nearby board. The request is already loaded. */
+export function NearbyPlan({ request, onChange }: { request: BuddyRequest; onChange: () => void }) {
+  const [current, setCurrent] = useState(request);
+  const [busy, setBusy] = useState(false);
+  const person = current.person;
+  if (!person) return null;
+  const group = current.spots > 1;
+  const toggle = async () => {
+    if (!current.offered && !(await confirm(group ? tr("Join {name}'s group?", { name: person.display_name }) : tr('Join {name}?', { name: person.display_name }), meetSafely(), tr("I'm in")))) return;
+    if (current.offered && group && !(await confirm(tr('Leave the group?'), tr("You'll leave its group chat too."), tr('Leave'), true))) return;
+    setBusy(true);
+    try {
+      if (current.offered) await api.buddies.withdraw(current.id);
+      else await api.buddies.offer(current.id);
+      setCurrent(await api.buddies.get(current.id));
+      onChange();
+    } catch (e) {
+      showError(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Glass style={{ gap: space.md }}>
+      <PersonRow person={person} onBlocked={onChange} />
+      <Plan {...planOf(current, true)} />
+      {current.offered && !group ? <T v="small" soft>{tr("{name} will see you're in, and picks who to go with.", { name: person.display_name })}</T> : null}
+      {current.offered && group ? <Button label={tr('Open the group chat')} icon="chatbubbles" kind="secondary" small onPress={() => router.push(`/group/${current.id}`)} /> : null}
+      <Button
+        label={current.offered ? (group ? tr('Leave the group') : tr('Take back')) : group ? tr('Join the group') : tr("I'm in")}
+        icon={current.offered ? 'close' : 'hand-right-outline'}
+        kind={current.offered ? 'secondary' : 'primary'}
+        small
+        loading={busy}
+        onPress={toggle}
+      />
+    </Glass>
+  );
+}
+
 /** Someone else's plan. */
 export function BuddyRequestCard({ id }: { id: string }) {
   const { request, gone, load, setGone } = useBuddyRequest(id);

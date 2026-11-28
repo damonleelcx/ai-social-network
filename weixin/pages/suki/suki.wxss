@@ -3,7 +3,9 @@
 .suki-header .grow { margin-left: 20rpx; }
 .suki-name { font-size: 36rpx; font-weight: 700; }
 .suki-busy { font-size: 26rpx; font-weight: 600; color: #ff9db0; }
-.suki-settings { width: 72rpx; height: 72rpx; margin-left: 12rpx; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,.12); flex-shrink: 0; }
+.suki-settings { position: relative; width: 72rpx; height: 72rpx; margin-left: 12rpx; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,.12); flex-shrink: 0; }
+.note-glyph { font-size: 32rpx; line-height: 1; }
+.note-count { position: absolute; top: -8rpx; right: -8rpx; min-width: 28rpx; height: 28rpx; line-height: 28rpx; padding: 0 6rpx; border-radius: 14rpx; background: #ff5c8a; color: #fff; font-size: 20rpx; text-align: center; }
 .suki-settings-dot { width: 8rpx; height: 8rpx; margin: 0 3rpx; border-radius: 50%; background: #fff; }
 .suki-row { display: flex; align-items: flex-start; margin-bottom: 18rpx; }
 .suki-col { flex: 1; min-width: 0; margin-left: 14rpx; display: flex; flex-direction: column; align-items: flex-start; }

@@ -1,4 +1,9 @@
 <view class="page">
+  <view wx:if="{{!guest}}" class="nav-row" bindtap="onNotes">
+    <view class="grow">{{t.notifications}}</view>
+    <view wx:if="{{unread}}" class="badge">{{unread}}</view>
+    <view class="arrow">›</view>
+  </view>
   <suki-says wx:if="{{!loaded}}" face="thinking" size="144" dots body="{{t.loading}}" />
   <block wx:if="{{proposals.length}}">
     <view class="section">{{t.introductions}}</view>

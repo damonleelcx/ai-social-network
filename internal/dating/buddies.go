@@ -20,8 +20,8 @@ import (
 // Buddies are the fast path beside introductions: someone wants company for one plan,
 // people in the same city say they're in, and the person who posted picks one. The picked
 // pair gets an ordinary match, so chat, blocking and reporting all work as they always do.
-// All of it happens in the conversation with Suki: she brings posts and offers as cards,
-// and the person's tap on a card is what acts.
+// Suki can bring posts and offers as cards, and a person can also post and browse from
+// the dates screens. A tap is what acts: nothing goes up until they confirm it.
 const (
 	buddyNoteMax     = 200
 	buddyWhenMax     = 60

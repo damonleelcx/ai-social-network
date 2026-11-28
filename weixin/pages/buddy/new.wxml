@@ -1,0 +1,36 @@
+<view class="page">
+  <view class="card">
+    <view class="title">{{t.ideaTitle}}</view>
+    <view class="soft gap">{{t.ideaBody}}</view>
+    <view class="field-label gap">{{t.idea}}</view>
+    <textarea class="input" value="{{idea}}" placeholder="{{t.ideaPlaceholder}}" bindinput="onIdea" maxlength="300" />
+    <button class="plain" loading="{{drafting}}" disabled="{{drafting}}" bindtap="onFill">{{t.fill}}</button>
+  </view>
+
+  <view class="field-label">{{t.kind}}</view>
+  <view class="options">
+    <view wx:for="{{kinds}}" wx:key="value" class="chip {{item.value === kind ? 'on' : ''}}" data-value="{{item.value}}" bindtap="onKind">{{item.label}}</view>
+  </view>
+
+  <view class="field-label">{{t.when}}</view>
+  <input class="input" value="{{when}}" placeholder="{{t.whenPlaceholder}}" bindinput="onWhen" maxlength="60" />
+  <view class="field-label">{{t.note}}</view>
+  <textarea class="input" value="{{note}}" placeholder="{{t.notePlaceholder}}" bindinput="onNote" maxlength="200" />
+  <view class="field-label">{{t.place}}</view>
+  <input class="input" value="{{place}}" placeholder="{{t.placePlaceholder}}" bindinput="onPlace" maxlength="80" />
+
+  <view class="field-label">{{t.hours}}</view>
+  <view class="options">
+    <view wx:for="{{hourOptions}}" wx:key="value" class="chip {{item.value === hours ? 'on' : ''}}" data-value="{{item.value}}" bindtap="onHours">{{item.label}}</view>
+  </view>
+  <view class="field-label">{{t.spots}}</view>
+  <view class="options">
+    <view wx:for="{{spotOptions}}" wx:key="value" class="chip {{item.value === spots ? 'on' : ''}}" data-value="{{item.value}}" bindtap="onSpots">{{item.label}}</view>
+  </view>
+
+  <view class="set-row">
+    <view class="grow">{{t.same}}</view>
+    <switch color="#ff5c8a" checked="{{same}}" bindchange="onSame" />
+  </view>
+  <button class="primary" loading="{{posting}}" disabled="{{posting}}" bindtap="onPost">{{t.post}}</button>
+</view>

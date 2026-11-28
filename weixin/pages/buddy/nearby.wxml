@@ -1,0 +1,25 @@
+<view class="page">
+  <suki-says wx:if="{{!loaded}}" face="thinking" size="144" dots body="{{t.loading}}" />
+  <block wx:elif="{{missing.length}}">
+    <suki-says face="thinking" size="264" title="{{t.missingTitle}}" body="{{t.missingBody}}" />
+  </block>
+  <block wx:elif="{{posts.length}}">
+    <view class="soft">{{t.safety}}</view>
+    <view wx:for="{{posts}}" wx:key="id" class="card gap">
+      <view class="row">
+        <image wx:if="{{item.photo}}" class="avatar" src="{{item.photo}}" mode="aspectFill" />
+        <view wx:else class="avatar"></view>
+        <view class="grow">
+          <view class="title">{{item.who}}</view>
+          <view class="soft">{{item.kindText}} · {{item.when}}</view>
+        </view>
+      </view>
+      <view wx:if="{{item.where}}" class="soft gap">{{item.where}}</view>
+      <view wx:if="{{item.note}}" class="gap">{{item.note}}</view>
+      <view wx:if="{{item.waiting}}" class="soft gap">{{item.waiting}}</view>
+      <button wx:if="{{item.offered && item.group}}" class="plain" data-id="{{item.id}}" bindtap="onChat">{{t.chat}}</button>
+      <button class="{{item.offered ? 'plain' : 'primary'}}" data-index="{{index}}" bindtap="onJoin">{{item.joinLabel}}</button>
+    </view>
+  </block>
+  <suki-says wx:elif="{{loaded}}" face="playful" size="264" title="{{t.emptyTitle}}" body="{{t.emptyBody}}" />
+</view>

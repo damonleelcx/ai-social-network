@@ -78,7 +78,7 @@ func (c *capturedMail) lastCode(t *testing.T, to string) string {
 }
 
 type env struct {
-	images *fakeImages
+	images   *fakeImages
 	api      *httptest.Server
 	pool     *pgxpool.Pool
 	chats    *chatstore.Store
@@ -182,7 +182,8 @@ func setup(t *testing.T) *env {
 	hub := httpapi.NewHub()
 	srv := &httpapi.Server{Pool: pool, Auth: a, Chats: chats, Photos: photos, Places: plc, Dating: svc, Hub: hub, Billing: bill,
 		Translator: &translate.Service{Pool: pool, Model: model, LLM: "fast"}, Scenes: scn,
-		Verifier: &verify.Service{Pool: pool, Photos: photos, Model: model, LLM: "fast"}}
+		Verifier: &verify.Service{Pool: pool, Photos: photos, Model: model, LLM: "fast"},
+		Model:    model, FastLLM: "fast"}
 	a.BeforeDelete = srv.BeforeDelete
 	e := &env{images: images, billing: bill, pool: pool, chats: chats, mail: m, bodies: &bytes.Buffer{}, store: store, model: model, svc: svc, fake: fake, cancel: cancel, photos: photos}
 	e.srv, e.auth = srv, a

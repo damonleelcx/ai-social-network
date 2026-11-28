@@ -8,6 +8,10 @@
       <view class="suki-name">Suki</view>
       <view wx:if="{{thinking}}" class="suki-busy">{{t.thinkingHeader}}</view>
     </view>
+    <view wx:if="{{!guest}}" class="suki-settings note-btn" aria-role="button" aria-label="{{t.notifications}}" bindtap="onNotes">
+      <text class="note-glyph">🔔</text>
+      <view wx:if="{{unread}}" class="note-count">{{unread}}</view>
+    </view>
     <view wx:if="{{!guest}}" class="suki-settings" aria-role="button" aria-label="{{t.settings}}" bindtap="onSettings">
       <view class="suki-settings-dot"></view>
       <view class="suki-settings-dot"></view>

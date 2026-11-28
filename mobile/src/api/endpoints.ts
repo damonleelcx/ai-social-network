@@ -140,6 +140,20 @@ export const buddies = {
   },
   mine: async () => (await api<{ requests: BuddyRequest[] | null }>('/v1/buddies/mine')).requests ?? [],
   get: async (id: string) => (await api<{ request: BuddyRequest }>(`/v1/buddies/${id}`)).request,
+  draft: async (idea: string) =>
+    (
+      await api<{
+        draft: {
+          kind: string;
+          when: string;
+          note: string;
+          expires_in_hours: number;
+          same_gender: boolean;
+          spots?: number;
+          place?: string;
+        };
+      }>('/v1/buddies/draft', { method: 'POST', body: { idea } })
+    ).draft,
   post: async (b: {
     kind: string;
     when: string;
